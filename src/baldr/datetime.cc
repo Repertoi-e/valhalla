@@ -422,11 +422,7 @@ const std::unordered_map<std::string, size_t> tz_name_to_id = {
 
 // checks the integrity of the static tz maps, which will fail in case of
 // tzdb updates. this function pretty-prints missing tzs for convenience
-#if defined(__EMSCRIPTEN__)
-const std::string check_tz_map(const date::tzdb&) {
-  return {};
-}
-#else
+#if !defined(__EMSCRIPTEN__)
 const std::string check_tz_map(const date::tzdb& db) {
   std::vector<std::string> new_zones_msg;
   std::unordered_set<std::string> new_zones_names;

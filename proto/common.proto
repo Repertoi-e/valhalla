@@ -186,7 +186,7 @@ message BikeShareStationInfo {
   string ref = 2;
   uint32 capacity = 3;
   string network = 4;
-  string operator = 5;
+  string _operator = 5;
   float rent_cost = 6;
   float return_cost = 7;
 }

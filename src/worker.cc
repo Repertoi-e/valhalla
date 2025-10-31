@@ -13,7 +13,6 @@
 #include "sif/hierarchylimits.h"
 #include "worker.h"
 
-#include <boost/optional.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <cpp-statsd-client/StatsdClient.hpp>
 
@@ -151,7 +150,7 @@ void parse_ring(ring_pbf_t* ring, const rapidjson::Value& coord_array) {
 void parse_location(valhalla::Location* location,
                     const rapidjson::Value& r_loc,
                     Api& request,
-                    const boost::optional<bool>& ignore_closures,
+                    const std::optional<bool>& ignore_closures,
                     bool is_last_loc) {
   auto lat = rapidjson::get_optional<double>(r_loc, "/lat");
   if (location->has_ll() && location->ll().has_lat_case()) {
@@ -275,42 +274,42 @@ void parse_location(valhalla::Location* location,
     }
   }
 
-  boost::optional<bool> exclude_closures;
+  std::optional<bool> exclude_closures;
   // is it json?
   auto search_filter = rapidjson::get_child_optional(r_loc, "/search_filter");
   if (search_filter) {
     // search_filter.min_road_class
     auto min_road_class =
-        rapidjson::get<std::string>(*search_filter, "/min_road_class", "service_other");
+        rapidjson::get<std::string>(*(*search_filter), "/min_road_class", "service_other");
     valhalla::RoadClass min_rc;
     if (RoadClass_Enum_Parse(min_road_class, &min_rc)) {
       location->mutable_search_filter()->set_min_road_class(min_rc);
     }
     // search_filter.max_road_class
-    auto max_road_class = rapidjson::get<std::string>(*search_filter, "/max_road_class", "motorway");
+    auto max_road_class = rapidjson::get<std::string>(*(*search_filter), "/max_road_class", "motorway");
     valhalla::RoadClass max_rc;
     if (RoadClass_Enum_Parse(max_road_class, &max_rc)) {
       location->mutable_search_filter()->set_max_road_class(max_rc);
     }
     // search_filter.exclude_tunnel
     location->mutable_search_filter()->set_exclude_tunnel(
-        rapidjson::get<bool>(*search_filter, "/exclude_tunnel", false));
+        rapidjson::get<bool>(*(*search_filter), "/exclude_tunnel", false));
     // search_filter.exclude_bridge
     location->mutable_search_filter()->set_exclude_bridge(
-        rapidjson::get<bool>(*search_filter, "/exclude_bridge", false));
+        rapidjson::get<bool>(*(*search_filter), "/exclude_bridge", false));
     // search_filter.exclude_toll
     location->mutable_search_filter()->set_exclude_toll(
-        rapidjson::get<bool>(*search_filter, "/exclude_toll", false));
+        rapidjson::get<bool>(*(*search_filter), "/exclude_toll", false));
     // search_filter.exclude_ramp
     location->mutable_search_filter()->set_exclude_ramp(
-        rapidjson::get<bool>(*search_filter, "/exclude_ramp", false));
+        rapidjson::get<bool>(*(*search_filter), "/exclude_ramp", false));
     // search_filter.exclude_ferry
     location->mutable_search_filter()->set_exclude_ferry(
-        rapidjson::get<bool>(*search_filter, "/exclude_ferry", false));
+        rapidjson::get<bool>(*(*search_filter), "/exclude_ferry", false));
     location->mutable_search_filter()->set_level(
-        rapidjson::get<float>(*search_filter, "/level", baldr::kMaxLevel));
+        rapidjson::get<float>(*(*search_filter), "/level", baldr::kMaxLevel));
     // search_filter.exclude_closures
-    exclude_closures = rapidjson::get_optional<bool>(*search_filter, "/exclude_closures");
+    exclude_closures = rapidjson::get_optional<bool>(*(*search_filter), "/exclude_closures");
   } // or is it pbf
   else if (location->has_search_filter()) {
     if (location->search_filter().has_min_road_class_case() &&
@@ -372,7 +371,7 @@ void parse_locations(const rapidjson::Document& doc,
                      Api& request,
                      const std::string& node,
                      unsigned location_parse_error_code,
-                     const boost::optional<bool>& ignore_closures,
+                     const std::optional<bool>& ignore_closures,
                      bool& had_date_time) {
   auto& options = *request.mutable_options();
 
@@ -513,9 +512,9 @@ void parse_recostings(const rapidjson::Document& doc,
 
   // look either in JSON & PBF
   auto recostings = rapidjson::get_child_optional(doc, "/recostings");
-  if (recostings && recostings->IsArray()) {
-    names.reserve(recostings->GetArray().Size());
-    for (size_t i = 0; i < recostings->GetArray().Size(); ++i) {
+  if (recostings && (*recostings)->IsArray()) {
+    names.reserve((*recostings)->GetArray().Size());
+    for (size_t i = 0; i < (*recostings)->GetArray().Size(); ++i) {
       // parse the options
       std::string key = "/recostings/" + std::to_string(i);
       sif::ParseCosting(doc, key, options.add_recostings());
@@ -563,9 +562,9 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
   auto& allocator = doc.GetAllocator();
   if (deprecated) {
     for (const auto& key : {"/units", "/narrative", "/format", "/language"}) {
-      auto child = rapidjson::get_child_optional(*deprecated, key);
+      auto child = rapidjson::get_child_optional(*(*deprecated), key);
       if (child) {
-        doc.AddMember(rapidjson::Value(&key[1], allocator), *child, allocator);
+        doc.AddMember(rapidjson::Value(&key[1], allocator), *(*child), allocator);
       }
     }
     // delete options if it existed
@@ -772,7 +771,7 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
   ss << "/costing_options/" << costing_str << "/ignore_closures";
   auto ignore_closures = costing_str != "multimodal"
                              ? rapidjson::get_optional<bool>(doc, ss.str().c_str())
-                             : boost::none;
+                             : std::nullopt;
   for (const auto& co : options.costings()) {
     if (co.second.type() == options.costing_type() &&
         co.second.options().has_ignore_closures_case()) {
@@ -961,12 +960,12 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
       rapidjson::get_child_optional(doc, doc.HasMember("avoid_polygons") ? "/avoid_polygons"
                                                                          : "/exclude_polygons");
   if (rings_req) {
-    if (!rings_req->IsArray()) {
+    if (!(*rings_req)->IsArray()) {
       add_warning(api, 204);
     } else {
       auto rings_pbf = options.mutable_exclude_polygons();
       try {
-        for (const auto& req_poly : rings_req->GetArray()) {
+        for (const auto& req_poly : (*rings_req)->GetArray()) {
           if (!req_poly.IsArray() || (req_poly.IsArray() && req_poly.GetArray().Empty())) {
             continue;
           }
@@ -1005,8 +1004,8 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
   auto exp_props_req = rapidjson::get_child_optional(doc, "/expansion_properties");
   auto exp_props_pbf = options.mutable_expansion_properties();
   Options::ExpansionProperties exp_prop;
-  if (exp_props_req && exp_props_req->IsArray()) {
-    for (const auto& prop : exp_props_req->GetArray()) {
+  if (exp_props_req && (*exp_props_req)->IsArray()) {
+    for (const auto& prop : (*exp_props_req)->GetArray()) {
       if (!valhalla::Options_ExpansionProperties_Enum_Parse(std::string(prop.GetString()),
                                                             &exp_prop)) {
         throw valhalla_exception_t(168, std::string(prop.GetString()));

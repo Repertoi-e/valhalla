@@ -24,7 +24,7 @@ namespace valhalla {
 namespace sif {
 
 // Default options/values
-namespace {
+namespace autocost_internal {
 
 // Base transition costs
 constexpr float kDefaultServicePenalty = 75.0f; // Seconds
@@ -393,7 +393,7 @@ AutoCost::AutoCost(const Costing& costing, uint32_t access_mask)
   }
 
   // Preference for distance vs time
-  distance_factor_ = costing_options.use_distance() * kInvMedianSpeed;
+  distance_factor_ = costing_options.use_distance() * autocost_internal::kInvMedianSpeed;
   inv_distance_factor_ = 1.f - costing_options.use_distance();
 
   // Preference to use toll roads (separate from toll booth penalty). Sets a toll
@@ -517,8 +517,8 @@ Cost AutoCost::EdgeCost(const baldr::DirectedEdge* edge,
       break;
   }
 
-  factor += highway_factor_ * kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
-            surface_factor_ * kSurfaceFactor[static_cast<uint32_t>(edge->surface())] +
+  factor += highway_factor_ * autocost_internal::kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
+            surface_factor_ * autocost_internal::kSurfaceFactor[static_cast<uint32_t>(edge->surface())] +
             SpeedPenalty(edge, tile, time_info, flow_sources, edge_speed) +
             edge->toll() * toll_factor_;
 
@@ -538,7 +538,7 @@ Cost AutoCost::EdgeCost(const baldr::DirectedEdge* edge,
     case Use::kTurnChannel:
       if (flow_sources & kDefaultFlowMask) {
         // boost only historic & live speeds
-        factor *= kTurnChannelFactor;
+        factor *= autocost_internal::kTurnChannelFactor;
       }
       break;
     default:
@@ -572,17 +572,17 @@ Cost AutoCost::TransitionCost(const baldr::DirectedEdge* edge,
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = kTCCrossing;
+      turn_cost = autocost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right()) ? autocost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                                           : autocost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred.use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred.use() != Use::kRamp)) {
-      turn_cost += kTCRamp;
+      turn_cost += autocost_internal::kTCRamp;
       if (edge->roundabout())
-        turn_cost += kTCRoundabout;
+        turn_cost += autocost_internal::kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -644,17 +644,17 @@ Cost AutoCost::TransitionCostReverse(const uint32_t idx,
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = kTCCrossing;
+      turn_cost = autocost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right()) ? autocost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                                           : autocost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred->use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred->use() != Use::kRamp)) {
-      turn_cost += kTCRamp;
+      turn_cost += autocost_internal::kTCRamp;
       if (edge->roundabout())
-        turn_cost += kTCRoundabout;
+        turn_cost += autocost_internal::kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -701,19 +701,19 @@ void ParseAutoCostOptions(const rapidjson::Document& doc,
   rapidjson::Value dummy;
   const auto& json = rapidjson::get_child(doc, costing_options_key.c_str(), dummy);
 
-  ParseBaseCostOptions(json, c, kBaseCostOptsConfig);
-  JSON_PBF_RANGED_DEFAULT(co, kAlleyFactorRange, json, "/alley_factor", alley_factor);
-  JSON_PBF_RANGED_DEFAULT(co, kUseHighwaysRange, json, "/use_highways", use_highways);
-  JSON_PBF_RANGED_DEFAULT(co, kUseTollsRange, json, "/use_tolls", use_tolls);
-  JSON_PBF_RANGED_DEFAULT(co, kUseDistanceRange, json, "/use_distance", use_distance);
-  JSON_PBF_RANGED_DEFAULT(co, kAutoHeightRange, json, "/height", height);
-  JSON_PBF_RANGED_DEFAULT(co, kAutoWidthRange, json, "/width", width);
-  JSON_PBF_RANGED_DEFAULT(co, kProbabilityRange, json, "/restriction_probability",
+  ParseBaseCostOptions(json, c, autocost_internal::kBaseCostOptsConfig);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAlleyFactorRange, json, "/alley_factor", alley_factor);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseHighwaysRange, json, "/use_highways", use_highways);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseTollsRange, json, "/use_tolls", use_tolls);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseDistanceRange, json, "/use_distance", use_distance);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAutoHeightRange, json, "/height", height);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAutoWidthRange, json, "/width", width);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kProbabilityRange, json, "/restriction_probability",
                           restriction_probability);
   JSON_PBF_DEFAULT_V2(co, false, json, "/include_hot", include_hot);
   JSON_PBF_DEFAULT_V2(co, false, json, "/include_hov2", include_hov2);
   JSON_PBF_DEFAULT_V2(co, false, json, "/include_hov3", include_hov3);
-  JSON_PBF_RANGED_DEFAULT(co, kVehicleSpeedRange, json, "/top_speed", top_speed);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kVehicleSpeedRange, json, "/top_speed", top_speed);
 }
 
 cost_ptr_t CreateAutoCost(const Costing& costing_options) {
@@ -974,7 +974,7 @@ public:
     float factor = (edge->use() == Use::kFerry) ? ferry_factor_ : kDensityFactor[edge->density()];
     factor += SpeedPenalty(edge, tile, time_info, flow_sources, edge_speed);
     if ((edge->forwardaccess() & kTaxiAccess) && !(edge->forwardaccess() & kAutoAccess)) {
-      factor *= kTaxiFactor;
+      factor *= autocost_internal::kTaxiFactor;
     }
 
     if (edge->use() == Use::kAlley) {

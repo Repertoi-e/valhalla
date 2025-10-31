@@ -21,7 +21,7 @@ namespace valhalla {
 namespace sif {
 
 // Default options/values
-namespace {
+namespace truckcost_internal {
 
 // Base transition costs
 // Note: all roads of class "Service, other" are already penalized with low_class_penalty, so for
@@ -346,8 +346,8 @@ TruckCost::TruckCost(const Costing& costing)
   low_class_penalty_ = costing_options.low_class_penalty();
   non_truck_route_factor_ =
       costing_options.use_truck_route() < 0.5f
-          ? kMinNonTruckRouteFactor + 2.f * costing_options.use_truck_route()
-          : ((kMinNonTruckRouteFactor - 5.f) + 12.f * costing_options.use_truck_route());
+          ? truckcost_internal::kMinNonTruckRouteFactor + 2.f * costing_options.use_truck_route()
+          : ((truckcost_internal::kMinNonTruckRouteFactor - 5.f) + 12.f * costing_options.use_truck_route());
 
   // Get the vehicle attributes
   hazmat_ = costing_options.hazmat();
@@ -527,14 +527,14 @@ Cost TruckCost::EdgeCost(const baldr::DirectedEdge* edge,
       break;
     default:
       factor = kDensityFactor[edge->density()] +
-               highway_factor_ * kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
-               kSurfaceFactor[static_cast<uint32_t>(edge->surface())] +
+               highway_factor_ * truckcost_internal::kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
+               truckcost_internal::kSurfaceFactor[static_cast<uint32_t>(edge->surface())] +
                SpeedPenalty(edge, tile, time_info, flow_sources, edge_speed);
       break;
   }
 
   if (edge->truck_route() > 0) {
-    factor *= kTruckRouteFactor;
+    factor *= truckcost_internal::kTruckRouteFactor;
   } else {
     factor *= non_truck_route_factor_;
   }
@@ -587,17 +587,17 @@ Cost TruckCost::TransitionCost(const baldr::DirectedEdge* edge,
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = kTCCrossing;
+      turn_cost = truckcost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right()) ? truckcost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                                           : truckcost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred.use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred.use() != Use::kRamp)) {
-      turn_cost += kTCRamp;
+      turn_cost += truckcost_internal::kTCRamp;
       if (edge->roundabout())
-        turn_cost += kTCRoundabout;
+        turn_cost += truckcost_internal::kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -667,17 +667,17 @@ Cost TruckCost::TransitionCostReverse(const uint32_t idx,
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = kTCCrossing;
+      turn_cost = truckcost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right()) ? truckcost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                                           : truckcost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred->use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred->use() != Use::kRamp)) {
-      turn_cost += kTCRamp;
+      turn_cost += truckcost_internal::kTCRamp;
       if (edge->roundabout())
-        turn_cost += kTCRoundabout;
+        turn_cost += truckcost_internal::kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -734,21 +734,21 @@ void ParseTruckCostOptions(const rapidjson::Document& doc,
   rapidjson::Value dummy;
   const auto& json = rapidjson::get_child(doc, costing_options_key.c_str(), dummy);
 
-  ParseBaseCostOptions(json, c, kBaseCostOptsConfig);
-  JSON_PBF_RANGED_DEFAULT(co, kLowClassPenaltyRange, json, "/low_class_penalty", low_class_penalty);
+  ParseBaseCostOptions(json, c, truckcost_internal::kBaseCostOptsConfig);
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kLowClassPenaltyRange, json, "/low_class_penalty", low_class_penalty);
   JSON_PBF_DEFAULT_V2(co, false, json, "/hazmat", hazmat);
-  JSON_PBF_RANGED_DEFAULT(co, kTruckWeightRange, json, "/weight", weight);
-  JSON_PBF_RANGED_DEFAULT(co, kTruckAxleLoadRange, json, "/axle_load", axle_load);
-  JSON_PBF_RANGED_DEFAULT(co, kTruckHeightRange, json, "/height", height);
-  JSON_PBF_RANGED_DEFAULT(co, kTruckWidthRange, json, "/width", width);
-  JSON_PBF_RANGED_DEFAULT(co, kTruckLengthRange, json, "/length", length);
-  JSON_PBF_RANGED_DEFAULT(co, kUseTollsRange, json, "/use_tolls", use_tolls);
-  JSON_PBF_RANGED_DEFAULT(co, kUseHighwaysRange, json, "/use_highways", use_highways);
-  JSON_PBF_RANGED_DEFAULT_V2(co, kAxleCountRange, json, "/axle_count", axle_count);
-  JSON_PBF_RANGED_DEFAULT(co, kTopSpeedRange, json, "/top_speed", top_speed);
-  JSON_PBF_RANGED_DEFAULT(co, kHGVNoAccessRange, json, "/hgv_no_access_penalty",
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kTruckWeightRange, json, "/weight", weight);
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kTruckAxleLoadRange, json, "/axle_load", axle_load);
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kTruckHeightRange, json, "/height", height);
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kTruckWidthRange, json, "/width", width);
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kTruckLengthRange, json, "/length", length);
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kUseTollsRange, json, "/use_tolls", use_tolls);
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kUseHighwaysRange, json, "/use_highways", use_highways);
+  JSON_PBF_RANGED_DEFAULT_V2(co, truckcost_internal::kAxleCountRange, json, "/axle_count", axle_count);
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kTopSpeedRange, json, "/top_speed", top_speed);
+  JSON_PBF_RANGED_DEFAULT(co, truckcost_internal::kHGVNoAccessRange, json, "/hgv_no_access_penalty",
                           hgv_no_access_penalty);
-  JSON_PBF_RANGED_DEFAULT_V2(co, kUseTruckRouteRange, json, "/use_truck_route", use_truck_route);
+  JSON_PBF_RANGED_DEFAULT_V2(co, truckcost_internal::kUseTruckRouteRange, json, "/use_truck_route", use_truck_route);
 }
 
 cost_ptr_t CreateTruckCost(const Costing& costing_options) {

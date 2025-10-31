@@ -7,7 +7,7 @@ using namespace valhalla::baldr;
 
 namespace {
 
-void access_json(uint32_t access, rapidjson::writer_wrapper_t& writer) {
+void de_access_json(uint32_t access, rapidjson::writer_wrapper_t& writer) {
   writer("bicycle", static_cast<bool>(access & kBicycleAccess));
   writer("bus", static_cast<bool>(access & kBusAccess));
   writer("car", static_cast<bool>(access & kAutoAccess));
@@ -19,21 +19,6 @@ void access_json(uint32_t access, rapidjson::writer_wrapper_t& writer) {
   writer("wheelchair", static_cast<bool>(access & kWheelchairAccess));
   writer("moped", static_cast<bool>(access & kMopedAccess));
   writer("motorcycle", static_cast<bool>(access & kMotorcycleAccess));
-}
-
-/**
- * Get the updated bit field.
- * @param dst  Data member to be updated.
- * @param src  Value to be updated.
- * @param pos  Position (pos element within the bit field).
- * @param len  Length of each element within the bit field.
- * @return  Returns an updated value for the bit field.
- */
-uint32_t
-OverwriteBits(const uint32_t dst, const uint32_t src, const uint32_t pos, const uint32_t len) {
-  uint32_t shift = (pos * len);
-  uint32_t mask = ((static_cast<uint32_t>(1) << len) - 1) << shift;
-  return (dst & ~mask) | (src << shift);
 }
 
 /**
@@ -615,10 +600,10 @@ void DirectedEdge::json(rapidjson::writer_wrapper_t& writer) const {
   writer("access_restriction", static_cast<bool>(access_restriction_));
 
   writer.start_object("start_restriction");
-  access_json(start_restriction_, writer);
+  de_access_json(start_restriction_, writer);
   writer.end_object();
   writer.start_object("end_restriction");
-  access_json(end_restriction_, writer);
+  de_access_json(end_restriction_, writer);
   writer.end_object();
 
   writer("part_of_complex_restriction", static_cast<bool>(complex_restriction_));
@@ -655,10 +640,10 @@ void DirectedEdge::json(rapidjson::writer_wrapper_t& writer) const {
   writer.end_object();
 
   writer.start_object("access");
-  access_json(forwardaccess_, writer);
+  de_access_json(forwardaccess_, writer);
   writer.end_object();
 
-  //{"access", access_json(reverseaccess_)},
+  //{"access", de_access_json(reverseaccess_)},
 
   writer.start_object("classification");
   writer("classification", to_string(static_cast<RoadClass>(classification_)));

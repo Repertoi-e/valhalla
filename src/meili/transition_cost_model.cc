@@ -1,13 +1,6 @@
 #include "meili/transition_cost_model.h"
 #include "meili/routing.h"
 
-namespace {
-inline float GreatCircleDistance(const valhalla::meili::Measurement& left,
-                                 const valhalla::meili::Measurement& right) {
-  return left.lnglat().Distance(right.lnglat());
-}
-} // namespace
-
 namespace valhalla {
 namespace meili {
 

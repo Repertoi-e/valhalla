@@ -13,7 +13,7 @@ namespace {
 
 // should return true if not equal to TaggedValue::kLinguistic
 bool IsNonLiguisticTagValue(char ch) {
-  return static_cast<TaggedValue>(ch) != TaggedValue::kLinguistic;
+  return static_cast<valhalla::baldr::TaggedValue>(ch) != valhalla::baldr::TaggedValue::kLinguistic;
 }
 
 void bike_network_json(uint8_t mask, rapidjson::writer_wrapper_t& writer) {
@@ -51,28 +51,28 @@ int32_t parse_varint(const char*& encoded) {
 
 // per tag parser. each returned string includes the leading TaggedValue.
 std::vector<std::string> parse_tagged_value(const char* ptr) {
-  switch (static_cast<TaggedValue>(ptr[0])) {
-    case TaggedValue::kLayer:
-    case TaggedValue::kBssInfo:
-    case TaggedValue::kLevel:
-    case TaggedValue::kLevelRef:
-    case TaggedValue::kTunnel:
-    case TaggedValue::kBridge:
+  switch (static_cast<valhalla::baldr::TaggedValue>(ptr[0])) {
+    case valhalla::baldr::TaggedValue::kLayer:
+    case valhalla::baldr::TaggedValue::kBssInfo:
+    case valhalla::baldr::TaggedValue::kLevel:
+    case valhalla::baldr::TaggedValue::kLevelRef:
+    case valhalla::baldr::TaggedValue::kTunnel:
+    case valhalla::baldr::TaggedValue::kBridge:
       return {std::string(ptr)};
-    case TaggedValue::kLandmark: {
+    case valhalla::baldr::TaggedValue::kLandmark: {
       std::string landmark_name = ptr + 10;
       size_t landmark_size = landmark_name.size() + 10;
       return {std::string(ptr, landmark_size)};
     }
-    case TaggedValue::kLevels: {
+    case valhalla::baldr::TaggedValue::kLevels: {
       auto start = ptr + 1;
       int size = static_cast<int>(parse_varint(start));
       return {std::string(ptr, (start + size) - ptr)};
     }
-    case TaggedValue::kConditionalSpeedLimits: {
+    case valhalla::baldr::TaggedValue::kConditionalSpeedLimits: {
       return {std::string(ptr, 1 + sizeof(ConditionalSpeedLimit))};
     }
-    case TaggedValue::kLinguistic:
+    case valhalla::baldr::TaggedValue::kLinguistic:
     default:
       return {};
   }

@@ -23,7 +23,7 @@ namespace valhalla {
 namespace sif {
 
 // Default options/values
-namespace {
+namespace motorscootercost_internal {
 
 // Base transition costs (not toll booth penalties since scooters likely don't take toll roads)
 constexpr float kDefaultDestinationOnlyPenalty = 120.0f; // Seconds
@@ -358,7 +358,7 @@ MotorScooterCost::MotorScooterCost(const Costing& costing)
   float use_hills = costing_options.use_hills();
   float avoid_hills = (1.0f - use_hills);
   for (uint32_t i = 0; i <= kMaxGradeFactor; ++i) {
-    grade_penalty_[i] = avoid_hills * kAvoidHillsStrength[i];
+    grade_penalty_[i] = avoid_hills * motorscootercost_internal::kAvoidHillsStrength[i];
   }
 
   // Set the road classification factor based on use_primary option - scales from
@@ -383,7 +383,7 @@ bool MotorScooterCost::Allowed(const baldr::DirectedEdge* edge,
   // Allow U-turns at dead-end nodes.
   if (!IsAccessible(edge) || (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
       ((pred.restrictions() & (1 << edge->localedgeidx())) && !ignore_turn_restrictions_) ||
-      (edge->surface() > kMinimumScooterSurface) || IsUserAvoidEdge(edgeid) ||
+      (edge->surface() > motorscootercost_internal::kMinimumScooterSurface) || IsUserAvoidEdge(edgeid) ||
       (!allow_destination_only_ && !pred.destonly() && edge->destonly()) ||
       (pred.closure_pruning() && IsClosed(edge, tile)) || CheckExclusions(edge, pred)) {
     return false;
@@ -408,7 +408,7 @@ bool MotorScooterCost::AllowedReverse(const baldr::DirectedEdge* edge,
   // Allow U-turns at dead-end nodes.
   if (!IsAccessible(opp_edge) || (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
       ((opp_edge->restrictions() & (1 << pred.opp_local_idx())) && !ignore_turn_restrictions_) ||
-      (opp_edge->surface() > kMinimumScooterSurface) || IsUserAvoidEdge(opp_edgeid) ||
+      (opp_edge->surface() > motorscootercost_internal::kMinimumScooterSurface) || IsUserAvoidEdge(opp_edgeid) ||
       (!allow_destination_only_ && !pred.destonly() && opp_edge->destonly()) ||
       (pred.closure_pruning() && IsClosed(opp_edge, tile)) || CheckExclusions(opp_edge, pred)) {
     return false;
@@ -437,8 +437,8 @@ Cost MotorScooterCost::EdgeCost(const baldr::DirectedEdge* edge,
   // prevent scooter speed to become 0
   uint32_t scooter_speed =
       std::max(1.f, (std::min(top_speed_, speed) *
-                     kSurfaceSpeedFactors[static_cast<uint32_t>(edge->surface())] *
-                     kGradeBasedSpeedFactor[static_cast<uint32_t>(edge->weighted_grade())]));
+                     motorscootercost_internal::kSurfaceSpeedFactors[static_cast<uint32_t>(edge->surface())] *
+                     motorscootercost_internal::kGradeBasedSpeedFactor[static_cast<uint32_t>(edge->weighted_grade())]));
 
   assert(scooter_speed < kSpeedFactor.size());
   float sec = (edge->length() * kSpeedFactor[scooter_speed]);
@@ -448,12 +448,12 @@ Cost MotorScooterCost::EdgeCost(const baldr::DirectedEdge* edge,
   }
 
   float factor = 1.0f + (kDensityFactor[edge->density()] - 0.85f) +
-                 (road_factor_ * kRoadClassFactor[static_cast<uint32_t>(edge->classification())]) +
+                 (road_factor_ * motorscootercost_internal::kRoadClassFactor[static_cast<uint32_t>(edge->classification())]) +
                  grade_penalty_[static_cast<uint32_t>(edge->weighted_grade())] +
                  SpeedPenalty(edge, tile, time_info, flow_sources, speed);
 
   if (edge->destonly()) {
-    factor += kDestinationOnlyFactor;
+    factor += motorscootercost_internal::kDestinationOnlyFactor;
   }
 
   if (edge->use() == Use::kTrack) {
@@ -490,17 +490,17 @@ Cost MotorScooterCost::TransitionCost(
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = kTCCrossing;
+      turn_cost = motorscootercost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right()) ? motorscootercost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                                           : motorscootercost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred.use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred.use() != Use::kRamp)) {
-      turn_cost += kTCRamp;
+      turn_cost += motorscootercost_internal::kTCRamp;
       if (edge->roundabout())
-        turn_cost += kTCRoundabout;
+        turn_cost += motorscootercost_internal::kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -564,17 +564,17 @@ Cost MotorScooterCost::TransitionCostReverse(
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = kTCCrossing;
+      turn_cost = motorscootercost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right()) ? motorscootercost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                                           : motorscootercost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred->use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred->use() != Use::kRamp)) {
-      turn_cost += kTCRamp;
+      turn_cost += motorscootercost_internal::kTCRamp;
       if (edge->roundabout())
-        turn_cost += kTCRoundabout;
+        turn_cost += motorscootercost_internal::kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -616,10 +616,10 @@ void ParseMotorScooterCostOptions(const rapidjson::Document& doc,
   rapidjson::Value dummy;
   const auto& json = rapidjson::get_child(doc, costing_options_key.c_str(), dummy);
 
-  ParseBaseCostOptions(json, c, kBaseCostOptsConfig);
-  JSON_PBF_RANGED_DEFAULT(co, kTopSpeedRange, json, "/top_speed", top_speed);
-  JSON_PBF_RANGED_DEFAULT(co, kUseHillsRange, json, "/use_hills", use_hills);
-  JSON_PBF_RANGED_DEFAULT(co, kUsePrimaryRange, json, "/use_primary", use_primary);
+  ParseBaseCostOptions(json, c, motorscootercost_internal::kBaseCostOptsConfig);
+  JSON_PBF_RANGED_DEFAULT(co, motorscootercost_internal::kTopSpeedRange, json, "/top_speed", top_speed);
+  JSON_PBF_RANGED_DEFAULT(co, motorscootercost_internal::kUseHillsRange, json, "/use_hills", use_hills);
+  JSON_PBF_RANGED_DEFAULT(co, motorscootercost_internal::kUsePrimaryRange, json, "/use_primary", use_primary);
 }
 
 cost_ptr_t CreateMotorScooterCost(const Costing& costing_options) {

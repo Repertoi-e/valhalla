@@ -13,14 +13,12 @@
 #include "sif/transitcost.h"
 #include "sif/truckcost.h"
 
-#include <boost/optional.hpp>
-
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;
 
 namespace {
 
-uint8_t SpeedMask_Parse(const boost::optional<const rapidjson::Value&>& speed_types) {
+uint8_t SpeedMask_Parse(const std::optional<const rapidjson::Value*>& speed_types) {
   static const std::unordered_map<std::string, uint8_t> types{
       {"freeflow", kFreeFlowMask},
       {"constrained", kConstrainedFlowMask},
@@ -33,9 +31,9 @@ uint8_t SpeedMask_Parse(const boost::optional<const rapidjson::Value&>& speed_ty
 
   bool had_value = false;
   uint8_t mask = 0;
-  if (speed_types->IsArray()) {
+  if ((*speed_types)->IsArray()) {
     had_value = true;
-    for (const auto& speed_type : speed_types->GetArray()) {
+    for (const auto& speed_type : (*speed_types)->GetArray()) {
       if (speed_type.IsString()) {
         auto i = types.find(speed_type.GetString());
         if (i != types.cend()) {
@@ -562,9 +560,9 @@ void ParseCosting(const rapidjson::Document& doc,
     // it has to have a costing object, it has to be an object, it has to have a member
     // named costing and the value of that member has to be a string type
     auto json = rapidjson::get_child_optional(doc, key.c_str());
-    decltype(json->MemberBegin()) costing_itr;
-    if (!json || !json->IsObject() ||
-        (costing_itr = json->FindMember("costing")) == json->MemberEnd() ||
+    decltype((*json)->MemberBegin()) costing_itr;
+    if (!json || !(*json)->IsObject() ||
+        (costing_itr = (*json)->FindMember("costing")) == (*json)->MemberEnd() ||
         !costing_itr->value.IsString()) {
       throw valhalla_exception_t{127};
     }

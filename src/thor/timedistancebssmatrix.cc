@@ -8,14 +8,6 @@ using namespace valhalla::baldr;
 using namespace valhalla::midgard;
 using namespace valhalla::sif;
 
-namespace {
-static travel_mode_t get_other_travel_mode(const travel_mode_t current_mode) {
-  static const auto bss_modes =
-      std::vector<travel_mode_t>{travel_mode_t::kPedestrian, travel_mode_t::kBicycle};
-  return bss_modes[static_cast<size_t>(current_mode == travel_mode_t::kPedestrian)];
-}
-
-} // namespace
 namespace valhalla {
 namespace thor {
 

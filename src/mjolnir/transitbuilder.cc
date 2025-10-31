@@ -344,7 +344,7 @@ std::vector<OSMConnectionEdge> MakeConnections(const graph_tile_ptr& local_tile,
     // keep this info about the closest point to an edge shape
     GraphId closest_start_node;
     const DirectedEdge* closest_edge = nullptr;
-    boost::optional<EdgeInfo> closest_edgeinfo;
+    std::optional<EdgeInfo> closest_edgeinfo;
     std::tuple<PointLL, decltype(PointLL::first), int> closest_point({}, SNAP_DISTANCE_CUTOFF, 0);
 
     // Loop over all the graph that is in this tile

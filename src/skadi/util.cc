@@ -3,14 +3,6 @@
 
 #include <algorithm>
 
-namespace {
-
-template <class T> T clamp(T val, const T low, const T high) {
-  return std::min<T>(std::max<T>(val, low), high);
-}
-
-} // namespace
-
 namespace valhalla {
 namespace skadi {
 
