@@ -47,13 +47,13 @@ void serialize_shape(const valhalla::Matrix& matrix,
                      const size_t td_count,
                      const ShapeFormat shape_format) {
   // TODO(nils): shapes aren't implemented yet in TDMatrix
-  if (shape_format == no_shape || (matrix.algorithm() != Matrix::CostMatrix))
+  if (shape_format == ShapeFormat::no_shape || (matrix.algorithm() != Matrix::CostMatrix))
     return;
 
   for (size_t i = start_td; i < start_td + td_count; ++i) {
     switch (shape_format) {
       // even if it source == target or no route found, we want to emplace an element
-      case geojson:
+      case ShapeFormat::geojson:
         if (!matrix.shapes()[i].empty()) {
           writer.start_object();
           tyr::geojson_shape(decode<std::vector<PointLL>>(matrix.shapes()[i]), writer);
@@ -112,7 +112,7 @@ std::string serialize(const Api& request) {
 
 namespace valhalla_serializers {
 
-void locations(const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+void locations(const std::vector<valhalla::Location>& locations,
                rapidjson::writer_wrapper_t& writer) {
   for (const auto& location : locations) {
     if (location.correlation().edges().size() == 0) {
@@ -190,11 +190,11 @@ void serialize_row(const valhalla::Matrix& matrix,
         writer("end_lon", end_lon);
       }
       writer.set_precision(tyr::kDefaultPrecision);
-      if (matrix.shapes().size() && shape_format != no_shape) {
+      if (matrix.shapes().size() && shape_format != ShapeFormat::no_shape) {
         // TODO(nils): tdmatrices don't have "shape" support yet
         if (!matrix.shapes()[i].empty()) {
           switch (shape_format) {
-            case geojson:
+            case ShapeFormat::geojson:
               writer.start_object("shape");
               tyr::geojson_shape(decode<std::vector<PointLL>>(matrix.shapes()[i]), writer);
               writer.end_object();
@@ -257,7 +257,7 @@ std::string serialize(const Api& request, double distance_scale) {
     }
     writer.end_array();
 
-    if (!(options.shape_format() == no_shape ||
+    if (!(options.shape_format() == ShapeFormat::no_shape ||
           (request.matrix().algorithm() != Matrix::CostMatrix))) {
       writer.start_array("shapes");
       for (int source_index = 0; source_index < options.sources_size(); ++source_index) {

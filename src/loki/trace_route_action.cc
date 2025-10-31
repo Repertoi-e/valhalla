@@ -11,7 +11,7 @@ using namespace valhalla::loki;
 
 namespace {
 
-void check_shape(const google::protobuf::RepeatedPtrField<valhalla::Location>& shape,
+void check_shape(const std::vector<valhalla::Location>& shape,
                  unsigned int max_shape,
                  float max_factor = 1.0f) {
   // Adjust max - this enables max edge_walk shape count to be larger
@@ -27,7 +27,7 @@ void check_shape(const google::protobuf::RepeatedPtrField<valhalla::Location>& s
   };
 }
 
-void check_distance(const google::protobuf::RepeatedPtrField<valhalla::Location>& shape,
+void check_distance(const std::vector<valhalla::Location>& shape,
                     float max_distance,
                     float max_breakage_distance,
                     float max_factor = 1.0f) {
@@ -60,7 +60,7 @@ void check_distance(const google::protobuf::RepeatedPtrField<valhalla::Location>
 }
 
 void check_alternates_shape(unsigned int alternates,
-                            const google::protobuf::RepeatedPtrField<valhalla::Location>& shape,
+                            const std::vector<valhalla::Location>& shape,
                             size_t max_alternates_shape) {
 
   // Validate shape is not larger than the configured best paths shape max
@@ -189,7 +189,7 @@ void loki_worker_t::locations_from_shape(Api& request) {
       auto orig = options.mutable_locations(0);
       orig->mutable_ll()->set_lng(orig_ll.lng());
       orig->mutable_ll()->set_lat(orig_ll.lat());
-      for (auto& e : *orig->mutable_correlation()->mutable_edges()) {
+      for (auto& e : orig->mutable_correlation()->mutable_edges()) {
         GraphId edgeid(e.graph_id());
         graph_tile_ptr tile = reader->GetGraphTile(edgeid);
         const DirectedEdge* de = tile->directededge(edgeid);
@@ -216,7 +216,7 @@ void loki_worker_t::locations_from_shape(Api& request) {
       auto dest = options.mutable_locations(1);
       dest->mutable_ll()->set_lng(dest_ll.lng());
       dest->mutable_ll()->set_lat(dest_ll.lat());
-      for (auto& e : *dest->mutable_correlation()->mutable_edges()) {
+      for (auto& e : dest->mutable_correlation()->mutable_edges()) {
         GraphId edgeid(e.graph_id());
         graph_tile_ptr tile = reader->GetGraphTile(edgeid);
         const DirectedEdge* de = tile->directededge(edgeid);

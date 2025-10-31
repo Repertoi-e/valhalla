@@ -54,12 +54,6 @@ std::string incidentTypeToString(const valhalla::IncidentsTile::Metadata::Type& 
     case valhalla::IncidentsTile::Metadata::WEATHER:
       return "weather";
       break;
-    case valhalla::
-        IncidentsTile_Metadata_Type_IncidentsTile_Metadata_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
-    case valhalla::
-        IncidentsTile_Metadata_Type_IncidentsTile_Metadata_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-      // Like the name says, do not use. Simply for ensuring full coverage of switch statement
-      break;
   };
   throw std::runtime_error("Unhandled case in incidentTypeToString: " +
                            std::to_string(incident_type));
@@ -83,12 +77,6 @@ const char* incidentImpactToString(const valhalla::IncidentsTile::Metadata::Impa
     case valhalla::IncidentsTile::Metadata::LOW:
       return "low";
       break;
-    case valhalla::
-        IncidentsTile_Metadata_Impact_IncidentsTile_Metadata_Impact_INT_MAX_SENTINEL_DO_NOT_USE_:
-    case valhalla::
-        IncidentsTile_Metadata_Impact_IncidentsTile_Metadata_Impact_INT_MIN_SENTINEL_DO_NOT_USE_:
-      // Like the name says, do not use. Simply for ensuring full coverage of switch statement
-      break;
   }
   // TODO Throw or warn here? Assert maybe to only crash debug build
   LOG_WARN("Unhandled case in incidentCriticalityToString: " + std::to_string(impact));
@@ -96,7 +84,7 @@ const char* incidentImpactToString(const valhalla::IncidentsTile::Metadata::Impa
 }
 
 const std::string& GuidanceViewTypeToString(const valhalla::DirectionsLeg_GuidanceView_Type type) {
-  static const std::unordered_map<int, std::string>
+  static const std::unordered_map<valhalla::DirectionsLeg_GuidanceView_Type, std::string>
       types{{DirectionsLeg_GuidanceView_Type_kJunction, "jct"},
             {DirectionsLeg_GuidanceView_Type_kSapa, "sapa"},
             {DirectionsLeg_GuidanceView_Type_kTollbranch, "tollbranch"},
@@ -145,7 +133,7 @@ bool Options_ExpansionAction_Enum_Parse(const std::string& action, Options::Acti
 }
 
 const std::string& Options_Action_Enum_Name(const Options::Action action) {
-  static const std::unordered_map<int, std::string> actions{
+  static const std::unordered_map<Options::Action, std::string> actions{
       {Options::route, "route"},
       {Options::locate, "locate"},
       {Options::sources_to_targets, "sources_to_targets"},
@@ -177,7 +165,7 @@ bool Location_Type_Enum_Parse(const std::string& type, Location::Type* t) {
   return true;
 }
 const std::string& Location_Type_Enum_Name(const Location::Type type) {
-  static const std::unordered_map<int, std::string> types{
+  static const std::unordered_map<Location::Type, std::string> types{
       {Location::kBreak, "break"},
       {Location::kThrough, "through"},
       {Location::kBreakThrough, "break_through"},
@@ -188,7 +176,7 @@ const std::string& Location_Type_Enum_Name(const Location::Type type) {
 }
 
 const std::string& Location_SideOfStreet_Enum_Name(const Location::SideOfStreet side) {
-  static const std::unordered_map<int, std::string> sides{
+  static const std::unordered_map<Location::SideOfStreet, std::string> sides{
       {Location::kLeft, "left"},
       {Location::kRight, "right"},
       {Location::kNone, "none"},
@@ -223,7 +211,7 @@ bool Costing_Enum_Parse(const std::string& costing, Costing::Type* c) {
 }
 
 const std::string& Costing_Enum_Name(const Costing::Type costing) {
-  static const std::unordered_map<int, std::string> costings{
+  static const std::unordered_map<Costing::Type, std::string> costings{
       {Costing::auto_, "auto"},
       // auto_shorter is deprecated
       {Costing::bicycle, "bicycle"},
@@ -257,7 +245,7 @@ bool ShapeMatch_Enum_Parse(const std::string& match, ShapeMatch* s) {
 }
 
 const std::string& ShapeMatch_Enum_Name(const ShapeMatch match) {
-  static const std::unordered_map<int, std::string> matches{
+  static const std::unordered_map<ShapeMatch, std::string> matches{
       {ShapeMatch::edge_walk, "edge_walk"},
       {ShapeMatch::map_snap, "map_snap"},
       {ShapeMatch::walk_or_snap, "walk_or_snap"},
@@ -279,7 +267,7 @@ bool Options_Format_Enum_Parse(const std::string& format, Options::Format* f) {
 }
 
 const std::string& Options_Format_Enum_Name(const Options::Format match) {
-  static const std::unordered_map<int, std::string> formats{
+  static const std::unordered_map<Options::Format, std::string> formats{
       {Options::json, "json"}, {Options::gpx, "gpx"},         {Options::osrm, "osrm"},
       {Options::pbf, "pbf"},   {Options::geotiff, "geotiff"},
   };
@@ -288,7 +276,7 @@ const std::string& Options_Format_Enum_Name(const Options::Format match) {
 }
 
 const std::string& Options_Units_Enum_Name(const Options::Units unit) {
-  static const std::unordered_map<int, std::string> units{
+  static const std::unordered_map<Options::Units, std::string> units{
       {Options::kilometers, "kilometers"},
       {Options::miles, "miles"},
   };
@@ -309,7 +297,7 @@ bool FilterAction_Enum_Parse(const std::string& action, FilterAction* a) {
 }
 
 const std::string& FilterAction_Enum_Name(const FilterAction action) {
-  static const std::unordered_map<int, std::string> actions{
+  static const std::unordered_map<FilterAction, std::string> actions{
       {FilterAction::exclude, "exclude"},
       {FilterAction::include, "include"},
   };
@@ -368,7 +356,7 @@ bool Options_ExpansionProperties_Enum_Parse(const std::string& prop,
               {"duration", Options_ExpansionProperties_duration},
               {"distance", Options_ExpansionProperties_distance},
               {"edge_status", Options_ExpansionProperties_edge_status},
-              {"edge_id", Options::ExpansionProperties::Options_ExpansionProperties_edge_id},
+              {"edge_id", Options_ExpansionProperties_edge_id},
               {"pred_edge_id", Options_ExpansionProperties_pred_edge_id},
               {"expansion_type", Options_ExpansionProperties_expansion_type}};
   auto i = actions.find(prop);
@@ -413,23 +401,23 @@ std::pair<std::string, std::string>
 travel_mode_type(const valhalla::DirectionsLeg_Maneuver& maneuver) {
   switch (maneuver.travel_mode()) {
     case TravelMode::kDrive: {
-      auto i = vehicle_to_string.find(maneuver.vehicle_type());
-      return vehicle_to_string.find(maneuver.vehicle_type()) == vehicle_to_string.cend()
+      auto i = vehicle_to_string.find((int) maneuver.vehicle_type());
+      return vehicle_to_string.find((int) maneuver.vehicle_type()) == vehicle_to_string.cend()
                  ? std::make_pair("drive", "car")
                  : std::make_pair("drive", i->second);
     }
     case TravelMode::kPedestrian: {
-      auto i = pedestrian_to_string.find(maneuver.pedestrian_type());
+      auto i = pedestrian_to_string.find((int) maneuver.pedestrian_type());
       return i == pedestrian_to_string.cend() ? std::make_pair("pedestrian", "foot")
                                               : std::make_pair("pedestrian", i->second);
     }
     case TravelMode::kBicycle: {
-      auto i = bicycle_to_string.find(maneuver.bicycle_type());
+      auto i = bicycle_to_string.find((int) maneuver.bicycle_type());
       return i == bicycle_to_string.cend() ? std::make_pair("bicycle", "road")
                                            : std::make_pair("bicycle", i->second);
     }
     case TravelMode::kTransit: {
-      auto i = transit_to_string.find(maneuver.transit_type());
+      auto i = transit_to_string.find((int) maneuver.transit_type());
       return i == transit_to_string.cend() ? std::make_pair("transit", "rail")
                                            : std::make_pair("transit", i->second);
     }
@@ -439,7 +427,7 @@ travel_mode_type(const valhalla::DirectionsLeg_Maneuver& maneuver) {
 }
 
 const std::string& Expansion_EdgeStatus_Enum_Name(const Expansion_EdgeStatus status) {
-  static const std::unordered_map<int, std::string> statuses{
+  static const std::unordered_map<Expansion_EdgeStatus, std::string> statuses{
       {Expansion_EdgeStatus_reached, "r"},
       {Expansion_EdgeStatus_settled, "s"},
       {Expansion_EdgeStatus_connected, "c"},

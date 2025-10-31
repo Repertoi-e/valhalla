@@ -54,7 +54,7 @@ float length_comparison(const float length, const bool exact_match) {
 // check if the intermediate shape points are also on the edge
 bool check_shape(const graph_tile_ptr& tile,
                  const DirectedEdge* de,
-                 const google::protobuf::RepeatedPtrField<valhalla::Location>& shape,
+                 const std::vector<valhalla::Location>& shape,
                  uint32_t from,
                  uint32_t to) {
   if (to - from == 1 && de->length() == 0) {
@@ -69,7 +69,7 @@ bool check_shape(const graph_tile_ptr& tile,
   bool forward = de->forward();
   for (uint32_t j = from + 1; j < to; i++, j++) {
     const uint32_t shape_idx = forward ? i : edge_shape.size() - 1 - i;
-    if (!to_ll(shape.Get(j).ll()).ApproximatelyEqual(edge_shape[shape_idx])) {
+    if (!to_ll(shape[j].ll()).ApproximatelyEqual(edge_shape[shape_idx])) {
       return false;
     }
   }
@@ -126,7 +126,7 @@ end_node_t GetEndEdges(GraphReader& reader, const valhalla::Location& destinatio
 bool expand_from_node(const mode_costing_t& mode_costing,
                       const TravelMode& mode,
                       GraphReader& reader,
-                      const google::protobuf::RepeatedPtrField<valhalla::Location>& shape,
+                      const std::vector<valhalla::Location>& shape,
                       std::vector<std::pair<float, float>>& distances,
                       const valhalla::baldr::TimeInfo& time_info,
                       const bool use_timestamps,
@@ -195,7 +195,7 @@ bool expand_from_node(const mode_costing_t& mode_costing,
       }
 
       // Found a match if shape equals directed edge LL within tolerance
-      if (to_ll(shape.Get(index).ll()).ApproximatelyEqual(de_end_ll) &&
+      if (to_ll(shape[index].ll()).ApproximatelyEqual(de_end_ll) &&
           de->length() < length_comparison(length, true) &&
           check_shape(tile, de, shape, correlated_index, index)) {
 
@@ -215,7 +215,7 @@ bool expand_from_node(const mode_costing_t& mode_costing,
         elapsed += cost;
         // overwrite time with timestamps
         if (use_timestamps)
-          elapsed.secs = shape.Get(index).time() - shape.Get(0).time();
+          elapsed.secs = shape[index].time() - shape[0].time();
 
         // Add edge and update correlated index
         path_infos.emplace_back(mode, elapsed, edge_id, 0, 0.f, -1, transition_cost);

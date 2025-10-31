@@ -24,9 +24,9 @@ namespace odin {
 // trip directions.
 void DirectionsBuilder::Build(Api& api, const MarkupFormatter& markup_formatter) {
   const auto& options = api.options();
-  for (auto& trip_route : *api.mutable_trip()->mutable_routes()) {
+  for (auto& trip_route : api.mutable_trip()->mutable_routes()) {
     auto& directions_route = *api.mutable_directions()->mutable_routes()->Add();
-    for (auto& trip_path : *trip_route.mutable_legs()) {
+    for (auto& trip_path : trip_route.mutable_legs()) {
       auto& trip_directions = *directions_route.mutable_legs()->Add();
 
       // Validate trip path node list
@@ -406,10 +406,6 @@ void DirectionsBuilder::PopulateDirectionsLeg(const Options& options,
         trip_maneuver->set_transit_type(maneuver.transit_type());
         break;
       }
-      case TravelMode_INT_MIN_SENTINEL_DO_NOT_USE_:
-      case TravelMode_INT_MAX_SENTINEL_DO_NOT_USE_:
-        // Sentinel values - should not occur in practice
-        break;
     }
   }
 

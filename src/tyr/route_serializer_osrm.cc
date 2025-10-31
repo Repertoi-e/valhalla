@@ -217,9 +217,9 @@ void route_summary(json::MapPtr& route, const valhalla::Api& api, bool imperial,
   route->emplace("duration", json::fixed_t{duration, 3});
 
   route->emplace("weight", json::fixed_t{weight, 3});
-  assert(api.options().costings().find(api.options().costing_type())->second.has_name_case());
+  assert(api.options().costings().find((int) api.options().costing_type())->second.has_name_case());
   route->emplace("weight_name",
-                 api.options().costings().find(api.options().costing_type())->second.name());
+                 api.options().costings().find((int) api.options().costing_type())->second.name());
 
   auto recosting_itr = api.options().recostings().begin();
   for (const auto& recost : recosts) {
@@ -238,7 +238,7 @@ void route_summary(json::MapPtr& route, const valhalla::Api& api, bool imperial,
 std::vector<PointLL> full_shape(const valhalla::DirectionsRoute& directions,
                                 const valhalla::Options& options) {
   // If just one leg and it we want polyline6 then we just return the encoded leg shape
-  if (directions.legs().size() == 1 && options.shape_format() == polyline6) {
+  if (directions.legs().size() == 1 && options.shape_format() == ShapeFormat::polyline6) {
     return midgard::decode<std::vector<PointLL>>(directions.legs().begin()->shape());
   }
   // TODO: there is a tricky way to do this... since the end of each leg is the same as the
@@ -289,7 +289,7 @@ std::vector<PointLL> simplified_shape(const valhalla::DirectionsRoute& direction
 void route_geometry(json::MapPtr& route,
                     const valhalla::DirectionsRoute& directions,
                     const valhalla::Options& options) {
-  if (options.shape_format() == no_shape) {
+  if (options.shape_format() == ShapeFormat::no_shape) {
     return;
   }
 
@@ -300,10 +300,10 @@ void route_geometry(json::MapPtr& route,
              (options.has_generalize_case() && options.generalize() > 0.0f)) {
     shape = full_shape(directions, options);
   }
-  if (options.shape_format() == geojson) {
+  if (options.shape_format() == ShapeFormat::geojson) {
     route->emplace("geometry", geojson_shape(shape));
   } else {
-    int precision = options.shape_format() == polyline6 ? 1e6 : 1e5;
+    int precision = options.shape_format() == ShapeFormat::polyline6 ? 1e6 : 1e5;
     route->emplace("geometry", midgard::encode(shape, precision));
   }
 }
@@ -627,7 +627,7 @@ json::ArrayPtr intersections(const valhalla::DirectionsLeg::Maneuver& maneuver,
       if (curr_edge->road_class() == valhalla::RoadClass::kMotorway) {
         classes.push_back("motorway");
       }
-      if (curr_edge->use() == TripLeg::Use::TripLeg_Use_kFerryUse) {
+      if (curr_edge->use() == TripLeg_Use_kFerryUse) {
         classes.push_back("ferry");
       }
 
@@ -698,7 +698,7 @@ valhalla::baldr::json::RawJSON serializeIncident(const TripLeg::Incident& incide
 }
 
 // Serializes incidents and adds to json-document
-void serializeIncidents(const google::protobuf::RepeatedPtrField<TripLeg::Incident>& incidents,
+void serializeIncidents(const std::vector<TripLeg::Incident>& incidents,
                         json::Jmap& doc) {
   if (incidents.size() == 0) {
     // No incidents, nothing to do
@@ -741,7 +741,7 @@ void serializeClosures(const valhalla::TripLeg& leg, json::Jmap& doc) {
 // Compile and return the refs of the specified list
 // TODO we could enhance by limiting results by using consecutive count
 std::string get_sign_element_refs(
-    const google::protobuf::RepeatedPtrField<::valhalla::TripSignElement>& sign_elements,
+    const std::vector<::valhalla::TripSignElement>& sign_elements,
     const std::string& delimiter = kSignElementDelimiter) {
   std::string refs;
   for (const auto& sign_element : sign_elements) {
@@ -761,7 +761,7 @@ std::string get_sign_element_refs(
 // Compile and return the nonrefs of the specified list
 // TODO we could enhance by limiting results by using consecutive count
 std::string get_sign_element_nonrefs(
-    const google::protobuf::RepeatedPtrField<::valhalla::TripSignElement>& sign_elements,
+    const std::vector<::valhalla::TripSignElement>& sign_elements,
     const std::string& delimiter = kSignElementDelimiter) {
   std::string nonrefs;
   for (const auto& sign_element : sign_elements) {
@@ -781,7 +781,7 @@ std::string get_sign_element_nonrefs(
 // Compile and return the sign elements of the specified list
 // TODO we could enhance by limiting results by using consecutive count
 std::string get_sign_elements(
-    const google::protobuf::RepeatedPtrField<::valhalla::TripSignElement>& sign_elements,
+    const std::vector<::valhalla::TripSignElement>& sign_elements,
     const std::string& delimiter = kSignElementDelimiter) {
   std::string sign_elements_string;
   for (const auto& sign_element : sign_elements) {
@@ -1428,10 +1428,10 @@ void maneuver_geometry(json::MapPtr& step,
     maneuver_shape.push_back(shape.back());
   }
 
-  if (options.shape_format() == geojson) {
+  if (options.shape_format() == ShapeFormat::geojson) {
     step->emplace("geometry", geojson_shape(maneuver_shape));
   } else {
-    int precision = options.shape_format() == polyline6 ? 1e6 : 1e5;
+    int precision = options.shape_format() == ShapeFormat::polyline6 ? 1e6 : 1e5;
     step->emplace("geometry", midgard::encode(maneuver_shape, precision));
   }
 }
@@ -1617,7 +1617,7 @@ std::string get_mode(const valhalla::DirectionsLeg::Maneuver& maneuver,
                      valhalla::odin::EnhancedTripLeg* etp) {
   // Return ferry if not last maneuver and the edge use is Ferry
   if (!arrive_maneuver &&
-      (etp->GetCurrEdge(maneuver.begin_path_index())->use() == TripLeg::Use::TripLeg_Use_kFerryUse)) {
+      (etp->GetCurrEdge(maneuver.begin_path_index())->use() == TripLeg_Use_kFerryUse)) {
     return "ferry";
   }
 
@@ -1643,7 +1643,7 @@ std::string get_mode(const valhalla::DirectionsLeg::Maneuver& maneuver,
                            " Unhandled travel_mode: " + std::to_string(num));
 }
 
-const ::google::protobuf::RepeatedPtrField<::valhalla::StreetName>&
+const ::std::vector<::valhalla::StreetName>&
 get_maneuver_street_names(const valhalla::DirectionsLeg::Maneuver& maneuver) {
   // Roundabouts need to use the roundabout_exit_street_names
   // if a maneuver begin street name exists then use it otherwise use the maneuver street name
@@ -1698,7 +1698,7 @@ std::string get_pronunciations(const valhalla::DirectionsLeg::Maneuver& maneuver
 }
 
 // Serialize each leg
-json::ArrayPtr serialize_legs(const google::protobuf::RepeatedPtrField<valhalla::DirectionsLeg>& legs,
+json::ArrayPtr serialize_legs(const std::vector<valhalla::DirectionsLeg>& legs,
                               const std::vector<std::string>& leg_summaries,
                               google::protobuf::RepeatedPtrField<valhalla::TripLeg>& path_legs,
                               bool imperial,
@@ -2012,7 +2012,7 @@ json::ArrayPtr serialize_legs(const google::protobuf::RepeatedPtrField<valhalla:
 }
 
 std::vector<std::vector<std::string>>
-summarize_route_legs(const google::protobuf::RepeatedPtrField<DirectionsRoute>& routes) {
+summarize_route_legs(const std::vector<DirectionsRoute>& routes) {
 
   route_summary_cache rscache(routes);
 
@@ -2027,7 +2027,7 @@ summarize_route_legs(const google::protobuf::RepeatedPtrField<DirectionsRoute>& 
   // unique the same leg (leg_idx) between all routes.
   for (int route_i = 0; route_i < routes.size(); route_i++) {
 
-    size_t num_legs_i = routes.Get(route_i).legs_size();
+    size_t num_legs_i = routes[route_i].legs_size();
     std::vector<std::string> leg_summaries;
     leg_summaries.reserve(num_legs_i);
 
@@ -2047,7 +2047,7 @@ summarize_route_legs(const google::protobuf::RepeatedPtrField<DirectionsRoute>& 
         if (route_i == route_j)
           continue;
 
-        size_t num_legs_j = routes.Get(route_j).legs_size();
+        size_t num_legs_j = routes[route_j].legs_size();
 
         // there should be the same number of legs in every route. however, some
         // unit tests break this rule, so we cannot enable this assert.
@@ -2109,9 +2109,11 @@ std::string serialize(valhalla::Api& api) {
     case valhalla::Options::route:
       json->emplace("waypoints", osrm::waypoints(api.trip()));
       break;
-    case valhalla::Options::optimized_route:
-      json->emplace("waypoints", waypoints(*options.mutable_locations()));
+    case valhalla::Options::optimized_route: {
+      auto locations = options.mutable_locations();
+      json->emplace("waypoints", waypoints(locations));
       break;
+    }
     default:
       throw std::runtime_error("Unknown route serialization action");
   }
@@ -2150,8 +2152,9 @@ std::string serialize(valhalla::Api& api) {
     route_summary(route, api, imperial, i);
 
     // Serialize route legs
+    auto legs = api.mutable_trip()->mutable_routes(i)->mutable_legs();
     route->emplace("legs", serialize_legs(api.directions().routes(i).legs(), route_leg_summaries[i],
-                                          *api.mutable_trip()->mutable_routes(i)->mutable_legs(),
+                                          legs,
                                           imperial, options, controller));
 
     // Add voice instructions if the user requested them

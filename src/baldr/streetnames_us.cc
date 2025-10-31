@@ -18,7 +18,7 @@ StreetNamesUs::StreetNamesUs(const std::vector<std::pair<std::string, bool>>& na
   }
 }
 
-StreetNamesUs::StreetNamesUs(const google::protobuf::RepeatedPtrField<valhalla::StreetName>& names) {
+StreetNamesUs::StreetNamesUs(const std::vector<valhalla::StreetName>& names) {
   for (auto& name : names) {
     std::optional<baldr::Pronunciation> pronunciation =
         name.has_pronunciation()

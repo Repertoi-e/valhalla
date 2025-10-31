@@ -32,15 +32,15 @@ bool is_format_supported(Options::Action action, Options::Format format) {
       // json
       0xFFFF, // all actions support json
       // gpx
-      (1 << Options::route) | (1 << Options::optimized_route) | (1 << Options::trace_route),
+      (1 << (int) Options::route) | (1 << (int) Options::optimized_route) | (1 << (int) Options::trace_route),
       // osrm
-      (1 << Options::route) | (1 << Options::optimized_route) | (1 << Options::trace_route) |
-          (1 << Options::trace_attributes) | (1 << Options::locate) | (1 << Options::status) |
-          (1 << Options::sources_to_targets) | (1 << Options::expansion),
+      (1 << (int) Options::route) | (1 << (int) Options::optimized_route) | (1 << (int) Options::trace_route) |
+          (1 << (int) Options::trace_attributes) | (1 << (int) Options::locate) | (1 << (int) Options::status) |
+          (1 << (int) Options::sources_to_targets) | (1 << (int) Options::expansion),
       // pbf
-      (1 << Options::route) | (1 << Options::optimized_route) | (1 << Options::trace_route) |
-          (1 << Options::centroid) | (1 << Options::trace_attributes) | (1 << Options::status) |
-          (1 << Options::sources_to_targets) | (1 << Options::isochrone) | (1 << Options::expansion),
+      (1 << (int) Options::route) | (1 << (int) Options::optimized_route) | (1 << (int) Options::trace_route) |
+          (1 << (int) Options::centroid) | (1 << (int) Options::trace_attributes) | (1 << (int) Options::status) |
+          (1 << (int) Options::sources_to_targets) | (1 << (int) Options::isochrone) | (1 << (int) Options::expansion),
   // geotiff
 #ifdef ENABLE_GDAL
       (1 << Options::isochrone),
@@ -51,8 +51,8 @@ bool is_format_supported(Options::Action action, Options::Format format) {
   static_assert(std::size(kFormatActionSupport) == Options::Format_ARRAYSIZE,
                 "Please update format_action array to match Options::Action_ARRAYSIZE");
 
-  if (Options::Action_IsValid(action) && Options::Format_IsValid(format)) {
-    return (kFormatActionSupport[format] & (1 << action)) != 0;
+  if (Options_Action_IsValid(action) && Options_Format_IsValid(format)) {
+    return (kFormatActionSupport[(int) format] & (1 << (int) action)) != 0;
   } else {
     return false;
   }
@@ -90,6 +90,7 @@ bool add_date_to_locations(Options& options,
         case Options::invariant:
           for (auto& loc : locations)
             loc.set_date_time(options.date_time());
+          break;
         default:
           break;
       }
@@ -116,7 +117,7 @@ void parse_ring(ring_pbf_t* ring, const rapidjson::Value& coord_array) {
   if (ring->coords_size()) {
     if (ring->coords_size() < 2)
       throw std::runtime_error("Polygon coordinates must consist of [Lon, Lat] arrays.");
-    for (auto& coord : *ring->mutable_coords()) {
+    for (auto& coord : ring->mutable_coords()) {
       if (!coord.has_lat_case() || !coord.has_lng_case())
         throw std::runtime_error("Polygon coordinates must consist of [Lon, Lat] arrays.");
 
@@ -182,7 +183,7 @@ void parse_location(valhalla::Location* location,
     location->set_type(valhalla::Location::kVia);
   } // other actions let you specify whatever type of stop you want
   else if (stop_type_json) {
-    Location::Type type = Location::kBreak;
+    valhalla::Location::Type type = valhalla::Location::kBreak;
     Location_Type_Enum_Parse(*stop_type_json, &type);
     location->set_type(type);
   } // and if you didnt set it it defaulted to break which is not the default for trace_route
@@ -331,10 +332,10 @@ void parse_location(valhalla::Location* location,
   location->mutable_search_filter()->set_exclude_closures(
       ignore_closures ? !(*ignore_closures) : (exclude_closures ? *exclude_closures : true));
   if (!location->search_filter().has_min_road_class_case()) {
-    location->mutable_search_filter()->set_min_road_class(valhalla::kServiceOther);
+    location->mutable_search_filter()->set_min_road_class(valhalla::RoadClass::kServiceOther);
   }
   if (!location->search_filter().has_max_road_class_case()) {
-    location->mutable_search_filter()->set_max_road_class(valhalla::kMotorway);
+    location->mutable_search_filter()->set_max_road_class(valhalla::RoadClass::kMotorway);
   }
   if (!location->search_filter().has_level_case())
     location->mutable_search_filter()->set_level(baldr::kMaxLevel);
@@ -375,19 +376,26 @@ void parse_locations(const rapidjson::Document& doc,
                      bool& had_date_time) {
   auto& options = *request.mutable_options();
 
+  auto options_locations = options.mutable_locations();
+  auto options_shape = options.mutable_shape();
+  auto options_trace = options.mutable_trace();
+  auto options_sources = options.mutable_sources();
+  auto options_targets = options.mutable_targets();
+  auto options_exclude_locations = options.mutable_exclude_locations();
+
   google::protobuf::RepeatedPtrField<valhalla::Location>* locations = nullptr;
   if (node == "locations") {
-    locations = options.mutable_locations();
+    locations = &options_locations;
   } else if (node == "shape") {
-    locations = options.mutable_shape();
+    locations = &options_shape;
   } else if (node == "trace") {
-    locations = options.mutable_trace();
+    locations = &options_trace;
   } else if (node == "sources") {
-    locations = options.mutable_sources();
+    locations = &options_sources;
   } else if (node == "targets") {
-    locations = options.mutable_targets();
+    locations = &options_targets;
   } else if (node == "exclude_locations" || node == "avoid_locations") {
-    locations = options.mutable_exclude_locations();
+    locations = &options_exclude_locations;
   } else {
     return;
   }
@@ -440,7 +448,7 @@ void parse_locations(const rapidjson::Document& doc,
     // we tell the costing to let all closed roads through, so that we can do
     // a secondary per-location filtering using loki's search_filter
     // functionality. Otherwise we default to skipping closed roads
-    for (auto& costing : *options.mutable_costings()) {
+    for (auto& costing : options.mutable_costings()) {
       costing.second.set_filter_closures(filter_closures);
     }
   }
@@ -454,7 +462,7 @@ void parse_locations(const rapidjson::Document& doc,
 }
 
 void parse_contours(const rapidjson::Document& doc,
-                    google::protobuf::RepeatedPtrField<Contour>* contours) {
+                    google::protobuf::RepeatedPtrField<Contour>& contours) {
 
   // make sure the isoline definitions are valid
   auto json_contours = rapidjson::get_optional<rapidjson::Value::ConstArray>(doc, "/contours");
@@ -481,7 +489,7 @@ void parse_contours(const rapidjson::Document& doc,
     }
   }
 
-  for (const auto& c : *contours) {
+  for (const auto& c : contours) {
     // You need at least something
     if (!c.has_time_case() && !c.has_distance_case()) {
       throw valhalla_exception_t{111};
@@ -514,7 +522,7 @@ void parse_recostings(const rapidjson::Document& doc,
       check_name(*options.recostings().rbegin());
     }
   } else if (options.recostings().size()) {
-    for (auto& recosting : *options.mutable_recostings()) {
+    for (auto& recosting : options.mutable_recostings()) {
       check_name(recosting);
       sif::ParseCosting(doc, key, &recosting, recosting.type());
     }
@@ -546,7 +554,7 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
 
   // set the action
   auto& options = *api.mutable_options();
-  if (Options::Action_IsValid(action))
+  if (Options_Action_IsValid(action))
     options.set_action(action);
 
   // TODO: stop doing this after a sufficient amount of time has passed
@@ -681,13 +689,13 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
 
   // date_time
   auto date_time_type = rapidjson::get_optional<unsigned int>(doc, "/date_time/type");
-  if (date_time_type && Options::DateTimeType_IsValid(*date_time_type + 1)) {
+  if (date_time_type && Options_DateTimeType_IsValid((valhalla::Options_DateTimeType) (*date_time_type + 1))) {
     options.set_date_time_type(static_cast<Options::DateTimeType>(*date_time_type + 1));
   }
   if (options.date_time_type() != Options::no_time) {
     // check the type is in bounds
     auto v = options.date_time_type();
-    if (v >= Options::DateTimeType_ARRAYSIZE)
+    if ((int) v >= Options::DateTimeType_ARRAYSIZE)
       throw valhalla_exception_t{163};
     // check the value exists for depart at and arrive by
     auto date_time_value =
@@ -730,22 +738,22 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
   auto shape_format = rapidjson::get_optional<std::string>(doc, "/shape_format");
   if (shape_format) {
     if (*shape_format == "polyline6") {
-      options.set_shape_format(polyline6);
+      options.set_shape_format(ShapeFormat::polyline6);
     } else if (*shape_format == "polyline5") {
-      options.set_shape_format(polyline5);
+      options.set_shape_format(ShapeFormat::polyline5);
     } else if (*shape_format == "geojson") {
-      options.set_shape_format(geojson);
+      options.set_shape_format(ShapeFormat::geojson);
     } else if (*shape_format == "no_shape") {
       if (action == Options::height) {
         throw valhalla_exception_t{164};
       }
-      options.set_shape_format(no_shape);
+      options.set_shape_format(ShapeFormat::no_shape);
     } else {
       // Throw an error if shape format is invalid
       throw valhalla_exception_t{164};
     }
   } else if (action == Options::sources_to_targets) {
-    options.set_shape_format(options.has_shape_format_case() ? options.shape_format() : no_shape);
+    options.set_shape_format(options.has_shape_format_case() ? options.shape_format() : ShapeFormat::no_shape);
   }
 
   // whether or not to output b64 encoded openlr
@@ -795,7 +803,7 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
     // support polyline6 inputs at this time.
     double precision = 1e-6;
     if (options.action() == Options::height) {
-      precision = options.shape_format() == valhalla::polyline5 ? 1e-5 : 1e-6;
+      precision = options.shape_format() == valhalla::ShapeFormat::polyline5 ? 1e-5 : 1e-6;
     }
 
     options.mutable_shape()->Clear();
@@ -815,7 +823,8 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
       options.mutable_shape(options.shape_size() - 1)->set_type(valhalla::Location::kBreak);
     }
     // add the date time
-    add_date_to_locations(options, *options.mutable_shape(), "shape");
+    auto shape = options.mutable_shape();
+    add_date_to_locations(options, shape, "shape");
   } // fall back from encoded polyline to array of locations
   else {
     parse_locations(doc, api, "shape", 134, ignore_closures, had_date_time);
@@ -922,7 +931,7 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
   // if not a time dependent route/mapmatch disable time dependent edge speed/flow data sources
   if (options.date_time_type() == Options::no_time && !had_date_time &&
       (options.shape_size() == 0 || options.shape(0).time() == -1)) {
-    for (auto& costing : *options.mutable_costings()) {
+    for (auto& costing : options.mutable_costings()) {
       costing.second.mutable_options()->set_flow_mask(
           static_cast<uint8_t>(costing.second.options().flow_mask()) &
           ~(valhalla::baldr::kPredictedFlowMask | valhalla::baldr::kCurrentFlowMask));
@@ -955,7 +964,7 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
     if (!rings_req->IsArray()) {
       add_warning(api, 204);
     } else {
-      auto* rings_pbf = options.mutable_exclude_polygons();
+      auto rings_pbf = options.mutable_exclude_polygons();
       try {
         for (const auto& req_poly : rings_req->GetArray()) {
           if (!req_poly.IsArray() || (req_poly.IsArray() && req_poly.GetArray().Empty())) {
@@ -968,7 +977,7 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
     }
   } // if it was there in the pbf already
   else if (options.exclude_polygons_size()) {
-    for (auto& ring : *options.mutable_exclude_polygons()) {
+    for (auto& ring : options.mutable_exclude_polygons()) {
       parse_ring(&ring, rapidjson::Value{});
     }
   }
@@ -994,7 +1003,7 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
 
   // expansion response properties
   auto exp_props_req = rapidjson::get_child_optional(doc, "/expansion_properties");
-  auto* exp_props_pbf = options.mutable_expansion_properties();
+  auto exp_props_pbf = options.mutable_expansion_properties();
   Options::ExpansionProperties exp_prop;
   if (exp_props_req && exp_props_req->IsArray()) {
     for (const auto& prop : exp_props_req->GetArray()) {
@@ -1013,7 +1022,8 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
   options.set_dedupe(rapidjson::get<bool>(doc, "/dedupe", options.dedupe()));
 
   // get the contours in there
-  parse_contours(doc, options.mutable_contours());
+  auto contours = options.mutable_contours();
+  parse_contours(doc, contours);
 
   // if specified, get the polygons boolean in there
   options.set_polygons(rapidjson::get<bool>(doc, "/polygons", options.polygons()));
@@ -1175,10 +1185,11 @@ std::string serialize_error(const valhalla_exception_t& exception, Api& request)
   auto* err_stat = request.mutable_info()->mutable_statistics()->Add();
   err_stat->set_key(action + level + worker + exception.statsd_key);
   err_stat->set_value(1);
-  err_stat->set_type(count);
+  err_stat->set_type(StatisticType::count);
 
   // pbf format output, we only send back the info with errors in it
   if (request.options().format() == Options::pbf) {
+#if !defined __EMSCRIPTEN__
     Api error_only;
     error_only.mutable_info()->Swap(request.mutable_info());
     auto bytes = error_only.SerializeAsString();
@@ -1189,6 +1200,9 @@ std::string serialize_error(const valhalla_exception_t& exception, Api& request)
     else
       request.Swap(&error_only);
     return bytes;
+#else
+    throw std::runtime_error("PBF format not implemented in Emscripten builds");
+#endif
   }
 
   // json
@@ -1501,25 +1515,21 @@ void service_worker_t::enqueue_statistics(Api& api) const {
   for (const auto& stat : api.info().statistics()) {
     float frequency = stat.frequency() ? stat.frequency() : 1.f;
     switch (stat.type()) {
-      case count:
+      case StatisticType::count:
         statsd_client->count(stat.key(), static_cast<int>(stat.value() + 0.5), frequency,
                              statsd_client->tags);
         break;
-      case gauge:
+      case StatisticType::gauge:
         statsd_client->gauge(stat.key(), static_cast<unsigned int>(stat.value() + 0.5), frequency,
                              statsd_client->tags);
         break;
-      case timing:
+      case StatisticType::timing:
         statsd_client->timing(stat.key(), static_cast<unsigned int>(stat.value() + 0.5), frequency,
                               statsd_client->tags);
         break;
-      case set:
+      case StatisticType::set:
         statsd_client->set(stat.key(), static_cast<unsigned int>(stat.value() + 0.5), frequency,
                            statsd_client->tags);
-        break;
-      // Handle protobuf sentinel values to avoid compiler warnings
-      case StatisticType_INT_MIN_SENTINEL_DO_NOT_USE_:
-      case StatisticType_INT_MAX_SENTINEL_DO_NOT_USE_:
         break;
     }
   }
@@ -1542,7 +1552,7 @@ midgard::Finally<std::function<void()>> service_worker_t::measure_scope_time(Api
     auto* stat = api.mutable_info()->mutable_statistics()->Add();
     stat->set_key(action + ".info." + service_name() + ".latency_ms");
     stat->set_value(e);
-    stat->set_type(timing);
+    stat->set_type(StatisticType::timing);
   });
 }
 

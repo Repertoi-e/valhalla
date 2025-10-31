@@ -173,10 +173,10 @@ bool TimeDistanceBSSMatrix::ComputeMatrix(Api& request,
   uint32_t matrix_locations = request.options().matrix_locations();
 
   // Run a series of one to many calls and concatenate the results.
-  auto& origins = FORWARD ? *request.mutable_options()->mutable_sources()
-                          : *request.mutable_options()->mutable_targets();
-  auto& destinations = FORWARD ? *request.mutable_options()->mutable_targets()
-                               : *request.mutable_options()->mutable_sources();
+  auto origins = FORWARD ? request.mutable_options()->mutable_sources()
+                          : request.mutable_options()->mutable_targets();
+  auto destinations = FORWARD ? request.mutable_options()->mutable_targets()
+                               : request.mutable_options()->mutable_sources();
 
   // Construct adjacency list, edge status, and done set. Set bucket size and
   // cost range based on DynamicCost.

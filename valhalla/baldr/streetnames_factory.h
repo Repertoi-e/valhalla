@@ -20,7 +20,7 @@ public:
 
   static std::unique_ptr<StreetNames>
   Create(const std::string& country_code,
-         const google::protobuf::RepeatedPtrField<valhalla::StreetName>& names);
+         const std::vector<valhalla::StreetName>& names);
 };
 
 } // namespace baldr

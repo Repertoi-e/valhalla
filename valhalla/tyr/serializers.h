@@ -269,9 +269,9 @@ void waypoint(const valhalla::Location& location,
  * Serialize locations into osrm waypoints
  */
 valhalla::baldr::json::ArrayPtr
-waypoints(const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+waypoints(const std::vector<valhalla::Location>& locations,
           bool tracepoints = false);
-void waypoints(const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+void waypoints(const std::vector<valhalla::Location>& locations,
                rapidjson::writer_wrapper_t& writer,
                bool tracepoints = false);
 valhalla::baldr::json::ArrayPtr waypoints(const valhalla::Trip& locations);

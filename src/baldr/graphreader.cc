@@ -8,8 +8,13 @@
 #include <sys/stat.h>
 
 #include <filesystem>
+#include <mutex>
 #include <string>
 #include <utility>
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten/val.h>
+#endif
 
 using namespace valhalla::midgard;
 
@@ -24,6 +29,66 @@ struct tile_index_entry {
   uint32_t tile_id; // just level and tileindex hence fitting in 32bits
   uint32_t size;    // size of the tile in bytes
 };
+
+#ifdef __EMSCRIPTEN__
+using valhalla::baldr::GraphId;
+
+std::unordered_set<GraphId> FetchTilesFromModule() {
+  std::unordered_set<GraphId> tiles;
+  try {
+    auto module = emscripten::val::global("Module");
+    if (module.isNull() || module.isUndefined()) {
+      return tiles;
+    }
+    auto fn = module["listGraphTiles"];
+    if (fn.isNull() || fn.isUndefined()) {
+      return tiles;
+    }
+    auto js_paths = module.call<emscripten::val>("listGraphTiles");
+    const auto length = js_paths["length"].as<unsigned>();
+    tiles.reserve(length);
+    for (unsigned i = 0; i < length; ++i) {
+      auto path_val = js_paths[i];
+      if (path_val.isNull() || path_val.isUndefined()) {
+        continue;
+      }
+      try {
+        auto path = path_val.as<std::string>();
+        tiles.emplace(valhalla::baldr::GraphTile::GetTileId(path));
+      } catch (...) {
+        // Ignore manifest entries that we cannot parse
+      }
+    }
+  } catch (...) {
+    // Surface an empty set if interop fails; callers handle absence gracefully
+  }
+  return tiles;
+}
+
+const std::unordered_set<GraphId>& WasmTileManifest() {
+  static std::mutex manifest_mutex;
+  static std::unordered_set<GraphId> manifest;
+  static bool manifest_initialized = false;
+  std::lock_guard<std::mutex> lock(manifest_mutex);
+  if (!manifest_initialized) {
+    manifest = FetchTilesFromModule();
+    manifest_initialized = true;
+  }
+  return manifest;
+}
+
+std::unordered_set<GraphId> WasmTileManifest(uint8_t level) {
+  std::unordered_set<GraphId> filtered;
+  const auto& manifest = WasmTileManifest();
+  filtered.reserve(manifest.size());
+  for (const auto& id : manifest) {
+    if (id.level() == level) {
+      filtered.emplace(id);
+    }
+  }
+  return filtered;
+}
+#endif
 
 } // namespace
 
@@ -525,8 +590,15 @@ bool GraphReader::DoesTileExist(const GraphId& graphid) const {
   if (cache_->Contains(graphid)) {
     return true;
   }
+#ifdef __EMSCRIPTEN__
+  if (tile_dir_.empty()) {
+    const auto& manifest = WasmTileManifest();
+    return manifest.find(graphid.Tile_Base()) != manifest.end();
+  }
+#else
   if (tile_dir_.empty())
     return false;
+#endif
   std::string file_location = tile_dir_;
   file_location += std::filesystem::path::preferred_separator;
   file_location += GraphTile::FileSuffix(graphid.Tile_Base());
@@ -598,7 +670,10 @@ graph_tile_ptr GraphReader::GetGraphTile(const GraphId& graphid) {
                               : nullptr;
 
     // Try to get it from disk and if we cant..
-    graph_tile_ptr tile = GraphTile::Create(tile_dir_, base, std::move(traffic_memory));
+    graph_tile_ptr tile = nullptr;
+    if (!tile_dir_.empty()) {
+      tile = GraphTile::Create(tile_dir_, base, std::move(traffic_memory));
+    }
     if (!tile || !tile->header()) {
       if (!tile_getter_) {
         return nullptr;
@@ -882,13 +957,21 @@ std::string GraphReader::encoded_edge_shape(const valhalla::baldr::GraphId& edge
 // Note: this will grab all road tiles and transit tiles.
 std::unordered_set<GraphId> GraphReader::GetTileSet() const {
   // either mmap'd tiles
-  std::unordered_set<GraphId> tiles;
   if (tile_extract_->tiles.size()) {
+    std::unordered_set<GraphId> tiles;
     for (const auto& t : tile_extract_->tiles) {
       tiles.emplace(t.first);
     }
-  } // or individually on disk
-  else if (!tile_dir_.empty()) {
+    return tiles;
+  }
+#ifdef __EMSCRIPTEN__
+  if (tile_dir_.empty()) {
+    return WasmTileManifest();
+  }
+#endif
+
+  std::unordered_set<GraphId> tiles;
+  if (!tile_dir_.empty()) {
     // for each level
     for (uint8_t level = 0; level <= TileHierarchy::GetTransitLevel().level; ++level) {
       // crack open this level of tiles directory
@@ -915,14 +998,23 @@ std::unordered_set<GraphId> GraphReader::GetTileSet() const {
 // Get the set of tiles for a specified level
 std::unordered_set<GraphId> GraphReader::GetTileSet(const uint8_t level) const {
   // either mmap'd tiles
-  std::unordered_set<GraphId> tiles;
   if (tile_extract_->tiles.size()) {
+    std::unordered_set<GraphId> tiles;
     for (const auto& t : tile_extract_->tiles) {
       if (static_cast<GraphId>(t.first).level() == level) {
         tiles.emplace(t.first);
       }
-    } // or individually on disk
-  } else if (!tile_dir_.empty()) {
+    }
+    return tiles;
+  }
+#ifdef __EMSCRIPTEN__
+  if (tile_dir_.empty()) {
+    return WasmTileManifest(level);
+  }
+#endif
+
+  std::unordered_set<GraphId> tiles;
+  if (!tile_dir_.empty()) {
     // crack open this level of tiles directory
     std::filesystem::path root_dir{tile_dir_};
     root_dir.append(std::to_string(level));

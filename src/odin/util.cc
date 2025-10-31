@@ -39,7 +39,7 @@ constexpr size_t kPrivateuseIndex = 4;
 valhalla::odin::locales_singleton_t load_narrative_locals() {
   valhalla::odin::locales_singleton_t locales;
   // for each locale
-  for (const auto& json : locales_json) {
+  for (const auto& json : valhalla::odin::locales_json) {
     LOG_TRACE("LOCALES");
     LOG_TRACE("-------");
     LOG_TRACE("- " + json.first);

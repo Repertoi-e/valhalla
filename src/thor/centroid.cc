@@ -178,7 +178,7 @@ void Centroid::Clear() {
 template <typename label_container_t>
 std::vector<std::vector<PathInfo>>
 Centroid::FormPaths(const ExpansionType& expansion_type,
-                    const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+                    const std::vector<valhalla::Location>& locations,
                     const label_container_t& labels,
                     baldr::GraphReader& reader,
                     valhalla::Location& centroid) const {
@@ -244,14 +244,14 @@ Centroid::FormPaths(const ExpansionType& expansion_type,
 
 template std::vector<std::vector<PathInfo>> Centroid::FormPaths<decltype(Dijkstras::bdedgelabels_)>(
     const ExpansionType&,
-    const google::protobuf::RepeatedPtrField<valhalla::Location>&,
+    const std::vector<valhalla::Location>&,
     const decltype(Dijkstras::bdedgelabels_)&,
     baldr::GraphReader&,
     valhalla::Location&) const;
 
 template std::vector<std::vector<PathInfo>> Centroid::FormPaths<decltype(Dijkstras::mmedgelabels_)>(
     const ExpansionType&,
-    const google::protobuf::RepeatedPtrField<valhalla::Location>&,
+    const std::vector<valhalla::Location>&,
     const decltype(Dijkstras::mmedgelabels_)&,
     baldr::GraphReader&,
     valhalla::Location&) const;

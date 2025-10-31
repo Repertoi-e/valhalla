@@ -7,7 +7,8 @@ namespace loki {
 
 Reach::Reach() : Dijkstras() {
   // Mock up the Location struct with the important stuff missing
-  auto* path_edge = locations_.Add()->mutable_correlation()->add_edges();
+  locations_.push_back(Location());
+  auto* path_edge = locations_.back().mutable_correlation()->add_edges();
   path_edge->set_distance(0);
   path_edge->set_begin_node(false);
   path_edge->set_end_node(false);
@@ -175,11 +176,11 @@ directed_reach Reach::exact(const valhalla::baldr::DirectedEdge* edge,
     return reach;
   }
   auto ll = node->latlng(tile->header()->base_ll());
-  locations_.Mutable(0)->mutable_ll()->set_lng(ll.first);
-  locations_.Mutable(0)->mutable_ll()->set_lat(ll.second);
-  locations_.Mutable(0)->mutable_correlation()->mutable_edges(0)->set_graph_id(edge_id);
-  locations_.Mutable(0)->mutable_correlation()->mutable_edges(0)->mutable_ll()->set_lng(ll.first);
-  locations_.Mutable(0)->mutable_correlation()->mutable_edges(0)->mutable_ll()->set_lat(ll.second);
+  locations_[0].mutable_ll()->set_lng(ll.first);
+  locations_[0].mutable_ll()->set_lat(ll.second);
+  locations_[0].mutable_correlation()->mutable_edges(0)->set_graph_id(edge_id);
+  locations_[0].mutable_correlation()->mutable_edges(0)->mutable_ll()->set_lng(ll.first);
+  locations_[0].mutable_correlation()->mutable_edges(0)->mutable_ll()->set_lat(ll.second);
 
   // fake up the costing array
   sif::mode_costing_t costings;

@@ -11,7 +11,7 @@ using namespace valhalla::sif;
 namespace {
 
 // Method to get an operator Id from a map of operator strings vs. Id.
-uint32_t GetOperatorId(const graph_tile_ptr& tile,
+uint32_t GetOperatorIdMultimodal(const graph_tile_ptr& tile,
                        uint32_t routeid,
                        std::unordered_map<std::string, uint32_t>& operators) {
   const TransitRoute* transit_route = tile->GetTransitRoute(routeid);
@@ -104,7 +104,7 @@ MultiModalPathAlgorithm::GetBestPath(valhalla::Location& origin,
 
   // set the maximum_walking distance for this request
   max_walking_dist_ =
-      options.costings().find(Costing::pedestrian)->second.options().transit_start_end_max_distance();
+      options.costings().find((int) Costing::pedestrian)->second.options().transit_start_end_max_distance();
   // Set the mode from the origin
   mode_ = mode;
   const auto& tc = mode_costing[static_cast<uint32_t>(travel_mode_t::kPublicTransit)];
@@ -402,7 +402,7 @@ bool MultiModalPathAlgorithm::ExpandForward(GraphReader& graphreader,
           }
 
           // Get the operator Id
-          operator_id = GetOperatorId(tile, departure->routeindex(), operators_);
+          operator_id = GetOperatorIdMultimodal(tile, departure->routeindex(), operators_);
 
           // Add transfer penalty and operator change penalty
           if (pred.transit_operator() > 0 && pred.transit_operator() != operator_id) {

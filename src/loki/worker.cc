@@ -19,13 +19,13 @@ using namespace valhalla::loki;
 
 namespace valhalla {
 namespace loki {
-void loki_worker_t::parse_locations(google::protobuf::RepeatedPtrField<valhalla::Location>* locations,
+void loki_worker_t::parse_locations(google::protobuf::RepeatedPtrField<valhalla::Location> locations,
                                     Api& request,
                                     std::optional<valhalla_exception_t> required_exception) {
   bool has_302 = false, has_303 = false;
 
   if (locations->size()) {
-    for (auto& location : *locations) {
+    for (auto& location : locations) {
       if (!location.has_minimum_reachability_case())
         location.set_minimum_reachability(default_reachability);
       else if (location.minimum_reachability() > max_reachability)
@@ -321,8 +321,8 @@ void loki_worker_t::check_hierarchy_distance(Api& request) {
   // For matrix action, check every pair of source and target.
   bool max_distance_exceeded = false;
   if (request.options().action() == Options_Action_sources_to_targets) {
-    for (auto& source : *options.mutable_sources()) {
-      for (auto& target : *options.mutable_targets()) {
+    for (auto& source : options.mutable_sources()) {
+      for (auto& target : options.mutable_targets()) {
         if (to_ll(source).Distance(to_ll(target)) > max_distance_disable_hierarchy_culling) {
           max_distance_exceeded = true;
           break;

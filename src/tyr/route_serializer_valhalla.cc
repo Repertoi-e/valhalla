@@ -164,7 +164,7 @@ void summary(const valhalla::Api& api, int route_index, rapidjson::writer_wrappe
   LOG_DEBUG("trip_time::" + std::to_string(route_time) + "s");
 }
 
-void locations(const valhalla::Api& api, int route_index, rapidjson::writer_wrapper_t& writer) {
+void serialize_locations(const valhalla::Api& api, int route_index, rapidjson::writer_wrapper_t& writer) {
 
   int index = 0;
   writer.set_precision(tyr::kCoordinatePrecision);
@@ -691,7 +691,7 @@ std::string serialize(Api& api) {
     writer.start_object("trip");
 
     // the locations in the trip
-    locations(api, i, writer);
+    serialize_locations(api, i, writer);
 
     // the actual meat of the route
     legs(api, i, writer);

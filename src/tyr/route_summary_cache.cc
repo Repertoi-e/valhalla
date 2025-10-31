@@ -19,7 +19,7 @@ NamedSegment& NamedSegment::operator=(NamedSegment&& ns) noexcept {
 }
 
 route_summary_cache::route_summary_cache(
-    const google::protobuf::RepeatedPtrField<DirectionsRoute>& routes) {
+    const std::vector<DirectionsRoute>& routes) {
   // A route/leg/maneuver may go on/off the same named road many times.
   // Combine the distances for same named roads - store in a NamedSegment.
   route_leg_segs_by_dist.reserve(routes.size());

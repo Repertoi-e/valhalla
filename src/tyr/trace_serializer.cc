@@ -106,7 +106,7 @@ void serialize_edges(const AttributesController& controller,
         writer("shoulder", edge.shoulder());
       }
       if (controller(kEdgeSidewalk)) {
-        writer("sidewalk", to_string(edge.sidewalk()));
+        writer("sidewalk", _to_string(edge.sidewalk()));
       }
       if (controller(kEdgeBicycleNetwork)) {
         writer("bicycle_network", static_cast<uint64_t>(edge.bicycle_network()));
@@ -155,16 +155,16 @@ void serialize_edges(const AttributesController& controller,
         writer("id", edge.id());
       }
       if (controller(kEdgeTravelMode)) {
-        writer("travel_mode", to_string(edge.travel_mode()));
+        writer("travel_mode", _to_string(edge.travel_mode()));
       }
-      if (controller(kEdgeVehicleType) && edge.travel_mode() == valhalla::kDrive) {
-        writer("vehicle_type", to_string(edge.vehicle_type()));
+      if (controller(kEdgeVehicleType) && edge.travel_mode() == valhalla::TravelMode::kDrive) {
+        writer("vehicle_type", _to_string(edge.vehicle_type()));
       }
-      if (controller(kEdgePedestrianType) && edge.travel_mode() == valhalla::kPedestrian) {
-        writer("pedestrian_type", to_string(edge.pedestrian_type()));
+      if (controller(kEdgePedestrianType) && edge.travel_mode() == valhalla::TravelMode::kPedestrian) {
+        writer("pedestrian_type", _to_string(edge.pedestrian_type()));
       }
-      if (controller(kEdgeBicycleType) && edge.travel_mode() == valhalla::kBicycle) {
-        writer("bicycle_type", to_string(edge.bicycle_type()));
+      if (controller(kEdgeBicycleType) && edge.travel_mode() == valhalla::TravelMode::kBicycle) {
+        writer("bicycle_type", _to_string(edge.bicycle_type()));
       }
       if (controller(kEdgeSurface)) {
         writer("surface", to_string(static_cast<baldr::Surface>(edge.surface())));
@@ -194,7 +194,7 @@ void serialize_edges(const AttributesController& controller,
         writer("use", to_string(static_cast<baldr::Use>(edge.use())));
       }
       if (controller(kEdgeTraversability)) {
-        writer("traversability", to_string(edge.traversability()));
+        writer("traversability", _to_string(edge.traversability()));
       }
       if (controller(kEdgeEndShapeIndex)) {
         writer("end_shape_index", edge.end_shape_index());
@@ -218,7 +218,7 @@ void serialize_edges(const AttributesController& controller,
         writer("speed_type", to_string(static_cast<baldr::SpeedType>(edge.speed_type())));
       }
       if (controller(kEdgeSpeedsFaded) &&
-          options.date_time_type() == Options::DateTimeType::Options_DateTimeType_current &&
+          options.date_time_type() == Options_DateTimeType_current &&
           edge.has_speeds_faded_case()) {
         serialize_speeds(edge, true, serialize_speed, writer);
       }
@@ -334,15 +334,15 @@ void serialize_edges(const AttributesController& controller,
             writer.start_object();
             if (controller(kNodeIntersectingEdgeWalkability) &&
                 (xedge.walkability() != TripLeg_Traversability_kNone)) {
-              writer("walkability", to_string(xedge.walkability()));
+              writer("walkability", _to_string(xedge.walkability()));
             }
             if (controller(kNodeIntersectingEdgeCyclability) &&
                 (xedge.cyclability() != TripLeg_Traversability_kNone)) {
-              writer("cyclability", to_string(xedge.cyclability()));
+              writer("cyclability", _to_string(xedge.cyclability()));
             }
             if (controller(kNodeIntersectingEdgeDriveability) &&
                 (xedge.driveability() != TripLeg_Traversability_kNone)) {
-              writer("driveability", to_string(xedge.driveability()));
+              writer("driveability", _to_string(xedge.driveability()));
             }
             if (controller(kNodeIntersectingEdgeFromEdgeNameConsistency)) {
               writer("from_edge_name_consistency", xedge.prev_name_consistency());

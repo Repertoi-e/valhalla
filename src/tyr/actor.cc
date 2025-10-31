@@ -4,6 +4,10 @@
 #include "thor/worker.h"
 #include "tyr/serializers.h"
 
+#ifdef __EMSCRIPTEN__
+#include "baldr/wasm_tile_getter.h"
+#endif
+
 #include <boost/property_tree/ptree.hpp>
 
 using namespace valhalla;
@@ -16,10 +20,18 @@ namespace valhalla {
 namespace tyr {
 
 struct actor_t::pimpl_t {
+#ifdef __EMSCRIPTEN__
+  pimpl_t(const boost::property_tree::ptree& config)
+      : reader(new baldr::GraphReader(config.get_child("mjolnir"),
+                                      std::make_unique<baldr::wasm_tile_getter_t>())),
+        loki_worker(config, reader), thor_worker(config, reader), odin_worker(config) {
+  }
+#else
   pimpl_t(const boost::property_tree::ptree& config)
       : reader(new baldr::GraphReader(config.get_child("mjolnir"))), loki_worker(config, reader),
         thor_worker(config, reader), odin_worker(config) {
   }
+#endif
   pimpl_t(const boost::property_tree::ptree& config, baldr::GraphReader& graph_reader)
       : reader(&graph_reader, [](baldr::GraphReader*) {}), loki_worker(config, reader),
         thor_worker(config, reader), odin_worker(config) {
@@ -89,12 +101,6 @@ std::string actor_t::act(Api& api, const std::function<void()>* interrupt) {
 
 std::string
 actor_t::route(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
-  auto scoped_cleaner = make_finally([this]() {
-    if (auto_cleanup)
-      cleanup();
-  });
-  // set the interrupts
-  pimpl->set_interrupts(interrupt);
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -102,23 +108,28 @@ actor_t::route(const std::string& request_str, const std::function<void()>* inte
   }
   // parse the request
   ParseApi(request_str, Options::route, *api);
-  // check the request and locate the locations in the graph
-  pimpl->loki_worker.route(*api);
-  // route between the locations in the graph to find the best path
-  pimpl->thor_worker.route(*api);
-  // get some directions back from them and serialize
-  auto bytes = pimpl->odin_worker.narrate(*api);
-  return bytes;
+  return route(*api, interrupt);
 }
 
 std::string
-actor_t::locate(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
+actor_t::route(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
+  // check the request and locate the locations in the graph
+  pimpl->loki_worker.route(api);
+  // route between the locations in the graph to find the best path
+  pimpl->thor_worker.route(api);
+  // get some directions back from them and serialize
+  auto bytes = pimpl->odin_worker.narrate(api);
+  return bytes;
+}
+
+std::string
+actor_t::locate(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -126,19 +137,24 @@ actor_t::locate(const std::string& request_str, const std::function<void()>* int
   }
   // parse the request
   ParseApi(request_str, Options::locate, *api);
-  // check the request and locate the locations in the graph
-  auto json = pimpl->loki_worker.locate(*api);
-  return json;
+  return locate(*api, interrupt);
 }
 
 std::string
-actor_t::matrix(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
+actor_t::locate(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
+  // check the request and locate the locations in the graph
+  auto json = pimpl->loki_worker.locate(api);
+  return json;
+}
+
+std::string
+actor_t::matrix(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -146,22 +162,27 @@ actor_t::matrix(const std::string& request_str, const std::function<void()>* int
   }
   // parse the request
   ParseApi(request_str, Options::sources_to_targets, *api);
-  // check the request and locate the locations in the graph
-  pimpl->loki_worker.matrix(*api);
-  // compute the matrix
-  auto bytes = pimpl->thor_worker.matrix(*api);
-  return bytes;
+  return matrix(*api, interrupt);
 }
 
-std::string actor_t::optimized_route(const std::string& request_str,
-                                     const std::function<void()>* interrupt,
-                                     Api* api) {
+std::string 
+actor_t::matrix(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
+  // check the request and locate the locations in the graph
+  pimpl->loki_worker.matrix(api);
+  // compute the matrix
+  auto bytes = pimpl->thor_worker.matrix(api);
+  return bytes;
+}
+
+std::string actor_t::optimized_route(const std::string& request_str,
+                                     const std::function<void()>* interrupt,
+                                     Api* api) {
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -169,23 +190,28 @@ std::string actor_t::optimized_route(const std::string& request_str,
   }
   // parse the request
   ParseApi(request_str, Options::optimized_route, *api);
-  // check the request and locate the locations in the graph
-  pimpl->loki_worker.matrix(*api);
-  // compute compute all pairs and then the shortest path through them all
-  pimpl->thor_worker.optimized_route(*api);
-  // get some directions back from them and serialize
-  auto bytes = pimpl->odin_worker.narrate(*api);
-  return bytes;
+  return optimized_route(*api, interrupt);
 }
 
 std::string
-actor_t::isochrone(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
+actor_t::optimized_route(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
+  // check the request and locate the locations in the graph
+  pimpl->loki_worker.matrix(api);
+  // compute compute all pairs and then the shortest path through them all
+  pimpl->thor_worker.optimized_route(api);
+  // get some directions back from them and serialize
+  auto bytes = pimpl->odin_worker.narrate(api);
+  return bytes;
+}
+
+std::string
+actor_t::isochrone(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -193,22 +219,27 @@ actor_t::isochrone(const std::string& request_str, const std::function<void()>* 
   }
   // parse the request
   ParseApi(request_str, Options::isochrone, *api);
-  // check the request and locate the locations in the graph
-  pimpl->loki_worker.isochrones(*api);
-  // compute the isochrones
-  auto json = pimpl->thor_worker.isochrones(*api);
-  return json;
+  return isochrone(*api, interrupt);
 }
 
-std::string actor_t::trace_route(const std::string& request_str,
-                                 const std::function<void()>* interrupt,
-                                 Api* api) {
+std::string
+actor_t::isochrone(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
+  // check the request and locate the locations in the graph
+  pimpl->loki_worker.isochrones(api);
+  // compute the isochrones
+  auto json = pimpl->thor_worker.isochrones(api);
+  return json;
+}
+
+std::string actor_t::trace_route(const std::string& request_str,
+                                 const std::function<void()>* interrupt,
+                                 Api* api) {
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -216,24 +247,28 @@ std::string actor_t::trace_route(const std::string& request_str,
   }
   // parse the request
   ParseApi(request_str, Options::trace_route, *api);
-  // check the request and locate the locations in the graph
-  pimpl->loki_worker.trace(*api);
-  // route between the locations in the graph to find the best path
-  pimpl->thor_worker.trace_route(*api);
-  // get some directions back from them
-  auto bytes = pimpl->odin_worker.narrate(*api);
-  return bytes;
+  return trace_route(*api, interrupt);
+}
+
+std::string actor_t::trace_route(Api& api, const std::function<void()>* interrupt) {
+    auto scoped_cleaner = make_finally([this]() {
+        if (auto_cleanup)
+        cleanup();
+    });
+    // set the interrupts
+    pimpl->set_interrupts(interrupt);
+    // check the request and locate the locations in the graph
+    pimpl->loki_worker.trace(api);
+    // route between the locations in the graph to find the best path
+    pimpl->thor_worker.trace_route(api);
+    // get some directions back from them
+    auto bytes = pimpl->odin_worker.narrate(api);
+    return bytes;
 }
 
 std::string actor_t::trace_attributes(const std::string& request_str,
                                       const std::function<void()>* interrupt,
                                       Api* api) {
-  auto scoped_cleaner = make_finally([this]() {
-    if (auto_cleanup)
-      cleanup();
-  });
-  // set the interrupts
-  pimpl->set_interrupts(interrupt);
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -241,21 +276,25 @@ std::string actor_t::trace_attributes(const std::string& request_str,
   }
   // parse the request
   ParseApi(request_str, Options::trace_attributes, *api);
-  // check the request and locate the locations in the graph
-  pimpl->loki_worker.trace(*api);
-  // get the path and turn it into attribution along it
-  auto json = pimpl->thor_worker.trace_attributes(*api);
-  return json;
+  return trace_attributes(*api, interrupt);
 }
 
-std::string
-actor_t::height(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
+std::string actor_t::trace_attributes(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
+  // check the request and locate the locations in the graph
+  pimpl->loki_worker.trace(api);
+  // get the path and turn it into attribution along it
+  auto json = pimpl->thor_worker.trace_attributes(api);
+  return json;
+}
+
+std::string
+actor_t::height(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -263,20 +302,25 @@ actor_t::height(const std::string& request_str, const std::function<void()>* int
   }
   // parse the request
   ParseApi(request_str, Options::height, *api);
-  // get the height at each point
-  auto json = pimpl->loki_worker.height(*api);
-  return json;
+  return height(*api, interrupt);
 }
 
-std::string actor_t::transit_available(const std::string& request_str,
-                                       const std::function<void()>* interrupt,
-                                       Api* api) {
+std::string
+actor_t::height(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
+  // get the height at each point
+  auto json = pimpl->loki_worker.height(api);
+  return json;
+}
+
+std::string actor_t::transit_available(const std::string& request_str,
+                                       const std::function<void()>* interrupt,
+                                       Api* api) {
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -284,19 +328,23 @@ std::string actor_t::transit_available(const std::string& request_str,
   }
   // parse the request
   ParseApi(request_str, Options::transit_available, *api);
-  // check the request and locate the locations in the graph
-  auto json = pimpl->loki_worker.transit_available(*api);
-  return json;
+  return transit_available(*api, interrupt);
 }
 
-std::string
-actor_t::expansion(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
+std::string actor_t::transit_available(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
+  // check the request and locate the locations in the graph
+  auto json = pimpl->loki_worker.transit_available(api);
+  return json;
+}
+
+std::string
+actor_t::expansion(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -304,27 +352,31 @@ actor_t::expansion(const std::string& request_str, const std::function<void()>* 
   }
   // parse the request
   ParseApi(request_str, Options::expansion, *api);
-  // check the request and locate the locations in the graph
-  if (api->options().expansion_action() == Options::route) {
-    pimpl->loki_worker.route(*api);
-  } else if (api->options().expansion_action() == Options::isochrone) {
-    pimpl->loki_worker.isochrones(*api);
+  return expansion(*api, interrupt);
+}
+
+std::string
+actor_t::expansion(Api& api, const std::function<void()>* interrupt) {
+  auto scoped_cleaner = make_finally([this]() {
+    if (auto_cleanup)
+        cleanup();
+  });
+  // set the interrupts
+  pimpl->set_interrupts(interrupt);
+  if (api.options().expansion_action() == Options::route) {
+    pimpl->loki_worker.route(api);
+  } else if (api.options().expansion_action() == Options::isochrone) {
+    pimpl->loki_worker.isochrones(api);
   } else {
-    pimpl->loki_worker.matrix(*api);
+    pimpl->loki_worker.matrix(api);
   }
   // route between the locations in the graph to find the best path
-  auto json = pimpl->thor_worker.expansion(*api);
+  auto json = pimpl->thor_worker.expansion(api);
   return json;
 }
 
 std::string
 actor_t::centroid(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
-  auto scoped_cleaner = make_finally([this]() {
-    if (auto_cleanup)
-      cleanup();
-  });
-  // set the interrupts
-  pimpl->set_interrupts(interrupt);
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -332,23 +384,28 @@ actor_t::centroid(const std::string& request_str, const std::function<void()>* i
   }
   // parse the request
   ParseApi(request_str, Options::centroid, *api);
-  // check the request and locate the locations in the graph
-  pimpl->loki_worker.route(*api);
-  // route between the locations in the graph to find the best path
-  pimpl->thor_worker.centroid(*api);
-  // get some directions back from them and serialize
-  auto bytes = pimpl->odin_worker.narrate(*api);
-  return bytes;
+  return centroid(*api, interrupt);
 }
 
-std::string
-actor_t::status(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
+std::string 
+actor_t::centroid(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
+  // check the request and locate the locations in the graph
+  pimpl->loki_worker.route(api);
+  // route between the locations in the graph to find the best path
+  pimpl->thor_worker.centroid(api);
+  // get some directions back from them and serialize
+  auto bytes = pimpl->odin_worker.narrate(api);
+  return bytes;
+}
+
+std::string
+actor_t::status(const std::string& request_str, const std::function<void()>* interrupt, Api* api) {
   // if the caller doesn't want a copy we'll use this dummy
   Api dummy;
   if (!api) {
@@ -356,14 +413,25 @@ actor_t::status(const std::string& request_str, const std::function<void()>* int
   }
   // parse the request
   ParseApi(request_str, Options::status, *api);
+  return status(*api, interrupt);
+}
+
+std::string
+actor_t::status(Api& api, const std::function<void()>* interrupt) {
+  auto scoped_cleaner = make_finally([this]() {
+    if (auto_cleanup)
+      cleanup();
+  });
+  // set the interrupts
+  pimpl->set_interrupts(interrupt);
   // check lokis status
-  pimpl->loki_worker.status(*api);
+  pimpl->loki_worker.status(api);
   // check thors status
-  pimpl->thor_worker.status(*api);
+  pimpl->thor_worker.status(api);
   // check odins status
-  pimpl->odin_worker.status(*api);
+  pimpl->odin_worker.status(api);
   // get the json
-  auto json = tyr::serializeStatus(*api);
+  auto json = tyr::serializeStatus(api);
   return json;
 }
 

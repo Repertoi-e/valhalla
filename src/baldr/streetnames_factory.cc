@@ -21,7 +21,7 @@ StreetNamesFactory::Create(const std::string& country_code,
 
 std::unique_ptr<StreetNames>
 StreetNamesFactory::Create(const std::string& country_code,
-                           const google::protobuf::RepeatedPtrField<valhalla::StreetName>& names) {
+                           const std::vector<valhalla::StreetName>& names) {
   if (country_code == "US") {
     return std::make_unique<StreetNamesUs>(names);
   }

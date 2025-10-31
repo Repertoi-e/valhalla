@@ -156,8 +156,8 @@ bool CostMatrix::SourceToTarget(Api& request,
   costing_ = mode_costing[static_cast<uint32_t>(mode_)];
   access_mode_ = costing_->access_mode();
 
-  auto& source_location_list = *request.mutable_options()->mutable_sources();
-  auto& target_location_list = *request.mutable_options()->mutable_targets();
+  auto source_location_list = request.mutable_options()->mutable_sources();
+  auto target_location_list = request.mutable_options()->mutable_targets();
 
   current_pathdist_threshold_ = max_matrix_distance / 2;
 
@@ -1335,7 +1335,7 @@ std::string CostMatrix::RecostFormPath(GraphReader& graphreader,
                                        const baldr::TimeInfo& time_info,
                                        const bool invariant) {
   // no need to look at source == target or missing connectivity
-  if ((!has_time_ && request.options().shape_format() == no_shape && !request.options().verbose()) ||
+  if ((!has_time_ && request.options().shape_format() == ShapeFormat::no_shape && !request.options().verbose()) ||
       connection.cost.secs == 0.f || connection.distance == kMaxCost) {
     return "";
   }
@@ -1446,7 +1446,7 @@ std::string CostMatrix::RecostFormPath(GraphReader& graphreader,
   }
 
   // bail if no shape was requested
-  if (request.options().shape_format() == no_shape)
+  if (request.options().shape_format() == ShapeFormat::no_shape)
     return "";
 
   auto source_vertex = PointLL{source_edge.ll().lng(), source_edge.ll().lat()};
@@ -1485,7 +1485,7 @@ std::string CostMatrix::RecostFormPath(GraphReader& graphreader,
   }
 
   // encode to 6 precision for geojson as well, which the serializer expects
-  return encode<decltype(points)>(points, request.options().shape_format() != polyline5 ? 1e6 : 1e5);
+  return encode<decltype(points)>(points, request.options().shape_format() != ShapeFormat::polyline5 ? 1e6 : 1e5);
 }
 
 template <const MatrixExpansionType expansion_direction, const bool FORWARD>

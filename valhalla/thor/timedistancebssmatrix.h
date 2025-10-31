@@ -49,7 +49,7 @@ public:
 
     request.mutable_matrix()->set_algorithm(Matrix::TimeDistanceMatrix);
 
-    if (request.options().shape_format() != no_shape)
+    if (request.options().shape_format() != ShapeFormat::no_shape)
       add_warning(request, 207);
 
     // Set the costings

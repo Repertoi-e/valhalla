@@ -32,6 +32,8 @@
 
 // clang-format off
 
+#if !defined __EMSCRIPTEN__
+
 #ifdef _WIN32
    // windows.h will be included directly and indirectly (e.g. by curl).
    // We need to define these macros to prevent windows.h bringing in
@@ -519,10 +521,55 @@ sort_zone_mappings(std::vector<date::detail::timezone_mapping>& mappings)
         return false;
     });
 }
-
 static
 bool
 native_to_standard_timezone_name(const std::string& native_tz_name,
+    inline std::unordered_map<std::string, std::unique_ptr<time_zone>>& timezone_cache()
+    {
+        static auto& cache = *new std::unordered_map<std::string, std::unique_ptr<time_zone>>();
+        return cache;
+    }
+
+    inline const time_zone* ensure_time_zone_from_string(const std::string& name)
+    {
+        auto safe_name = name.empty() ? std::string("Etc/UTC") : name;
+        auto& cache = timezone_cache();
+        auto it = cache.find(safe_name);
+        if (it != cache.end())
+            return it->second.get();
+
+        auto zone = std::make_unique<time_zone>(safe_name, detail::undocumented{});
+        auto* raw = zone.get();
+        cache.emplace(safe_name, std::move(zone));
+        return raw;
+    }
+
+    #if HAS_STRING_VIEW
+    inline const time_zone* ensure_time_zone_from_view(std::string_view name)
+    {
+        return ensure_time_zone_from_string(std::string{name});
+    }
+    #endif
+
+    inline std::string detect_default_timezone_name()
+    {
+        auto global = val::global();
+        auto intl = global["Intl"];
+        if (!intl.isUndefined() && !intl.isNull())
+        {
+            auto dtf = intl["DateTimeFormat"];
+            if (!dtf.isUndefined() && !dtf.isNull() && dtf.typeOf().as<std::string>() == "function")
+            {
+                auto formatter = dtf();
+                auto options = formatter.call<val>("resolvedOptions");
+                auto tz = options["timeZone"];
+                if (!tz.isUndefined() && !tz.isNull())
+                    return tz.as<std::string>();
+            }
+        }
+        return "Etc/UTC";
+    }
+
                                  std::string& standard_tz_name)
 {
     // TODO! Need be a case insensitive compare?
@@ -4149,5 +4196,317 @@ init_tzdb_strings()
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic pop
 #endif
+
+#else  // __EMSCRIPTEN__
+
+#include <emscripten.h>
+
+#include <emscripten/val.h>
+
+#include <chrono>
+#include <cmath>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <mutex>
+
+#include <date/tz.h>
+
+EM_JS(void, date_init_timezone_stub, (), {
+    if (Module.__valhalla_tz_get_info) {
+        return;
+    }
+
+    Module.__valhalla_tz_get_info = function (tzName, epochSeconds, isLocal) {
+        tzName = tzName || 'Etc/UTC';
+        const epochMs = epochSeconds * 1000;
+        const instant = new Date(epochMs);
+
+        const parseOffsetSeconds = (text) => {
+            if (!text || typeof text !== 'string') {
+                return 0;
+            }
+            const match = /GMT([+-])([0-9]{1,2})(?::?([0-9]{2}))?/i.exec(text);
+            if (!match) {
+                return 0;
+            }
+            const sign = match[1] === '-' ? -1 : 1;
+            const hours = parseInt(match[2], 10) || 0;
+            const minutes = parseInt(match[3] || '0', 10) || 0;
+            return sign * ((hours * 60 + minutes) * 60);
+        };
+
+        const buildFormatterParts = (options) => {
+            try {
+                return new Intl.DateTimeFormat('en-US', Object.assign({ timeZone: tzName }, options)).formatToParts(instant);
+            } catch (err) {
+                return null;
+            }
+        };
+
+        const offsetParts = buildFormatterParts({ timeZoneName: 'shortOffset', hour: '2-digit', minute: '2-digit', second: '2-digit' }) || [];
+        const offsetPart = offsetParts.find((part) => part.type === 'timeZoneName');
+        const offsetSeconds = parseOffsetSeconds(offsetPart ? offsetPart.value : null);
+
+        const abbrevParts = buildFormatterParts({ timeZoneName: 'short' }) || [];
+        const abbrevPart = abbrevParts.find((part) => part.type === 'timeZoneName');
+        const abbrev = abbrevPart ? abbrevPart.value : (offsetPart ? offsetPart.value : 'UTC');
+
+        return {
+            result: 0,
+            first: {
+                begin: Number.NEGATIVE_INFINITY,
+                end: Number.POSITIVE_INFINITY,
+                offsetSeconds: offsetSeconds,
+                saveMinutes: 0,
+                abbrev: abbrev
+            },
+            second: null
+        };
+    };
+});
+
+namespace date
+{
+using emscripten::val;
+
+inline void ensure_timezone_provider()
+{
+    date_init_timezone_stub();
+}
+
+inline val get_timezone_provider(const std::string& preferred)
+{
+    ensure_timezone_provider();
+    auto module = val::global("Module");
+    auto fn = module[preferred];
+    if (!fn.isUndefined() && !fn.isNull() && fn.typeOf().as<std::string>() == "function") {
+        return fn;
+    }
+    auto fallback = module[std::string("__valhalla_tz_get_info")];
+    if (fallback.isUndefined() || fallback.isNull() || fallback.typeOf().as<std::string>() != "function") {
+        throw std::runtime_error("No JavaScript timezone resolver available (Module.getTimezoneInfo missing)");
+    }
+    return fallback;
+}
+
+namespace
+{
+
+inline std::unordered_map<std::string, std::unique_ptr<time_zone>>& timezone_cache()
+{
+    static auto& cache = *new std::unordered_map<std::string, std::unique_ptr<time_zone>>();
+    return cache;
+}
+
+inline const time_zone* ensure_time_zone_from_string(const std::string& name)
+{
+    auto safe_name = name.empty() ? std::string("Etc/UTC") : name;
+    auto& cache = timezone_cache();
+    auto it = cache.find(safe_name);
+    if (it != cache.end())
+        return it->second.get();
+
+    auto zone = std::make_unique<time_zone>(safe_name, detail::undocumented{});
+    auto* raw = zone.get();
+    cache.emplace(safe_name, std::move(zone));
+    return raw;
+}
+
+#if HAS_STRING_VIEW
+inline const time_zone* ensure_time_zone_from_view(std::string_view name)
+{
+    return ensure_time_zone_from_string(std::string{name});
+}
+#endif
+
+inline std::string detect_default_timezone_name()
+{
+    auto global = val::global();
+    auto intl = global["Intl"];
+    if (!intl.isUndefined() && !intl.isNull())
+    {
+        auto dtf = intl["DateTimeFormat"];
+        if (!dtf.isUndefined() && !dtf.isNull() && dtf.typeOf().as<std::string>() == "function")
+        {
+            auto formatter = dtf();
+            auto options = formatter.call<val>("resolvedOptions");
+            auto tz = options["timeZone"];
+            if (!tz.isUndefined() && !tz.isNull())
+                return tz.as<std::string>();
+        }
+    }
+    return "Etc/UTC";
+}
+
+inline val invoke_timezone_provider(const std::string& tz_name,
+                                    double epoch_seconds,
+                                    bool is_local)
+{
+    auto fn = get_timezone_provider("getTimezoneInfo");
+    return fn(val(tz_name), val(epoch_seconds), val(is_local));
+}
+
+inline std::chrono::sys_seconds to_sys_seconds(double seconds_value)
+{
+    if (!std::isfinite(seconds_value)) {
+        return seconds_value < 0 ? std::chrono::sys_seconds::min() : std::chrono::sys_seconds::max();
+    }
+    auto floored = static_cast<long long>(std::floor(seconds_value));
+    return std::chrono::sys_seconds{std::chrono::seconds{floored}};
+}
+
+inline sys_info parse_sys_info(const val& js_info)
+{
+    sys_info info{};
+    if (js_info.isUndefined() || js_info.isNull()) {
+        info.begin = std::chrono::sys_seconds::min();
+        info.end = std::chrono::sys_seconds::max();
+        info.offset = std::chrono::seconds::zero();
+        info.save = std::chrono::minutes::zero();
+        info.abbrev = "UTC";
+        return info;
+    }
+
+    auto begin_val = js_info[std::string("begin")];
+    info.begin = (!begin_val.isUndefined() && !begin_val.isNull()) ?
+        to_sys_seconds(begin_val.as<double>()) : std::chrono::sys_seconds::min();
+
+    auto end_val = js_info[std::string("end")];
+    info.end = (!end_val.isUndefined() && !end_val.isNull()) ?
+        to_sys_seconds(end_val.as<double>()) : std::chrono::sys_seconds::max();
+
+    auto offset_val = js_info[std::string("offsetSeconds")];
+    auto offset_seconds = (!offset_val.isUndefined() && !offset_val.isNull()) ?
+        static_cast<long long>(std::llround(offset_val.as<double>())) : 0LL;
+    info.offset = std::chrono::seconds{offset_seconds};
+
+    auto save_val = js_info[std::string("saveMinutes")];
+    auto save_minutes = (!save_val.isUndefined() && !save_val.isNull()) ?
+        static_cast<long long>(std::llround(save_val.as<double>())) : 0LL;
+    info.save = std::chrono::minutes{save_minutes};
+
+    auto abbrev_val = js_info[std::string("abbrev")];
+    info.abbrev = (!abbrev_val.isUndefined() && !abbrev_val.isNull()) ?
+        abbrev_val.as<std::string>() : std::string{"UTC"};
+
+    return info;
+}
+
+inline local_info parse_local_info(const val& js_info)
+{
+    local_info info{};
+    info.result = local_info::unique;
+    if (js_info.isUndefined() || js_info.isNull()) {
+        info.first = parse_sys_info(val::undefined());
+        return info;
+    }
+
+    auto result_val = js_info[std::string("result")];
+    if (!result_val.isUndefined() && !result_val.isNull()) {
+        auto code = result_val.as<int>();
+        switch (code) {
+            case 1: info.result = local_info::nonexistent; break;
+            case 2: info.result = local_info::ambiguous; break;
+            default: info.result = local_info::unique; break;
+        }
+    }
+
+    info.first = parse_sys_info(js_info[std::string("first")]);
+    if (info.result != local_info::unique) {
+        info.second = parse_sys_info(js_info[std::string("second")]);
+    }
+
+    return info;
+}
+
+}  // namespace
+
+sys_info time_zone::get_info_impl(sys_seconds tp) const
+{
+    auto payload = invoke_timezone_provider(name_, static_cast<double>(tp.time_since_epoch().count()), false);
+    auto first = (payload.isUndefined() || payload.isNull()) ? val::undefined() : payload["first"];
+    return parse_sys_info(first);
+}
+
+local_info time_zone::get_info_impl(local_seconds tp) const
+{
+    auto payload = invoke_timezone_provider(name_, static_cast<double>(tp.time_since_epoch().count()), true);
+    return parse_local_info(payload);
+}
+
+time_zone::time_zone(const std::string& s, detail::undocumented)
+    : name_(s)
+#if USE_OS_TZDB
+    , transitions_{}
+    , ttinfos_{}
+#endif
+    , adjusted_(new std::once_flag{})
+{}
+
+#if HAS_STRING_VIEW
+const time_zone*
+tzdb::locate_zone(std::string_view tz_name) const
+{
+    return ensure_time_zone_from_view(tz_name);
+}
+#else
+const time_zone*
+tzdb::locate_zone(const std::string& tz_name) const
+{
+    return ensure_time_zone_from_string(tz_name);
+}
+#endif
+
+#if HAS_STRING_VIEW
+const time_zone*
+locate_zone(std::string_view tz_name)
+{
+    return get_tzdb().locate_zone(tz_name);
+}
+#else
+const time_zone*
+locate_zone(const std::string& tz_name)
+{
+    return get_tzdb().locate_zone(tz_name);
+}
+#endif
+
+const tzdb&
+get_tzdb()
+{
+    static tzdb db;
+    static bool initialized = false;
+    if (!initialized)
+    {
+        db.version = "wasm-js";
+        db.next = nullptr;
+        initialized = true;
+    }
+    return db;
+}
+
+const tzdb&
+reload_tzdb()
+{
+    return get_tzdb();
+}
+
+const time_zone*
+tzdb::current_zone() const
+{
+    return locate_zone(detect_default_timezone_name());
+}
+
+const time_zone*
+current_zone()
+{
+    return get_tzdb().current_zone();
+}
+
+}  // namespace date
+
+#endif  // !defined __EMSCRIPTEN__
 
 // clang-format on

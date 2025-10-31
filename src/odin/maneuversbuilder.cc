@@ -77,7 +77,7 @@ bool is_pair(const std::vector<std::string>& tokens) {
 }
 
 bool has_level_changes(
-    const ::google::protobuf::RepeatedPtrField<valhalla::TripLeg_Edge_Level>& levels) {
+    const ::std::vector<valhalla::TripLeg_Edge_Level>& levels) {
   return levels.size() == 1 ? levels[0].start() != levels[0].end() : levels.size() != 0;
 }
 
@@ -1570,7 +1570,7 @@ void ManeuversBuilder::FinalizeManeuver(Maneuver& maneuver, int node_index) {
       maneuver.set_begin_street_names(std::move(curr_edge_names));
     }
   }
-  if (node->type() == TripLeg_Node_Type::TripLeg_Node_Type_kBikeShare && prev_edge &&
+  if (node->type() == TripLeg_Node_Type_kBikeShare && prev_edge &&
       (prev_edge->travel_mode() == TravelMode::kBicycle) &&
       maneuver.travel_mode() == TravelMode::kPedestrian) {
     maneuver.set_bss_maneuver_type(DirectionsLeg_Maneuver_BssManeuverType_kReturnBikeAtBikeShare);
@@ -1579,7 +1579,7 @@ void ManeuversBuilder::FinalizeManeuver(Maneuver& maneuver, int node_index) {
       maneuver.set_bss_info(bss_info);
     }
   }
-  if (node->type() == TripLeg_Node_Type::TripLeg_Node_Type_kBikeShare && prev_edge &&
+  if (node->type() == TripLeg_Node_Type_kBikeShare && prev_edge &&
       (prev_edge->travel_mode() == TravelMode::kPedestrian) &&
       maneuver.travel_mode() == TravelMode::kBicycle) {
     maneuver.set_bss_maneuver_type(DirectionsLeg_Maneuver_BssManeuverType_kRentBikeAtBikeShare);
@@ -2155,7 +2155,7 @@ bool ManeuversBuilder::CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_i
   if (curr_edge->pedestrian_type() == PedestrianType::kBlind && maneuver.has_node_type()) {
     return false;
   }
-  if (node->type() == TripLeg_Node_Type::TripLeg_Node_Type_kBikeShare) {
+  if (node->type() == TripLeg_Node_Type_kBikeShare) {
     return false;
   }
   /////////////////////////////////////////////////////////////////////////////
@@ -2645,9 +2645,9 @@ bool ManeuversBuilder::IsFork(int node_index,
            !curr_edge->IsRailFerryUse() &&
            node->HasRoadForkTraversableIntersectingEdge(prev_edge->end_heading(),
                                                         prev_edge->travel_mode(),
-                                                        ((prev_edge->road_class() == kServiceOther) ||
+                                                        ((prev_edge->road_class() == RoadClass::kServiceOther) ||
                                                          (curr_edge->road_class() ==
-                                                          kServiceOther)))) {
+                                                          RoadClass::kServiceOther)))) {
     return true;
   }
   // Determine if highway/ramp lane bifurcation

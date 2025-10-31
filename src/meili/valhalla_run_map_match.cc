@@ -1,3 +1,4 @@
+#if !defined __EMSCRIPTEN__
 #include "baldr/rapidjson_utils.h"
 #include "meili/map_matcher_factory.h"
 #include "meili/measurement.h"
@@ -88,3 +89,4 @@ int main(int argc, char* argv[]) {
 
   return 0;
 }
+#endif

@@ -80,7 +80,7 @@ class route_summary_cache {
   int misses = 0;
 
 public:
-  route_summary_cache(const google::protobuf::RepeatedPtrField<DirectionsRoute>& routes);
+  route_summary_cache(const std::vector<DirectionsRoute>& routes);
   size_t num_named_segments_for_route_leg(size_t route_idx, size_t leg_idx);
 
   // Return the n-part named-segment summary for the given route/leg.

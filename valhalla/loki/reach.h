@@ -97,7 +97,7 @@ protected:
   // need to reset the queues
   virtual void Clear() override;
 
-  google::protobuf::RepeatedPtrField<Location> locations_;
+  std::vector<Location> locations_;
   ankerl::unordered_dense::set<uint64_t> queue_, done_;
   uint32_t max_reach_{};
   size_t transitions_{};

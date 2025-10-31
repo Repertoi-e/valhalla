@@ -1360,7 +1360,7 @@ protected:
 };
 
 using cost_ptr_t = std::shared_ptr<DynamicCost>;
-using mode_costing_t = std::array<cost_ptr_t, static_cast<size_t>(TravelMode::kMaxTravelMode)>;
+using mode_costing_t = std::array<cost_ptr_t, static_cast<size_t>(TravelMode_ARRAYSIZE)>;
 
 /*
  * Structure that stores default values for costing options that are common for most costing models.

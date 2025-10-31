@@ -1315,30 +1315,30 @@ TripLeg_Edge* AddTripEdge(const AttributesController& controller,
     // Set traversability for forward directededge if requested
     if (controller(kEdgeTraversability)) {
       if ((directededge->forwardaccess() & kAccess) && (directededge->reverseaccess() & kAccess)) {
-        trip_edge->set_traversability(TripLeg_Traversability::TripLeg_Traversability_kBoth);
+        trip_edge->set_traversability(TripLeg_Traversability_kBoth);
       } else if ((directededge->forwardaccess() & kAccess) &&
                  !(directededge->reverseaccess() & kAccess)) {
-        trip_edge->set_traversability(TripLeg_Traversability::TripLeg_Traversability_kForward);
+        trip_edge->set_traversability(TripLeg_Traversability_kForward);
       } else if (!(directededge->forwardaccess() & kAccess) &&
                  (directededge->reverseaccess() & kAccess)) {
-        trip_edge->set_traversability(TripLeg_Traversability::TripLeg_Traversability_kBackward);
+        trip_edge->set_traversability(TripLeg_Traversability_kBackward);
       } else {
-        trip_edge->set_traversability(TripLeg_Traversability::TripLeg_Traversability_kNone);
+        trip_edge->set_traversability(TripLeg_Traversability_kNone);
       }
     }
   } else {
     // Set traversability for reverse directededge if requested
     if (controller(kEdgeTraversability)) {
       if ((directededge->forwardaccess() & kAccess) && (directededge->reverseaccess() & kAccess)) {
-        trip_edge->set_traversability(TripLeg_Traversability::TripLeg_Traversability_kBoth);
+        trip_edge->set_traversability(TripLeg_Traversability_kBoth);
       } else if (!(directededge->forwardaccess() & kAccess) &&
                  (directededge->reverseaccess() & kAccess)) {
-        trip_edge->set_traversability(TripLeg_Traversability::TripLeg_Traversability_kForward);
+        trip_edge->set_traversability(TripLeg_Traversability_kForward);
       } else if ((directededge->forwardaccess() & kAccess) &&
                  !(directededge->reverseaccess() & kAccess)) {
-        trip_edge->set_traversability(TripLeg_Traversability::TripLeg_Traversability_kBackward);
+        trip_edge->set_traversability(TripLeg_Traversability_kBackward);
       } else {
-        trip_edge->set_traversability(TripLeg_Traversability::TripLeg_Traversability_kNone);
+        trip_edge->set_traversability(TripLeg_Traversability_kNone);
       }
     }
   }
@@ -1513,11 +1513,11 @@ TripLeg_Edge* AddTripEdge(const AttributesController& controller,
 
   if (controller(kEdgeSidewalk)) {
     if (directededge->sidewalk_left() && directededge->sidewalk_right()) {
-      trip_edge->set_sidewalk(TripLeg_Sidewalk::TripLeg_Sidewalk_kBothSides);
+      trip_edge->set_sidewalk(TripLeg_Sidewalk_kBothSides);
     } else if (directededge->sidewalk_left()) {
-      trip_edge->set_sidewalk(TripLeg_Sidewalk::TripLeg_Sidewalk_kLeft);
+      trip_edge->set_sidewalk(TripLeg_Sidewalk_kLeft);
     } else if (directededge->sidewalk_right()) {
-      trip_edge->set_sidewalk(TripLeg_Sidewalk::TripLeg_Sidewalk_kRight);
+      trip_edge->set_sidewalk(TripLeg_Sidewalk_kRight);
     }
   }
 
@@ -1741,7 +1741,7 @@ void AccumulateRecostingInfoForward(const valhalla::Options& options,
     } // couldnt be recosted (difference in access for example) so we fill it with nulls to show this
     catch (...) {
       int should_have = leg.node(0).recosts_size();
-      for (auto& node : *leg.mutable_node()) {
+      for (auto& node : leg.mutable_node()) {
         if (node.recosts_size() == should_have) {
           node.mutable_recosts()->RemoveLast();
         }
@@ -1780,7 +1780,7 @@ void TripLegBuilder::Build(
   }
 
   // Remember what algorithms were used to create this leg
-  *trip_path.mutable_algorithms() = {algorithms.begin(), algorithms.end()};
+  trip_path.mutable_algorithms() = {algorithms.begin(), algorithms.end()};
 
   // Set origin, any through locations, and destination. Origin and
   // destination are assumed to be breaks.
@@ -1820,7 +1820,7 @@ void TripLegBuilder::Build(
   // Partial edge at the start and side of street (sos)
   float start_pct = 0.;
   valhalla::Location::SideOfStreet start_sos =
-      valhalla::Location::SideOfStreet::Location_SideOfStreet_kNone;
+      Location_SideOfStreet_kNone;
   PointLL start_vrt;
   for (const auto& e : origin.correlation().edges()) {
     if (e.graph_id() == path_begin->edgeid) {
@@ -1837,14 +1837,13 @@ void TripLegBuilder::Build(
   proj_ll->set_lng(start_vrt.lng());
 
   // Set the origin side of street, if one exists
-  if (start_sos != valhalla::Location::SideOfStreet::Location_SideOfStreet_kNone) {
+  if (start_sos != Location_SideOfStreet_kNone) {
     tp_orig->set_side_of_street(GetTripLegSideOfStreet(start_sos));
   }
 
   // Partial edge at the end
   float end_pct = 1.;
-  valhalla::Location::SideOfStreet end_sos =
-      valhalla::Location::SideOfStreet::Location_SideOfStreet_kNone;
+  valhalla::Location::SideOfStreet end_sos = Location_SideOfStreet_kNone;
   PointLL end_vrt;
   for (const auto& e : dest.correlation().edges()) {
     if (e.graph_id() == (path_end - 1)->edgeid) {
@@ -1861,7 +1860,7 @@ void TripLegBuilder::Build(
   proj_ll->set_lng(end_vrt.lng());
 
   // Set the destination side of street, if one exists
-  if (end_sos != valhalla::Location::SideOfStreet::Location_SideOfStreet_kNone) {
+  if (end_sos != Location_SideOfStreet_kNone) {
     tp_dest->set_side_of_street(GetTripLegSideOfStreet(end_sos));
   }
 

@@ -41,9 +41,9 @@ void thor_worker_t::optimized_route(Api& request) {
       };
       reachable = false;
     }
-    reachable = reachable || tds.Get(i) != kMaxCost;
+    reachable = reachable || tds[i] != kMaxCost;
     // Keep the times for the reordering
-    time_costs.emplace_back(static_cast<float>(tds.Get(i)));
+    time_costs.emplace_back(static_cast<float>(tds[i]));
   }
 
   Optimizer optimizer;
@@ -52,7 +52,7 @@ void thor_worker_t::optimized_route(Api& request) {
   // put the optimal order into the locations array
   options.mutable_locations()->Clear();
   for (size_t i = 0; i < optimal_order.size(); i++) {
-    options.mutable_locations()->Add()->CopyFrom(correlated.Get(optimal_order[i]));
+    options.mutable_locations()->Add()->CopyFrom(correlated[optimal_order[i]]);
   }
 
   // run the route

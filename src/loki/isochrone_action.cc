@@ -6,7 +6,7 @@ using namespace valhalla::baldr;
 
 namespace {
 
-void check_distance(const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+void check_distance(const std::vector<valhalla::Location>& locations,
                     float max_iso_distance) {
   // see if any locations pairs are unreachable or too far apart
   for (auto source = locations.begin(); source != locations.end() - 1; ++source) {
@@ -34,7 +34,7 @@ void loki_worker_t::init_isochrones(Api& request) {
   if (options.locations_size() < 1) {
     throw valhalla_exception_t{120};
   };
-  for (auto& l : *options.mutable_locations()) {
+  for (auto& l : options.mutable_locations()) {
     l.clear_heading();
   }
 

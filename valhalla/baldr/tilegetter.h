@@ -36,7 +36,8 @@ public:
    * The result of synchronous operation. Contains raw data and operations result code.
    */
   struct GET_response_t {
-    bytes_t bytes_;
+    char *data_ = nullptr;
+    size_t size_ = 0;
     status_code_t status_ = status_code_t::FAILURE;
     long http_code_ = 0;
   };

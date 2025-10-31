@@ -44,7 +44,7 @@ public:
     return trip_path_.mutable_node(index);
   }
 
-  const ::google::protobuf::RepeatedPtrField<::valhalla::TripLeg_Node>& node() const {
+  const ::std::vector<::valhalla::TripLeg_Node>& node() const {
     return trip_path_.node();
   }
 
@@ -80,11 +80,11 @@ public:
     return trip_path_.leg_count();
   }
 
-  const ::google::protobuf::RepeatedPtrField<::valhalla::LevelChange>& level_changes() const {
+  const ::std::vector<::valhalla::LevelChange>& level_changes() const {
     return trip_path_.level_changes();
   }
 
-  const ::google::protobuf::RepeatedPtrField<::valhalla::Location>& location() const {
+  const ::std::vector<::valhalla::Location>& location() const {
     return trip_path_.location();
   }
 
@@ -140,15 +140,15 @@ public:
     return mutable_edge_->name(index);
   }
 
-  const ::google::protobuf::RepeatedPtrField<::valhalla::StreetName>& name() const {
+  const ::std::vector<::valhalla::StreetName>& name() const {
     return mutable_edge_->name();
   }
 
-  const ::google::protobuf::RepeatedPtrField<::valhalla::TaggedValue>& tagged_value() const {
+  const ::std::vector<::valhalla::TaggedValue>& tagged_value() const {
     return mutable_edge_->tagged_value();
   }
 
-  const ::google::protobuf::RepeatedPtrField<::valhalla::RouteLandmark>& landmarks() const {
+  const ::std::vector<::valhalla::RouteLandmark>& landmarks() const {
     return mutable_edge_->landmarks();
   }
 
@@ -197,7 +197,7 @@ public:
   }
 
   bool has_vehicle_type() const {
-    return mutable_edge_->travel_mode() == kDrive;
+    return mutable_edge_->travel_mode() == TravelMode::kDrive;
   }
 
   ::valhalla::VehicleType vehicle_type() const {
@@ -205,7 +205,7 @@ public:
   }
 
   bool has_pedestrian_type() const {
-    return mutable_edge_->travel_mode() == kPedestrian;
+    return mutable_edge_->travel_mode() == TravelMode::kPedestrian;
   }
 
   ::valhalla::PedestrianType pedestrian_type() const {
@@ -213,7 +213,7 @@ public:
   }
 
   bool has_bicycle_type() const {
-    return mutable_edge_->travel_mode() == kBicycle;
+    return mutable_edge_->travel_mode() == TravelMode::kBicycle;
   }
 
   ::valhalla::BicycleType bicycle_type() const {
@@ -221,7 +221,7 @@ public:
   }
 
   bool has_transit_type() const {
-    return mutable_edge_->travel_mode() == kTransit;
+    return mutable_edge_->travel_mode() == TravelMode::kTransit;
   }
 
   ::valhalla::TransitType transit_type() const {
@@ -344,11 +344,11 @@ public:
     return mutable_edge_->turn_lanes_size();
   }
 
-  const ::google::protobuf::RepeatedPtrField<::valhalla::TurnLane>& turn_lanes() const {
+  const ::std::vector<::valhalla::TurnLane>& turn_lanes() const {
     return mutable_edge_->turn_lanes();
   }
 
-  ::google::protobuf::RepeatedPtrField<::valhalla::TurnLane>* mutable_turn_lanes() {
+  auto mutable_turn_lanes() {
     return mutable_edge_->mutable_turn_lanes();
   }
 
@@ -368,7 +368,7 @@ public:
     return mutable_edge_->indoor();
   }
 
-  const google::protobuf::RepeatedPtrField<valhalla::TripLeg_Edge_Level>& levels() const {
+  const ::std::vector<valhalla::TripLeg_Edge_Level>& levels() const {
     return mutable_edge_->levels();
   }
 
@@ -467,17 +467,17 @@ protected:
   TripLeg_Edge* mutable_edge_;
 
   std::string StreetNamesToString(
-      const ::google::protobuf::RepeatedPtrField<::valhalla::StreetName>& street_names) const;
+      const ::std::vector<::valhalla::StreetName>& street_names) const;
 
   std::string SignElementsToString(
-      const ::google::protobuf::RepeatedPtrField<::valhalla::TripSignElement>& sign_elements) const;
+      const ::std::vector<::valhalla::TripSignElement>& sign_elements) const;
 
 #ifdef LOGGING_LEVEL_TRACE
   std::string StreetNamesToParameterString(
-      const ::google::protobuf::RepeatedPtrField<::valhalla::StreetName>& street_names) const;
+      const ::std::vector<::valhalla::StreetName>& street_names) const;
 
   std::string SignElementsToParameterString(
-      const ::google::protobuf::RepeatedPtrField<::valhalla::TripSignElement>& sign_elements) const;
+      const ::std::vector<::valhalla::TripSignElement>& sign_elements) const;
 #endif
 };
 
@@ -493,7 +493,7 @@ public:
     return mutable_intersecting_edge_->name(index);
   }
 
-  const ::google::protobuf::RepeatedPtrField<::valhalla::StreetName>& name() const {
+  const ::std::vector<::valhalla::StreetName>& name() const {
     return mutable_intersecting_edge_->name();
   }
 
@@ -619,7 +619,7 @@ public:
     return mutable_node_->mutable_intersecting_edge(index);
   }
 
-  const ::google::protobuf::RepeatedPtrField<::valhalla::TripLeg_IntersectingEdge>&
+  const ::std::vector<::valhalla::TripLeg_IntersectingEdge>&
   intersecting_edge() const {
     return mutable_node_->intersecting_edge();
   }
@@ -655,7 +655,7 @@ public:
     return mutable_node_->cost();
   }
 
-  const google::protobuf::RepeatedPtrField<TripLeg::PathCost> recosts() const {
+  const ::std::vector<TripLeg::PathCost> recosts() const {
     return mutable_node_->recosts();
   }
 
@@ -815,7 +815,7 @@ const std::unordered_map<uint8_t, std::string> TripLeg_TravelMode_Strings{
     {static_cast<uint8_t>(TravelMode::kBicycle), "bicycle"},
     {static_cast<uint8_t>(TravelMode::kTransit), "transit"},
 };
-inline std::string to_string(TravelMode travel_mode) {
+inline std::string _to_string(TravelMode travel_mode) {
   auto i = TripLeg_TravelMode_Strings.find(static_cast<uint8_t>(travel_mode));
   if (i == TripLeg_TravelMode_Strings.cend()) {
     return "null";
@@ -829,7 +829,7 @@ const std::unordered_map<uint8_t, std::string> TripLeg_VehicleType_Strings{
     {static_cast<uint8_t>(VehicleType::kAutoBus), "bus"},
     {static_cast<uint8_t>(VehicleType::kTruck), "truck"},
 };
-inline std::string to_string(VehicleType vehicle_type) {
+inline std::string _to_string(VehicleType vehicle_type) {
   auto i = TripLeg_VehicleType_Strings.find(static_cast<uint8_t>(vehicle_type));
   if (i == TripLeg_VehicleType_Strings.cend()) {
     return "null";
@@ -841,7 +841,7 @@ const std::unordered_map<uint8_t, std::string> TripLeg_PedestrianType_Strings{
     {static_cast<uint8_t>(PedestrianType::kFoot), "foot"},
     {static_cast<uint8_t>(PedestrianType::kWheelchair), "wheelchair"},
 };
-inline std::string to_string(PedestrianType pedestrian_type) {
+inline std::string _to_string(PedestrianType pedestrian_type) {
   auto i = TripLeg_PedestrianType_Strings.find(static_cast<uint8_t>(pedestrian_type));
   if (i == TripLeg_PedestrianType_Strings.cend()) {
     return "null";
@@ -855,7 +855,7 @@ const std::unordered_map<uint8_t, std::string> TripLeg_BicycleType_Strings{
     {static_cast<uint8_t>(BicycleType::kHybrid), "hybrid"},
     {static_cast<uint8_t>(BicycleType::kMountain), "mountain"},
 };
-inline std::string to_string(BicycleType bicycle_type) {
+inline std::string _to_string(BicycleType bicycle_type) {
   auto i = TripLeg_BicycleType_Strings.find(static_cast<uint8_t>(bicycle_type));
   if (i == TripLeg_BicycleType_Strings.cend()) {
     return "null";
@@ -869,7 +869,7 @@ const std::unordered_map<uint8_t, std::string> TripLeg_Sidewalk_Strings = {
     {static_cast<uint8_t>(TripLeg_Sidewalk_kRight), "right"},
     {static_cast<uint8_t>(TripLeg_Sidewalk_kBothSides), "both"},
 };
-inline std::string to_string(TripLeg_Sidewalk s) {
+inline std::string _to_string(TripLeg_Sidewalk s) {
   auto i = TripLeg_Sidewalk_Strings.find(static_cast<uint8_t>(s));
   if (i == TripLeg_Sidewalk_Strings.cend()) {
     return "null";
@@ -883,7 +883,7 @@ const std::unordered_map<uint8_t, std::string> TripLeg_Traversability_Strings = 
     {static_cast<uint8_t>(TripLeg_Traversability_kBackward), "backward"},
     {static_cast<uint8_t>(TripLeg_Traversability_kBoth), "both"},
 };
-inline std::string to_string(TripLeg_Traversability t) {
+inline std::string _to_string(TripLeg_Traversability t) {
   auto i = TripLeg_Traversability_Strings.find(static_cast<uint8_t>(t));
   if (i == TripLeg_Traversability_Strings.cend()) {
     return "null";

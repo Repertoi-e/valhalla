@@ -592,7 +592,7 @@ std::string NarrativeBuilder::FormStartInstruction(Maneuver& maneuver) {
 
   // Set cardinal_direction value
   std::string cardinal_direction =
-      dictionary_.start_subset.cardinal_directions.at(maneuver.begin_cardinal_direction());
+      dictionary_.start_subset.cardinal_directions.at((int) maneuver.begin_cardinal_direction());
 
   // Set street_names value
   std::string street_names =
@@ -666,7 +666,7 @@ std::string NarrativeBuilder::FormVerbalStartInstruction(Maneuver& maneuver,
 
   // Set cardinal_direction value
   std::string cardinal_direction =
-      dictionary_.start_verbal_subset.cardinal_directions.at(maneuver.begin_cardinal_direction());
+      dictionary_.start_verbal_subset.cardinal_directions.at((int) maneuver.begin_cardinal_direction());
 
   // Set street_names value
   std::string street_names =
@@ -3924,7 +3924,7 @@ std::string NarrativeBuilder::FormVerbalSuccinctStartTransitionInstruction(Maneu
 
   // Set cardinal_direction value
   std::string cardinal_direction =
-      dictionary_.start_verbal_subset.cardinal_directions.at(maneuver.begin_cardinal_direction());
+      dictionary_.start_verbal_subset.cardinal_directions.at((int) maneuver.begin_cardinal_direction());
 
   // Determine which phrase to use
   uint8_t phrase_id = 0;
@@ -4640,7 +4640,7 @@ NarrativeBuilder::FormTransitName(const Maneuver& maneuver,
   } else if (!maneuver.transit_info().long_name.empty()) {
     return (maneuver.transit_info().long_name);
   }
-  return empty_transit_name_labels.at(maneuver.transit_type());
+  return empty_transit_name_labels.at((int) maneuver.transit_type());
 }
 
 // NOTE: Tried to use 'contains' instead of 'ends_with'

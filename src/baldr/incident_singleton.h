@@ -6,8 +6,10 @@
 #include "proto/incidents.pb.h"
 
 #include <boost/property_tree/ptree.hpp>
+#if !defined __EMSCRIPTEN__
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#endif
 
 #include <chrono>
 #include <condition_variable>
@@ -83,6 +85,7 @@ protected:
     return {};
   }
 
+#if !defined __EMSCRIPTEN__
   /**
    * Read the contents of a file into an incident tile
    * @param filename   name of the file on the file system to read into memory
@@ -156,6 +159,7 @@ protected:
               std::to_string(tile_id));
     return true;
   }
+#endif
 
   /**
    * Thread work function that continually checks for updates to incident tiles. The thread begins by
@@ -194,6 +198,7 @@ protected:
                     std::unordered_set<valhalla::baldr::GraphId> tileset,
                     std::shared_ptr<state_t> state,
                     std::function<bool(size_t)> interrupt) {
+#if !defined __EMSCRIPTEN__
     LOG_INFO("Incident watcher started");
     // try to configure for changelog mode
     std::unique_ptr<valhalla::midgard::sequence<uint64_t>> changelog;
@@ -332,6 +337,7 @@ protected:
     } while (!interrupt || !interrupt(run_count));
 
     LOG_INFO("Incident watcher has stopped");
+#endif
   }
 
 public:

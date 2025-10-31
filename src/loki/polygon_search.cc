@@ -95,13 +95,13 @@ namespace valhalla {
 namespace loki {
 
 std::unordered_set<vb::GraphId>
-edges_in_rings(const google::protobuf::RepeatedPtrField<valhalla::Ring>& rings_pbf,
+edges_in_rings(const std::vector<valhalla::Ring>& rings_pbf,
                baldr::GraphReader& reader,
                const sif::cost_ptr_t& costing,
                float max_length) {
   // protect for bogus input
-  if (rings_pbf.empty() || rings_pbf.Get(0).coords().empty() ||
-      !rings_pbf.Get(0).coords()[0].has_lat_case() || !rings_pbf.Get(0).coords()[0].has_lng_case()) {
+  if (rings_pbf.empty() || rings_pbf[0].coords().empty() ||
+      !rings_pbf[0].coords()[0].has_lat_case() || !rings_pbf[0].coords()[0].has_lng_case()) {
     return {};
   }
 

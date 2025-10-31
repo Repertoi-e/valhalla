@@ -48,7 +48,7 @@ public:
 
     request.mutable_matrix()->set_algorithm(Matrix::TimeDistanceMatrix);
 
-    if (request.options().shape_format() != no_shape)
+    if (request.options().shape_format() != ShapeFormat::no_shape)
       add_warning(request, 207);
 
     // Set the mode and costing
@@ -197,7 +197,7 @@ protected:
   template <const ExpansionType expansion_direction,
             const bool FORWARD = expansion_direction == ExpansionType::forward>
   void InitDestinations(baldr::GraphReader& graphreader,
-                        const google::protobuf::RepeatedPtrField<valhalla::Location>& locations);
+                        const std::vector<valhalla::Location>& locations);
 
   /**
    * Set the available destination edges for each origin.
@@ -227,7 +227,7 @@ protected:
    * @return  Returns true if all destinations have been settled.
    */
   bool UpdateDestinations(const valhalla::Location& origin,
-                          const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+                          const std::vector<valhalla::Location>& locations,
                           std::vector<uint32_t>& destinations,
                           const baldr::DirectedEdge* edge,
                           const baldr::graph_tile_ptr& tile,
@@ -243,7 +243,7 @@ protected:
    * @returns                  time info for each location
    */
   std::vector<baldr::TimeInfo>
-  SetTime(google::protobuf::RepeatedPtrField<valhalla::Location>& origins,
+  SetTime(std::vector<valhalla::Location>& origins,
           baldr::GraphReader& reader) {
     // loop over all locations setting the date time with timezone
     std::vector<baldr::TimeInfo> infos;

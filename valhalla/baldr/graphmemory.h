@@ -13,6 +13,9 @@ protected:
 public:
   virtual ~GraphMemory() = default;
 
+  GraphMemory(const GraphMemory&) = delete;
+  GraphMemory& operator=(const GraphMemory&) = delete;
+
   char* data;
   size_t size;
 };

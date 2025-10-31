@@ -133,7 +133,7 @@ public:
     l->mutable_search_filter()->set_exclude_closures(pl.search_filter_.exclude_closures_);
     l->mutable_search_filter()->set_level(pl.search_filter_.level_);
 
-    auto* path_edges = l->mutable_correlation()->mutable_edges();
+    auto path_edges = l->mutable_correlation()->mutable_edges();
     for (const auto& e : pl.edges) {
       auto* edge = path_edges->Add();
       edge->set_graph_id(e.id);
@@ -155,7 +155,7 @@ public:
       edge->set_heading(e.projected_heading);
     }
 
-    auto* filtered_edges = l->mutable_correlation()->mutable_filtered_edges();
+    auto filtered_edges = l->mutable_correlation()->mutable_filtered_edges();
     for (const auto& e : pl.filtered_edges) {
       auto* edge = filtered_edges->Add();
       edge->set_graph_id(e.id);
@@ -253,7 +253,7 @@ public:
    * @return
    */
   static std::vector<Location>
-  fromPBF(const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+  fromPBF(const std::vector<valhalla::Location>& locations,
           bool route_reach = false) {
     std::vector<Location> pls;
     for (const auto& l : locations) {

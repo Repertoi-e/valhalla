@@ -177,7 +177,7 @@ void thor_worker_t::centroid(Api& request) {
   adjust_scores(options);
   controller = AttributesController(request.options());
   auto costing = parse_costing(request);
-  auto& locations = *options.mutable_locations();
+  auto locations = options.mutable_locations();
   valhalla::Location destination;
 
   // get all the routes
@@ -352,7 +352,7 @@ void thor_worker_t::path_arrive_by(Api& api, const std::string& costing) {
   std::vector<std::string> algorithms;
   const Options& options = api.options();
   const Costing_Options& costing_options =
-      options.costings().find(options.costing_type())->second.options();
+      options.costings().find((int) options.costing_type())->second.options();
   valhalla::Trip& trip = *api.mutable_trip();
   trip.mutable_routes()->Reserve(options.alternates() + 1);
 
@@ -566,7 +566,7 @@ void thor_worker_t::path_arrive_by(Api& api, const std::string& costing) {
   // Reverse the legs because protobuf only has adding to the end
   std::reverse(route->mutable_legs()->begin(), route->mutable_legs()->end());
   // assign changed locations
-  *api.mutable_options()->mutable_locations() = std::move(correlated);
+  api.mutable_options()->mutable_locations() = std::move(correlated);
 }
 
 void thor_worker_t::path_depart_at(Api& api, const std::string& costing) {
@@ -578,7 +578,7 @@ void thor_worker_t::path_depart_at(Api& api, const std::string& costing) {
   std::vector<std::string> algorithms;
   const Options& options = api.options();
   const Costing_Options& costing_options =
-      options.costings().find(options.costing_type())->second.options();
+      options.costings().find((int) options.costing_type())->second.options();
   valhalla::Trip& trip = *api.mutable_trip();
   trip.mutable_routes()->Reserve(options.alternates() + 1);
 
@@ -759,7 +759,7 @@ void thor_worker_t::path_depart_at(Api& api, const std::string& costing) {
     add_warning(api, allow_hierarchy_limits_modifications ? 210 : 209);
 
   // assign changed locations
-  *api.mutable_options()->mutable_locations() = std::move(correlated);
+  api.mutable_options()->mutable_locations() = std::move(correlated);
 }
 } // namespace thor
 } // namespace valhalla

@@ -422,6 +422,11 @@ const std::unordered_map<std::string, size_t> tz_name_to_id = {
 
 // checks the integrity of the static tz maps, which will fail in case of
 // tzdb updates. this function pretty-prints missing tzs for convenience
+#if defined(__EMSCRIPTEN__)
+const std::string check_tz_map(const date::tzdb&) {
+  return {};
+}
+#else
 const std::string check_tz_map(const date::tzdb& db) {
   std::vector<std::string> new_zones_msg;
   std::unordered_set<std::string> new_zones_names;
@@ -442,6 +447,7 @@ const std::string check_tz_map(const date::tzdb& db) {
 
   return result;
 }
+#endif
 // use a cache to store already constructed sys_info's since they aren't cheap
 template <typename TP>
 const date::sys_info&
@@ -480,9 +486,11 @@ tz_db_t::tz_db_t() {
   const auto& db = date::get_tzdb();
 
   // update timezones & run the tests will fail here if new timezones were added
+#if !defined(__EMSCRIPTEN__)
   if (const std::string& msg = check_tz_map(db); msg.size()) {
     throw std::runtime_error("Update timezone map at " + std::string(__FILE__) + ": " + msg);
   }
+#endif
 
   zones.reserve(tz_name_to_id.size());
   for (const auto& tz_pair : tz_name_to_id) {

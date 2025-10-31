@@ -197,10 +197,10 @@ bool TimeDistanceMatrix::ComputeMatrix(Api& request,
 
   uint32_t bucketsize = costing_->UnitSize();
 
-  auto& origins = FORWARD ? *request.mutable_options()->mutable_sources()
-                          : *request.mutable_options()->mutable_targets();
-  auto& destinations = FORWARD ? *request.mutable_options()->mutable_targets()
-                               : *request.mutable_options()->mutable_sources();
+  auto& origins = FORWARD ? request.mutable_options()->sources_ 
+                          : request.mutable_options()->targets_;
+  auto& destinations = FORWARD ? request.mutable_options()->targets_ 
+                               : request.mutable_options()->sources_;
 
   size_t num_elements = origins.size() * destinations.size();
   auto time_infos = SetTime(origins, graphreader);
@@ -214,7 +214,7 @@ bool TimeDistanceMatrix::ComputeMatrix(Api& request,
   for (int origin_index = 0; origin_index < origins.size(); ++origin_index) {
     // reserve some space for the next dijkstras (will be cleared at the end of the loop)
     edgelabels_.reserve(max_reserved_labels_count_);
-    auto& origin = origins.Get(origin_index);
+    auto& origin = origins[origin_index];
     const auto& time_info = time_infos[origin_index];
 
     current_cost_threshold_ = GetCostThreshold(max_matrix_distance);
@@ -405,7 +405,7 @@ void TimeDistanceMatrix::SetOrigin(GraphReader& graphreader,
 template <const ExpansionType expansion_direction, const bool FORWARD>
 void TimeDistanceMatrix::InitDestinations(
     GraphReader& graphreader,
-    const google::protobuf::RepeatedPtrField<valhalla::Location>& locations) {
+    const std::vector<valhalla::Location>& locations) {
   // For each destination
   uint32_t idx = 0;
   for (const auto& loc : locations) {
@@ -458,7 +458,7 @@ void TimeDistanceMatrix::InitDestinations(
 // have be settled or if the specified location count has been met or exceeded.
 bool TimeDistanceMatrix::UpdateDestinations(
     const valhalla::Location& origin,
-    const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+    const std::vector<valhalla::Location>& locations,
     std::vector<uint32_t>& destinations,
     const DirectedEdge* edge,
     const graph_tile_ptr& tile,
@@ -468,7 +468,7 @@ bool TimeDistanceMatrix::UpdateDestinations(
   // For each destination along this edge
   for (auto dest_idx : destinations) {
     Destination& dest = destinations_[dest_idx];
-    auto& dest_loc = locations.Get(dest_idx);
+    auto& dest_loc = locations[dest_idx];
 
     // Skip if destination has already been settled. This can happen since we
     // do not remove remaining destination edges for this destination from
@@ -482,7 +482,7 @@ bool TimeDistanceMatrix::UpdateDestinations(
     // was removed towards the beginning which is not an error.
     auto dest_available = dest.dest_edges_available.find(pred.edgeid());
     if (dest_available == dest.dest_edges_available.end()) {
-      if (!IsTrivial(pred.edgeid(), origin, locations.Get(dest_idx))) {
+      if (!IsTrivial(pred.edgeid(), origin, locations[dest_idx])) {
         LOG_ERROR("Could not find the destination edge");
       }
       continue;

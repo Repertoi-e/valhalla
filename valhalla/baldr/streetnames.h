@@ -20,7 +20,7 @@ public:
 
   StreetNames(const std::vector<std::pair<std::string, bool>>& names);
 
-  StreetNames(const google::protobuf::RepeatedPtrField<valhalla::StreetName>& names);
+  StreetNames(const std::vector<valhalla::StreetName>& names);
 
   virtual ~StreetNames();
 

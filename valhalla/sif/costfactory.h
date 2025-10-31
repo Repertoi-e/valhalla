@@ -63,7 +63,7 @@ public:
    */
   cost_ptr_t Create(const Options& options) const {
     // create the cost using the creation function
-    auto found = options.costings().find(options.costing_type());
+    auto found = options.costings().find((int) options.costing_type());
     if (found != options.costings().end()) {
       return Create(found->second);
     } // if we didnt have costing options we need to use some default ones
@@ -99,10 +99,10 @@ public:
 
   mode_costing_t CreateModeCosting(const Options& options, TravelMode& mode) {
     mode_costing_t mode_costing;
-    mode = TravelMode::kMaxTravelMode;
+    mode = TravelMode(TravelMode_ARRAYSIZE);
     // Set travel mode and construct costing(s) for this type
     for (const auto& costing : kCostingTypeMapping.at(options.costing_type())) {
-      valhalla::sif::cost_ptr_t cost = Create(options.costings().find(costing)->second);
+      valhalla::sif::cost_ptr_t cost = Create(options.costings().find((int) costing)->second);
       mode = cost->travel_mode();
       mode_costing[static_cast<uint32_t>(mode)] = cost;
     }
@@ -112,7 +112,7 @@ public:
       mode = valhalla::sif::TravelMode::kPedestrian;
     }
     // this should never happen
-    if (mode == TravelMode::kMaxTravelMode) {
+    if (mode == TravelMode_ARRAYSIZE) {
       throw std::runtime_error("sif::CostFactory couldn't find a valid TravelMode for " +
                                Costing_Enum_Name(options.costing_type()));
     }

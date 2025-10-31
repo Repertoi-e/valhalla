@@ -16,8 +16,8 @@ void check_distance(Api& request,
   auto& options = *request.mutable_options();
   bool added_warning = false;
   // see if any locations pairs are unreachable or too far apart
-  for (auto& source : *options.mutable_sources()) {
-    for (auto& target : *options.mutable_targets()) {
+  for (auto& source : options.mutable_sources()) {
+    for (auto& target : options.mutable_targets()) {
       // check if distance between latlngs exceed max distance limit
       auto path_distance = to_ll(source).Distance(to_ll(target));
 

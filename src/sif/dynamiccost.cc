@@ -548,7 +548,7 @@ void ParseCosting(const rapidjson::Document& doc,
       continue;
     const auto key = costing_options_key + "/" + costing_str;
     // Parse the costing options
-    auto& costing = (*options.mutable_costings())[costing_type];
+    auto& costing = (options.mutable_costings())[costing_type];
     ParseCosting(doc, key, &costing, costing_type);
   }
 }

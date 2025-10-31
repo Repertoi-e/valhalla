@@ -71,7 +71,9 @@ inline MatchResult CreateMatchResult(const Measurement& measurement, StateId sta
           -1.f,
           measurement.epoch_time(),
           state_id,
-          measurement.is_break_point()};
+          measurement.is_break_point(),
+          false,
+          false};
 }
 
 inline MatchResult CreateMatchResult(const Measurement& measurement, const Interpolation& interp) {
@@ -81,12 +83,14 @@ inline MatchResult CreateMatchResult(const Measurement& measurement, const Inter
           interp.edge_distance,
           measurement.epoch_time(),
           StateId(),
-          measurement.is_break_point()};
+          measurement.is_break_point(),
+         false,
+         false};
 }
 
 // Find the interpolation along the route where the transition cost +
 // emission cost is minimal
-Interpolation InterpolateMeasurement(const MapMatcher& mapmatcher,
+Interpolation InterpolateMeasurement(const valhalla::meili::MapMatcher& mapmatcher,
                                      const Measurement& measurement,
                                      std::vector<EdgeSegment>::const_iterator begin,
                                      float begin_source_offset,
@@ -172,7 +176,7 @@ Interpolation InterpolateMeasurement(const MapMatcher& mapmatcher,
 
 // Interpolate measurements along the route from state at current time
 // to state at next time
-std::vector<MatchResult> InterpolateMeasurements(const MapMatcher& mapmatcher,
+std::vector<MatchResult> InterpolateMeasurements(const valhalla::meili::MapMatcher& mapmatcher,
                                                  const std::vector<Measurement>& measurements,
                                                  const StateId& stateid,
                                                  const StateId& next_stateid,
@@ -238,7 +242,7 @@ std::vector<MatchResult> InterpolateMeasurements(const MapMatcher& mapmatcher,
 }
 
 // Find the match result of a state, given its previous state and next state
-MatchResult FindMatchResult(const MapMatcher& mapmatcher,
+MatchResult FindMatchResult(const valhalla::meili::MapMatcher& mapmatcher,
                             const std::vector<StateId>& stateids,
                             StateId::Time time,
                             baldr::GraphReader& graph_reader) {
@@ -447,7 +451,7 @@ MatchResult FindMatchResult(const MapMatcher& mapmatcher,
 }
 
 // Find the corresponding match results of a list of states
-std::vector<MatchResult> FindMatchResults(const MapMatcher& mapmatcher,
+std::vector<MatchResult> FindMatchResults(const valhalla::meili::MapMatcher& mapmatcher,
                                           const std::vector<StateId>& stateids,
                                           baldr::GraphReader& graph_reader) {
   std::vector<MatchResult> results;

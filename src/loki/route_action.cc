@@ -14,7 +14,7 @@ void check_locations(const size_t location_count, const size_t max_locations) {
   };
 }
 
-void check_distance(const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+void check_distance(const std::vector<valhalla::Location>& locations,
                     float max_distance,
                     bool all_pairs) {
   // test if total distance along a polyline formed by connecting locations exceeds the maximum
@@ -22,7 +22,7 @@ void check_distance(const google::protobuf::RepeatedPtrField<valhalla::Location>
   float total_path_distance = 0.0f;
   for (int i = 0; i < locations.size(); ++i) {
     for (int j = i + 1; j < locations.size(); ++j) {
-      auto dist = to_ll(locations.Get(i)).Distance(to_ll(locations.Get(j)));
+      auto dist = to_ll(locations[i]).Distance(to_ll(locations[j]));
       total_path_distance += i + 1 == j ? dist : 0;
       if ((!all_pairs && total_path_distance > max_distance) || (all_pairs && dist > max_distance))
         throw valhalla_exception_t{154,

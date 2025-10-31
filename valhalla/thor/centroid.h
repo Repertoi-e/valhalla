@@ -161,7 +161,7 @@ protected:
   template <typename label_container_t>
   std::vector<std::vector<PathInfo>>
   FormPaths(const ExpansionType& expansion_type,
-            const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+            const std::vector<valhalla::Location>& locations,
             const label_container_t& labels,
             baldr::GraphReader& reader,
             valhalla::Location& centroid) const;

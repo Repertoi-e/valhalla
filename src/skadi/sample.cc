@@ -1,5 +1,4 @@
 #include "skadi/sample.h"
-#include "baldr/compression_utils.h"
 #include "filesystem_utils.h"
 #include "midgard/logging.h"
 #include "midgard/pointll.h"
@@ -7,7 +6,9 @@
 #include "valhalla/baldr/curl_tilegetter.h"
 
 #include <boost/property_tree/ptree.hpp>
+#if !defined __EMSCRIPTEN__
 #include <lz4frame.h>
+#endif
 #include <sys/stat.h>
 
 #include <cmath>
@@ -35,7 +36,7 @@ constexpr size_t TILE_COUNT = 180 * 360;
 constexpr int8_t UNPACKED_TILES_COUNT = 50;
 
 // macro is faster than inline function for this...
-#define out_of_range(v) v > NO_DATA_HIGH || v < NO_DATA_LOW
+#define out_of_range_m(v) v > NO_DATA_HIGH || v < NO_DATA_LOW
 
 int16_t flip(int16_t value) {
   return ((value & 0xFF) << 8) | ((value >> 8) & 0xFF);
@@ -106,26 +107,11 @@ public:
     this->unpacked = unpacked;
 
     if (format == format_t::GZIP) {
-      // for setting where to read compressed data from
-      auto src_func = [this](z_stream& s) -> void {
-        s.next_in = static_cast<Byte*>(static_cast<void*>(data.get()));
-        s.avail_in = static_cast<unsigned int>(data.size());
-      };
-
-      // for setting where to write the uncompressed data to
-      auto dst_func = [this](z_stream& s) -> int {
-        s.next_out = (Byte*)(this->unpacked);
-        s.avail_out = HGT_BYTES;
-        return Z_FINISH; // we know the output will hold all the input
-      };
-
-      // we have to unzip it
-      if (!baldr::inflate(src_func, dst_func)) {
-        LOG_WARN("Corrupt gzip elevation data");
-        format = format_t::UNKNOWN;
-        return false;
-      }
+      LOG_WARN("Gzip elevation tiles are unsupported when zlib is disabled");
+      format = format_t::UNKNOWN;
+      return false;
     } else if (format == format_t::LZ4) {
+#if !defined __EMSCRIPTEN__
       LZ4F_decompressionContext_t decode;
       LZ4F_decompressOptions_t options;
       LZ4F_createDecompressionContext(&decode, LZ4F_VERSION);
@@ -147,6 +133,9 @@ public:
       } while (result != 0);
 
       LZ4F_freeDecompressionContext(decode);
+#else
+      throw std::runtime_error("LZ4 elevation tiles are unsupported for now");
+#endif
     } else {
       LOG_WARN("Corrupt elevation data of unknown type");
       format = format_t::UNKNOWN;
@@ -240,10 +229,10 @@ public:
     double adjust = 0;
     auto a = flip(data[y * HGT_DIM + x]);
     auto b = flip(data[y * HGT_DIM + x + 1]);
-    if (out_of_range(a)) {
+    if (out_of_range_m(a)) {
       a_coef = 0;
     }
-    if (out_of_range(b)) {
+    if (out_of_range_m(b)) {
       b_coef = 0;
     }
 
@@ -257,10 +246,10 @@ public:
     if (y < HGT_DIM - 1) {
       auto c = flip(data[(y + 1) * HGT_DIM + x]);
       auto d = flip(data[(y + 1) * HGT_DIM + x + 1]);
-      if (out_of_range(c)) {
+      if (out_of_range_m(c)) {
         c_coef = 0;
       }
-      if (out_of_range(d)) {
+      if (out_of_range_m(d)) {
         d_coef = 0;
       }
       // LOG_INFO('{' + std::to_string((y + 1) * HGT_DIM + x) + ',' + std::to_string(c) + '}');
@@ -525,10 +514,12 @@ bool sample::fetch(uint16_t index) {
     return false;
   }
 
+  #if !defined __EMSCRIPTEN__
   if (!store(elev, result.bytes_)) {
     LOG_WARN("Fail to save data loaded from remote server address: " + uri);
     return false;
   }
+  #endif
 
   LOG_INFO("Data loaded from remote server address: " + uri);
   return true;

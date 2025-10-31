@@ -8,7 +8,7 @@ using namespace rapidjson;
 namespace valhalla {
 namespace tyr {
 std::string serializeExpansion(Api& request, const std::string& algo) {
-  if (request.options().format() == Options::Format::Options_Format_pbf)
+  if (request.options().format() == Options_Format_pbf)
     return serializePbf(request);
 
   // form GeoJSON

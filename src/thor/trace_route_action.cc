@@ -117,10 +117,6 @@ void thor_worker_t::trace_route(Api& request) {
       }
       // clang-format on
       break;
-    // Handle protobuf sentinel values to avoid compiler warnings
-    case ShapeMatch_INT_MIN_SENTINEL_DO_NOT_USE_:
-    case ShapeMatch_INT_MAX_SENTINEL_DO_NOT_USE_:
-      throw valhalla_exception_t{400, "Invalid shape_match value"};
   }
 }
 

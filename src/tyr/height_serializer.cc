@@ -63,7 +63,7 @@ void serialize_height(rapidjson::writer_wrapper_t& writer,
 }
 
 void serialize_shape(rapidjson::writer_wrapper_t& writer,
-                     const google::protobuf::RepeatedPtrField<valhalla::Location>& shape) {
+                     const std::vector<valhalla::Location>& shape) {
   writer.start_array("shape");
   writer.set_precision(tyr::kCoordinatePrecision);
   for (const auto& p : shape) {
@@ -74,7 +74,6 @@ void serialize_shape(rapidjson::writer_wrapper_t& writer,
   }
   writer.end_array();
 }
-
 } // namespace
 
 namespace valhalla {

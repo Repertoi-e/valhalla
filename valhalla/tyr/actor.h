@@ -58,6 +58,7 @@ public:
   std::string route(const std::string& request_str,
                     const std::function<void()>* interrupt = nullptr,
                     Api* api = nullptr);
+  std::string route(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the locate action and return json or protobuf depending on which was requested. The
@@ -72,6 +73,7 @@ public:
   std::string locate(const std::string& request_str,
                      const std::function<void()>* interrupt = nullptr,
                      Api* api = nullptr);
+  std::string locate(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the matrix action and return json or protobuf depending on which was requested. The
@@ -86,6 +88,7 @@ public:
   std::string matrix(const std::string& request_str,
                      const std::function<void()>* interrupt = nullptr,
                      Api* api = nullptr);
+  std::string matrix(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the optimized_route action and return json or protobuf depending on which was requested.
@@ -100,6 +103,7 @@ public:
   std::string optimized_route(const std::string& request_str,
                               const std::function<void()>* interrupt = nullptr,
                               Api* api = nullptr);
+  std::string optimized_route(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the isochrone action and return json or protobuf depending on which was requested. The
@@ -114,6 +118,7 @@ public:
   std::string isochrone(const std::string& request_str,
                         const std::function<void()>* interrupt = nullptr,
                         Api* api = nullptr);
+  std::string isochrone(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the trace_route action and return json or protobuf depending on which was requested. The
@@ -128,6 +133,7 @@ public:
   std::string trace_route(const std::string& request_str,
                           const std::function<void()>* interrupt = nullptr,
                           Api* api = nullptr);
+  std::string trace_route(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the trace_attributes action and return json or protobuf depending on which was requested.
@@ -142,6 +148,7 @@ public:
   std::string trace_attributes(const std::string& request_str,
                                const std::function<void()>* interrupt = nullptr,
                                Api* api = nullptr);
+  std::string trace_attributes(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the height action and return json or protobuf depending on which was requested. The
@@ -156,6 +163,7 @@ public:
   std::string height(const std::string& request_str,
                      const std::function<void()>* interrupt = nullptr,
                      Api* api = nullptr);
+  std::string height(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the transit_available action and return json or protobuf depending on which was
@@ -170,6 +178,7 @@ public:
   std::string transit_available(const std::string& request_str,
                                 const std::function<void()>* interrupt = nullptr,
                                 Api* api = nullptr);
+  std::string transit_available(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the expansion action and return json or protobuf depending on which was requested. The
@@ -184,6 +193,7 @@ public:
   std::string expansion(const std::string& request_str,
                         const std::function<void()>* interrupt = nullptr,
                         Api* api = nullptr);
+  std::string expansion(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the centroid action and return json or protobuf depending on which was requested. The
@@ -198,6 +208,7 @@ public:
   std::string centroid(const std::string& request_str,
                        const std::function<void()>* interrupt = nullptr,
                        Api* api = nullptr);
+  std::string centroid(Api& api, const std::function<void()>* interrupt = nullptr);
 
   /**
    * Perform the status action and return json or protobuf depending on which was requested. The
@@ -212,6 +223,7 @@ public:
   std::string status(const std::string& request_str,
                      const std::function<void()>* interrupt = nullptr,
                      Api* api = nullptr);
+  std::string status(Api& api, const std::function<void()>* interrupt = nullptr);
 
 protected:
   struct pimpl_t;

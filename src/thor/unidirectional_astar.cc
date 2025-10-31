@@ -12,7 +12,7 @@ using namespace valhalla::sif;
 namespace valhalla {
 namespace thor {
 // Number of iterations to allow with no convergence to the destination
-constexpr uint32_t kMaxIterationsWithoutConvergence = 1800000;
+constexpr uint32_t kMaxIterationsWithoutConvergenceUniDirAStar = 1800000;
 
 template <const ExpansionType expansion_direction, const bool FORWARD>
 UnidirectionalAStar<expansion_direction, FORWARD>::UnidirectionalAStar(
@@ -577,7 +577,7 @@ std::vector<std::vector<PathInfo>> UnidirectionalAStar<expansion_direction, FORW
     if (dist2dest < mindist) {
       mindist = dist2dest;
       nc = 0;
-    } else if (nc++ > kMaxIterationsWithoutConvergence) {
+    } else if (nc++ > kMaxIterationsWithoutConvergenceUniDirAStar) {
       if (best_path.first >= 0) {
         return {FormPath(best_path.first)};
       } else {

@@ -20,7 +20,7 @@ namespace {
  * @param  legs  The legs of the route
  * @return the gpx string
  */
-std::string pathToGPX(const google::protobuf::RepeatedPtrField<TripLeg>& legs) {
+std::string pathToGPX(const std::vector<TripLeg>& legs) {
   // start the gpx, we'll use 6 digits of precision
   std::stringstream gpx;
   gpx << std::setprecision(DIGITS_PRECISION) << std::fixed;

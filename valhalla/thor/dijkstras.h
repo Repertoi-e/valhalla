@@ -93,7 +93,7 @@ protected:
    */
   // Note: ExpansionType::multimodal not yet implemented
   template <const ExpansionType expansion_direction>
-  void Compute(google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+  void Compute(std::vector<valhalla::Location>& locations,
                baldr::GraphReader& graphreader,
                const sif::mode_costing_t& mode_costing,
                const sif::TravelMode mode);
@@ -106,7 +106,7 @@ protected:
    * @param  mode         Travel mode
    */
   virtual void
-  ComputeMultiModal(google::protobuf::RepeatedPtrField<valhalla::Location>& origin_locations,
+  ComputeMultiModal(std::vector<valhalla::Location>& origin_locations,
                     baldr::GraphReader& graphreader,
                     const sif::mode_costing_t& mode_costing,
                     const sif::TravelMode mode,
@@ -192,7 +192,7 @@ protected:
    * @returns                  time info for each location
    */
   std::vector<baldr::TimeInfo>
-  SetTime(google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+  SetTime(std::vector<valhalla::Location>& locations,
           baldr::GraphReader& reader);
 
   /**
@@ -243,7 +243,7 @@ protected:
    * @param  costing           Dynamic costing.
    */
   void SetOriginLocations(baldr::GraphReader& graphreader,
-                          google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+                          std::vector<valhalla::Location>& locations,
                           const sif::cost_ptr_t& costing);
 
   /**
@@ -254,7 +254,7 @@ protected:
    */
   void SetOriginLocationsMultiModal(
       baldr::GraphReader& graphreader,
-      google::protobuf::RepeatedPtrField<valhalla::Location>& origin_locations,
+      std::vector<valhalla::Location>& origin_locations,
       const sif::cost_ptr_t& costing);
 
   /**
@@ -264,7 +264,7 @@ protected:
    * @param  costing           Dynamic costing.
    */
   void SetDestinationLocations(baldr::GraphReader& graphreader,
-                               google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+                               std::vector<valhalla::Location>& locations,
                                const sif::cost_ptr_t& costing);
 
   /**

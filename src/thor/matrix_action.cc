@@ -9,7 +9,7 @@ using namespace valhalla::sif;
 using namespace valhalla::thor;
 
 namespace {
-const std::string get_unfound_indices(const google::protobuf::RepeatedField<bool>& result) {
+const std::string get_unfound_indices(const std::vector<bool>& result) {
   std::string indices;
   for (int i = 0; i != result.size(); ++i) {
     if (result[i]) {
@@ -107,7 +107,7 @@ std::string thor_worker_t::matrix(Api& request) {
 
   auto* algo = get_matrix_algorithm(request, has_time, costing);
   if (check_hierarchy_limits(mode_costing[int(mode)]->GetHierarchyLimits(), mode_costing[int(mode)],
-                             options.costings().find(options.costing_type())->second.options(),
+                             options.costings().find((int) options.costing_type())->second.options(),
                              hierarchy_limits_config_costmatrix, allow_hierarchy_limits_modifications,
                              mode_costing[int(mode)]->UseHierarchyLimits())) {
     // maybe warn if we needed to change user provided hierarchy limits

@@ -424,12 +424,12 @@ std::vector<std::string> EnhancedTripLeg_Edge::GetLevelRef() const {
   // try to get level_refs, else create some from levels as fallback
   if (!tagged_value().empty()) {
     for (int t = 0; t < tagged_value().size(); ++t) {
-      if (tagged_value().Get(t).type() == TaggedValue_Type_kLevelRef) {
-        level_refs.emplace_back(tagged_value().Get(t).value());
-      } else if (tagged_value().Get(t).type() == TaggedValue_Type_kLevels) {
+      if (tagged_value()[t].type() == TaggedValue_Type_kLevelRef) {
+        level_refs.emplace_back(tagged_value()[t].value());
+      } else if (tagged_value()[t].type() == TaggedValue_Type_kLevels) {
         // parse varint encoded levels, we're only interested in single
         // level values though
-        const auto& encoded = tagged_value().Get(t).value();
+        const auto& encoded = tagged_value()[t].value();
         std::vector<std::pair<float, float>> decoded;
         uint32_t precision;
         std::tie(decoded, precision) = baldr::decode_levels(encoded);
@@ -494,7 +494,7 @@ EnhancedTripLeg_Edge::ActivateTurnLanesFromLeft(uint16_t turn_lane_direction,
     return activated_count;
   }
 
-  for (auto& turn_lane : *(mutable_turn_lanes())) {
+  for (auto& turn_lane : (mutable_turn_lanes())) {
     // Process lanes matching the turn_lane_direction
     if (turn_lane.directions_mask() & turn_lane_direction) {
       // TODO: Use lane connectivity to skip impossible lanes
@@ -940,7 +940,7 @@ std::string EnhancedTripLeg_Edge::TurnLanesToString() const {
 }
 
 std::string EnhancedTripLeg_Edge::StreetNamesToString(
-    const ::google::protobuf::RepeatedPtrField<::valhalla::StreetName>& street_names) const {
+    const ::std::vector<::valhalla::StreetName>& street_names) const {
   std::string str;
 
   for (const auto& street_name : street_names) {
@@ -958,7 +958,7 @@ std::string EnhancedTripLeg_Edge::StreetNamesToString(
 }
 
 std::string EnhancedTripLeg_Edge::SignElementsToString(
-    const ::google::protobuf::RepeatedPtrField<::valhalla::TripSignElement>& sign_elements) const {
+    const ::std::vector<::valhalla::TripSignElement>& sign_elements) const {
   std::string str;
 
   for (const auto& sign_element : sign_elements) {
@@ -1487,7 +1487,7 @@ bool EnhancedTripLeg_Node::HasRoadForkTraversableIntersectingEdge(uint32_t from_
         (xedge->use() != TripLeg_Use_kRampUse) && (xedge->use() != TripLeg_Use_kTurnChannelUse) &&
         (xedge->use() != TripLeg_Use_kFerryUse) && (xedge->use() != TripLeg_Use_kRailFerryUse)) {
       // If service roads are not allowed then skip intersecting service roads
-      if (!allow_service_road && (xedge->road_class() == kServiceOther)) {
+      if (!allow_service_road && (xedge->road_class() == RoadClass::kServiceOther)) {
         continue;
       }
       return true;
@@ -1508,7 +1508,7 @@ bool EnhancedTripLeg_Node::HasForwardTraversableSignificantRoadClassXEdge(
     // and is a significant road class as compared to the path road class
     if (is_forward(GetTurnDegree(from_heading, intersecting_edge(i).begin_heading())) &&
         xedge->IsTraversableOutbound(travel_mode) &&
-        ((xedge->road_class() - path_road_class) <= kSignificantRoadClassThreshold)) {
+        (((int) xedge->road_class() - (int) path_road_class) <= kSignificantRoadClassThreshold)) {
       return true;
     }
   }
@@ -1547,7 +1547,7 @@ bool EnhancedTripLeg_Node::HasSimilarStraightSignificantRoadClassXEdge(uint32_t 
     if (is_relative_straight(path_turn_degree) && is_relative_straight(xedge_turn_degree) &&
         xedge->IsTraversableOutbound(travel_mode) &&
         (path_xedge_turn_degree_delta <= kSimilarStraightThreshold) &&
-        ((xedge->road_class() - path_road_class) <= kSignificantRoadClassThreshold)) {
+        (((int) xedge->road_class() - (int) path_road_class) <= kSignificantRoadClassThreshold)) {
       return true;
     }
   }
