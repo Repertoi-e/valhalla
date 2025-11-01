@@ -27,7 +27,9 @@ odin::locales_singleton_t load_narrative_locals() { return {}; }
 std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_locals_for(const std::string& locale_string)
 {
     auto module = emscripten::val::global("Module");
+    if (module.isNull() || module.isUndefined()) return nullptr;
     auto fn = module["fetchLocale"];
+    if (fn.isNull() || fn.isUndefined()) return nullptr;
 
     auto json_val = module.call<emscripten::val>("fetchLocale", locale_string).await();
     std::string json = json_val.as<std::string>();
@@ -42,26 +44,29 @@ std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_locals_for(c
 
 tile_getter_t::GET_response_t
 wasm_tile_getter_t::get(const std::string& url, const uint64_t offset, const uint64_t size) {
-  tile_getter_t::GET_response_t response;
+    tile_getter_t::GET_response_t response;
 
-  auto module = emscripten::val::global("Module");
-  auto fn = module["fetchGraphTile"];
-  auto tile = module.call<emscripten::val>("fetchGraphTile", url).await();
+    auto module = emscripten::val::global("Module");
+    if (module.isNull() || module.isUndefined()) return response;
+    auto fn = module["fetchGraphTile"];
+    if (fn.isNull() || fn.isUndefined()) return response;
+    
+    auto tile = module.call<emscripten::val>("fetchGraphTile", url).await();
 
-  response.data_ = (char*)(tile["data"]["byteOffset"].as<size_t>());
-  response.size_ = tile["size"].as<uint64_t>();
+    response.data_ = (char*)(tile["data"]["byteOffset"].as<size_t>());
+    response.size_ = tile["size"].as<uint64_t>();
 
-  printf("C/ Tile fetched: %s, size: %zu\n", url.c_str(), response.size_);
-  uint8_t checksum = 0;
-  for (size_t i = 0; i < response.size_; ++i) {
+    // printf("C/ Tile fetched: %s, size: %zu\n", url.c_str(), response.size_);
+    uint8_t checksum = 0;
+    for (size_t i = 0; i < response.size_; ++i) {
     checksum ^= response.data_[i];
-  }
-  printf("C/ Tile checksum: %02x\n", checksum);
+    }
+    // printf("C/ Tile checksum: %02x\n", checksum);
 
-  response.status_ = tile_getter_t::status_code_t::SUCCESS;
-  response.http_code_ = 200;
+    response.status_ = tile_getter_t::status_code_t::SUCCESS;
+    response.http_code_ = 200;
 
-  return response;
+    return response;
 }
 } // namespace valhalla
 
@@ -165,9 +170,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js, co
   // if (!RequestArena.Block) {
   //   RequestArena.AutomaticBlockSize = 64_MiB;
   // }
-
-  printf("do_request called with action: %s\n", action_js);
-  printf("do_request called with request: %s\n", request_js);
 
   context newContext = Context;
   // newContext.Alloc = {arena_allocator, &RequestArena};
