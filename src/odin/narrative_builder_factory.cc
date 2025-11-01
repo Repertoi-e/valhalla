@@ -13,6 +13,10 @@ NarrativeBuilderFactory::Create(const Options& options,
                                 const EnhancedTripLeg* trip_path,
                                 const MarkupFormatter& markup_formatter) {
 
+  if (!options.has_language()) {
+    throw std::runtime_error("Language tag not specified.");
+  }
+  
   const auto phrase_dictionary = get_locales_ensure_narrative_dictionary(options.language());
   if (!phrase_dictionary) {
     throw std::runtime_error("Invalid language tag.");

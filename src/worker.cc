@@ -605,10 +605,11 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
   options.set_reverse(rapidjson::get<bool>(doc, "/reverse", false));
 
   auto language = rapidjson::get_optional<std::string>(doc, "/language");
-  auto phrase_dictionary = odin::get_locales_ensure_narrative_dictionary(*language);
-  
-  if (language && phrase_dictionary) {
-    options.set_language(*language);
+  if (language) {
+    auto phrase_dictionary = odin::get_locales_ensure_narrative_dictionary(*language);
+    if (phrase_dictionary) {
+        options.set_language(*language);
+    }
   }
   if (!options.has_language_case()) {
     options.set_language("en-US");
