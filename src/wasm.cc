@@ -1,3 +1,5 @@
+#include <boost/property_tree/ptree.hpp>
+
 #include "arche/arche.h"
 #undef ref
 #undef search        // boost shih
@@ -8,37 +10,60 @@
 #include "baldr/wasm_tile_getter.h"
 #include "config.h"
 #include "midgard/logging.h"
+#include "odin/util.h"
 #include "tyr/actor.h"
 #include "valhalla/exceptions.h"
 
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
 
-using valhalla::baldr::tile_getter_t;
-using valhalla::baldr::wasm_tile_getter_t;
+namespace valhalla {
+
+using baldr::tile_getter_t;
+using baldr::wasm_tile_getter_t;
+
+odin::locales_singleton_t load_narrative_locals() { return {}; }
+
+std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_locals_for(const std::string& locale_string)
+{
+    auto module = emscripten::val::global("Module");
+    auto fn = module["fetchLocale"];
+
+    auto json_val = module.call<emscripten::val>("fetchLocale", locale_string).await();
+    std::string json = json_val.as<std::string>();
+
+    boost::property_tree::ptree narrative_pt;
+    std::stringstream ss;
+    ss << json;
+    rapidjson::read_json(ss, narrative_pt);
+    auto narrative_dictionary = std::make_shared<valhalla::odin::NarrativeDictionary>(locale_string, narrative_pt);
+    return narrative_dictionary;
+}
 
 tile_getter_t::GET_response_t
 wasm_tile_getter_t::get(const std::string& url, const uint64_t offset, const uint64_t size) {
   tile_getter_t::GET_response_t response;
 
   auto module = emscripten::val::global("Module");
-  if (module.isNull() || module.isUndefined()) {
-    return response;
-  }
   auto fn = module["fetchGraphTile"];
-  if (fn.isNull() || fn.isUndefined()) {
-    return response;
-  }
-
-  auto tile = module.call<emscripten::val>("fetchGraphTile", url);
+  auto tile = module.call<emscripten::val>("fetchGraphTile", url).await();
 
   response.data_ = (char*)(tile["data"]["byteOffset"].as<size_t>());
   response.size_ = tile["size"].as<uint64_t>();
+
+  printf("C/ Tile fetched: %s, size: %zu\n", url.c_str(), response.size_);
+  uint8_t checksum = 0;
+  for (size_t i = 0; i < response.size_; ++i) {
+    checksum ^= response.data_[i];
+  }
+  printf("C/ Tile checksum: %02x\n", checksum);
+
   response.status_ = tile_getter_t::status_code_t::SUCCESS;
   response.http_code_ = 200;
 
   return response;
 }
+} // namespace valhalla
 
 extern "C" {
 void* malloc(size_t size) {
@@ -98,6 +123,10 @@ val js_malloc(size_t size) {
   return val(typed_memory_view(size, (byte*)malloc<byte>({.Count = (s64)size})));
 }
 
+void js_free(val buffer) {
+  free((byte*)buffer.as<uintptr_t>());
+}
+
 template <class Allocator = std::allocator<bool>>
 class_<std::vector<bool, Allocator>> register_vector_bool(const char* name) {
   typedef std::vector<bool, Allocator> VecType;
@@ -119,78 +148,80 @@ class_<std::vector<bool, Allocator>> register_vector_bool(const char* name) {
 } // namespace emscripten
 
 namespace valhalla {
-
 std::string serialize_error(const valhalla_exception_t& exception, Api& request);
 bool Options_Action_Enum_Parse(const std::string& action, Options::Action* a);
 
-
-namespace {
 tyr::actor_t* actor = nullptr;
 
-void init_actor(const std::string& valhalla_config_json) {
-  actor = new tyr::actor_t(config(valhalla_config_json));
+void init_actor(std::string valhalla_config_json) {
+  actor = new valhalla::tyr::actor_t(config(std::string(valhalla_config_json)));
 }
+} // namespace valhalla
 
-std::string do_request(const std::string& action_js, const std::string& request_js) {
 
+extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js, const char* request_js) {
+  using namespace valhalla;
   // RequestArena.Used = 0; // Reset the arena for this request
   // if (!RequestArena.Block) {
   //   RequestArena.AutomaticBlockSize = 64_MiB;
   // }
+
+  printf("do_request called with action: %s\n", action_js);
+  printf("do_request called with request: %s\n", request_js);
 
   context newContext = Context;
   // newContext.Alloc = {arena_allocator, &RequestArena};
   // newContext.LogAllAllocations = true;
 
   std::string result;
-  valhalla::Api request;
+  Api request;
 
   try {
-    valhalla::Options::Action action;
+    Options::Action action;
 
-    if (!Options_Action_Enum_Parse(action_js.c_str(), &action)) {
-      throw valhalla::valhalla_exception_t{400};
+    if (!Options_Action_Enum_Parse(action_js, &action)) {
+      throw valhalla_exception_t{400};
     }
 
     switch (action) {
-      case valhalla::Options::route:
+      case Options::route:
         result = actor->route(request_js, nullptr, &request);
         break;
-      case valhalla::Options::locate:
+      case Options::locate:
         result = actor->locate(request_js, nullptr, &request);
         break;
-      case valhalla::Options::sources_to_targets:
+      case Options::sources_to_targets:
         result = actor->matrix(request_js, nullptr, &request);
         break;
-      case valhalla::Options::optimized_route:
+      case Options::optimized_route:
         result = actor->optimized_route(request_js, nullptr, &request);
         break;
-      case valhalla::Options::isochrone:
+      case Options::isochrone:
         result = actor->isochrone(request_js, nullptr, &request);
         break;
-      case valhalla::Options::trace_route:
+      case Options::trace_route:
         result = actor->trace_route(request_js, nullptr, &request);
         break;
-      case valhalla::Options::trace_attributes:
+      case Options::trace_attributes:
         result = actor->trace_attributes(request_js, nullptr, &request);
         break;
-      case valhalla::Options::height:
+      case Options::height:
         result = actor->height(request_js, nullptr, &request);
         break;
-      case valhalla::Options::transit_available:
+      case Options::transit_available:
         result = actor->transit_available(request_js, nullptr, &request);
         break;
-      case valhalla::Options::expansion:
+      case Options::expansion:
         result = actor->expansion(request_js, nullptr, &request);
         break;
-      case valhalla::Options::status:
+      case Options::status:
         result = actor->status(request_js, nullptr, &request);
         break;
       default:
-        throw valhalla::valhalla_exception_t{400};
+        throw valhalla_exception_t{400};
     }
   } // request processing error specific error condition
-  catch (const valhalla::valhalla_exception_t& ve) {
+  catch (const valhalla_exception_t& ve) {
     result = serialize_error(ve, request);
   } catch (const std::exception& e) {
     result = serialize_error({599, std::string(e.what())}, request);
@@ -200,19 +231,15 @@ std::string do_request(const std::string& action_js, const std::string& request_
     // print("STAT {}: {}\n", stat.key().c_str(), stat.value());
   }
 
-  return result;
+  return strdup(result.c_str()); // @Leak
 }
-
-} // namespace
-
-} // namespace valhalla::wasm
 
 EMSCRIPTEN_BINDINGS(valhalla_bindings) {
   using namespace emscripten;
   using namespace valhalla;
 
   function("init_actor", &init_actor);
-  function("do_request", &do_request);
 
   function("_malloc", &js_malloc);
+  function("_free", &js_free);
 }

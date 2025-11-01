@@ -77,12 +77,17 @@ using locales_singleton_t = std::unordered_map<std::string, std::shared_ptr<Narr
  */
 const locales_singleton_t& get_locales();
 
+#if !defined(__EMSCRIPTEN__)
 /**
  * Returns locale strings mapped to json strings defining the dictionaries
  *
  * @return the map of locales to json strings
  */
 const std::unordered_map<std::string, std::string>& get_locales_json();
+#else
+// Ensures that the NarrativeDictionary for the given locale string is loaded and returned
+std::shared_ptr<NarrativeDictionary> get_locales_ensure_narrative_dictionary(const std::string& locale_string);
+#endif
 
 Bcp47Locale parse_string_into_locale(const std::string& locale_string);
 

@@ -1,6 +1,10 @@
 #include "baldr/rapidjson_utils.h"
 #include "baldr/turnlanes.h"
+
+#if !defined(__EMSCRIPTEN__)
 #include "locales.h"
+#endif
+
 #include "midgard/logging.h"
 #include "odin/util.h"
 #include "tyr/serializer_constants.h"
@@ -29,6 +33,11 @@
 
 using namespace valhalla::tyr;
 
+namespace valhalla {
+extern valhalla::odin::locales_singleton_t load_narrative_locals();
+extern std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_locals_for(const std::string& locale_string);
+}
+
 namespace {
 
 constexpr size_t kLanguageIndex = 1;
@@ -36,6 +45,7 @@ constexpr size_t kScriptIndex = 2;
 constexpr size_t kRegionIndex = 3;
 constexpr size_t kPrivateuseIndex = 4;
 
+#if !defined(__EMSCRIPTEN__)
 valhalla::odin::locales_singleton_t load_narrative_locals() {
   valhalla::odin::locales_singleton_t locales;
   // for each locale
@@ -68,6 +78,7 @@ valhalla::odin::locales_singleton_t load_narrative_locals() {
   }
   return locales;
 }
+#endif
 
 } // namespace
 
@@ -150,9 +161,28 @@ const locales_singleton_t& get_locales() {
   return locales;
 }
 
+std::shared_ptr<NarrativeDictionary> get_locales_ensure_narrative_dictionary(const std::string& locale_string) {
+  auto target_locale = locale_string;
+  if (target_locale.empty()) {
+    target_locale = "en-US"; // Default to English
+  }
+
+  const auto& locales = get_locales();
+  auto it = locales.find(target_locale);
+  if (it != locales.end()) {
+    return it->second;
+  }
+  std::shared_ptr<NarrativeDictionary> narrative_dictionary = load_narrative_locals_for(target_locale);
+  auto& locales_nonconst = const_cast<locales_singleton_t&>(locales);
+  locales_nonconst.insert(std::make_pair(target_locale, narrative_dictionary));
+  return narrative_dictionary;
+}
+
+#if !defined(__EMSCRIPTEN__)
 const std::unordered_map<std::string, std::string>& get_locales_json() {
   return locales_json;
 }
+#endif
 
 Bcp47Locale parse_string_into_locale(const std::string& locale_string) {
   // Normalize

@@ -13,32 +13,29 @@ NarrativeBuilderFactory::Create(const Options& options,
                                 const EnhancedTripLeg* trip_path,
                                 const MarkupFormatter& markup_formatter) {
 
-  // Get the locale dictionary
-  const auto phrase_dictionary = get_locales().find(options.language());
-
-  // If language tag is not found then throw error
-  if (phrase_dictionary == get_locales().end()) {
+  const auto phrase_dictionary = get_locales_ensure_narrative_dictionary(options.language());
+  if (!phrase_dictionary) {
     throw std::runtime_error("Invalid language tag.");
   }
 
   // if a NarrativeBuilder is derived with specific code for a particular
   // language then add logic here and return derived NarrativeBuilder
-  if (phrase_dictionary->second->GetLanguageTag() == "cs-CZ") {
-    return std::make_unique<NarrativeBuilder_csCZ>(options, trip_path, *phrase_dictionary->second,
+  if (phrase_dictionary->GetLanguageTag() == "cs-CZ") {
+    return std::make_unique<NarrativeBuilder_csCZ>(options, trip_path, *phrase_dictionary,
                                                    markup_formatter);
-  } else if (phrase_dictionary->second->GetLanguageTag() == "hi-IN") {
-    return std::make_unique<NarrativeBuilder_hiIN>(options, trip_path, *phrase_dictionary->second,
+  } else if (phrase_dictionary->GetLanguageTag() == "hi-IN") {
+    return std::make_unique<NarrativeBuilder_hiIN>(options, trip_path, *phrase_dictionary,
                                                    markup_formatter);
-  } else if (phrase_dictionary->second->GetLanguageTag() == "it-IT") {
-    return std::make_unique<NarrativeBuilder_itIT>(options, trip_path, *phrase_dictionary->second,
+  } else if (phrase_dictionary->GetLanguageTag() == "it-IT") {
+    return std::make_unique<NarrativeBuilder_itIT>(options, trip_path, *phrase_dictionary,
                                                    markup_formatter);
-  } else if (phrase_dictionary->second->GetLanguageTag() == "ru-RU") {
-    return std::make_unique<NarrativeBuilder_ruRU>(options, trip_path, *phrase_dictionary->second,
+  } else if (phrase_dictionary->GetLanguageTag() == "ru-RU") {
+    return std::make_unique<NarrativeBuilder_ruRU>(options, trip_path, *phrase_dictionary,
                                                    markup_formatter);
   }
 
   // otherwise just return pointer to NarrativeBuilder
-  return std::make_unique<NarrativeBuilder>(options, trip_path, *phrase_dictionary->second,
+  return std::make_unique<NarrativeBuilder>(options, trip_path, *phrase_dictionary,
                                             markup_formatter);
 }
 
