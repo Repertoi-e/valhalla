@@ -625,7 +625,8 @@ int main(int argc, char* argv[]) {
 
       // Write the path.pbf if requested
       if (get_env("SAVE_PATH_PBF") == "true") {
-        std::string path_bytes = request.SerializeAsString();
+        std::string path_bytes;
+        request.SerializeToString(&path_bytes);
         std::string pbf_filename = "path.pbf";
         LOG_INFO("Writing TripPath to " + pbf_filename + " with size " +
                  std::to_string(path_bytes.size()));
@@ -671,9 +672,6 @@ int main(int argc, char* argv[]) {
   LOG_INFO("Total time= " + std::to_string(msecs) + " ms");
   data.addRuntime(msecs);
   data.log();
-
-  // Shutdown protocol buffer library
-  google::protobuf::ShutdownProtobufLibrary();
 
   return EXIT_SUCCESS;
 }

@@ -98,17 +98,12 @@ protected:
     if (!file.is_open()) {
       return {};
     }
-
-    // prepare a stream for parsing
+    // read the entire file into a buffer
     std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    google::protobuf::io::ArrayInputStream as(static_cast<const void*>(buffer.c_str()),
-                                              buffer.size());
-    google::protobuf::io::CodedInputStream cs(
-        static_cast<google::protobuf::io::ZeroCopyInputStream*>(&as));
 
     // try to parse the stream
     std::shared_ptr<valhalla::IncidentsTile> tile(new valhalla::IncidentsTile);
-    if (!tile->ParseFromCodedStream(&cs)) {
+    if (!tile->ParseFromString(buffer)) {
       LOG_WARN("Incident Watcher failed to parse " + filename.string());
       return {};
     }

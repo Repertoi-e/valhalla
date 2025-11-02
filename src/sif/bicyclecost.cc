@@ -946,7 +946,7 @@ TestBicycleCost* make_bicyclecost_from_json(const std::string& property, float t
      << "}}}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return new TestBicycleCost(request.options().costings().find(Costing::bicycle)->second);
+  return new TestBicycleCost(request.options().costings().find((int) Costing::bicycle)->second);
 }
 
 std::uniform_real_distribution<float>*
@@ -962,7 +962,7 @@ TEST(BicycleCost, testBicycleCostParams) {
   std::shared_ptr<std::uniform_real_distribution<float>> distributor;
   std::shared_ptr<TestBicycleCost> ctorTester;
 
-  const auto& defaults = kBaseCostOptsConfig;
+  const auto& defaults = bicyclecost_internal::kBaseCostOptsConfig;
 
   // maneuver_penalty_
   distributor.reset(make_distributor_from_range(defaults.maneuver_penalty_));
@@ -1059,15 +1059,15 @@ defaults.use_ferry_.max));
    */
 
   // use_roads_
-  distributor.reset(make_distributor_from_range(kUseRoadRange));
+  distributor.reset(make_distributor_from_range(bicyclecost_internal::kUseRoadRange));
   for (unsigned i = 0; i < testIterations; ++i) {
     ctorTester.reset(make_bicyclecost_from_json("use_roads", (*distributor)(generator)));
-    EXPECT_THAT(ctorTester->use_roads_, test::IsBetween(kUseRoadRange.min, kUseRoadRange.max));
+    EXPECT_THAT(ctorTester->use_roads_, test::IsBetween(bicyclecost_internal::kUseRoadRange.min, bicyclecost_internal::kUseRoadRange.max));
   }
 
   // speed_
-  constexpr ranged_default_t<float> kRoadCyclingSpeedRange{kMinCyclingSpeed, kDefaultCyclingSpeed[0],
-                                                           kMaxCyclingSpeed};
+  constexpr ranged_default_t<float> kRoadCyclingSpeedRange{bicyclecost_internal::kMinCyclingSpeed, bicyclecost_internal::kDefaultCyclingSpeed[0],
+                                                           bicyclecost_internal::kMaxCyclingSpeed};
   distributor.reset(make_distributor_from_range(kRoadCyclingSpeedRange));
   for (unsigned i = 0; i < testIterations; ++i) {
     ctorTester.reset(make_bicyclecost_from_json("cycling_speed", (*distributor)(generator)));

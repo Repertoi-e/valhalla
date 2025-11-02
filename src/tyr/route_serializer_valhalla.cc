@@ -103,7 +103,7 @@ void summary(const valhalla::Api& api, int route_index, rapidjson::writer_wrappe
   bool has_ferry = false;
   AABB2<PointLL> bbox(10000.0f, 10000.0f, -10000.0f, -10000.0f);
   std::vector<double> recost_times(api.options().recostings_size(), 0);
-  for (int leg_index = 0; leg_index < api.directions().routes(route_index).legs_size(); ++leg_index) {
+  for (int leg_index = 0; leg_index < (int) api.directions().routes(route_index).legs_size(); ++leg_index) {
     const auto& leg = api.directions().routes(route_index).legs(leg_index);
     const auto& trip_leg = api.trip().routes(route_index).legs(leg_index);
     route_time += leg.summary().time();
@@ -296,7 +296,7 @@ void legs(valhalla::Api& api, int route_index, rapidjson::writer_wrapper_t& writ
       // Set street names
       if (maneuver.street_name_size() > 0) {
         writer.start_array("street_names");
-        for (int i = 0; i < maneuver.street_name_size(); i++) {
+        for (int i = 0; i < (int) maneuver.street_name_size(); i++) {
           writer(maneuver.street_name(i).value());
         }
         writer.end_array();
@@ -305,7 +305,7 @@ void legs(valhalla::Api& api, int route_index, rapidjson::writer_wrapper_t& writ
       // Set begin street names
       if (maneuver.begin_street_name_size() > 0) {
         writer.start_array("begin_street_names");
-        for (int i = 0; i < maneuver.begin_street_name_size(); i++) {
+        for (int i = 0; i < (int) maneuver.begin_street_name_size(); i++) {
           writer(maneuver.begin_street_name(i).value());
         }
         writer.end_array();
@@ -314,7 +314,7 @@ void legs(valhalla::Api& api, int route_index, rapidjson::writer_wrapper_t& writ
       // Set bearings
       // absolute bearing (degrees from north, clockwise) before and after the maneuver.
       bool depart_maneuver = (maneuver_index == 0);
-      bool arrive_maneuver = (maneuver_index == directions_leg.maneuver_size() - 1);
+      bool arrive_maneuver = (maneuver_index == (int) directions_leg.maneuver_size() - 1);
       if (!depart_maneuver) {
         uint32_t node_index = maneuver.begin_path_index();
         uint32_t in_brg = etp.GetPrevEdge(node_index)->end_heading();
@@ -377,7 +377,7 @@ void legs(valhalla::Api& api, int route_index, rapidjson::writer_wrapper_t& writ
         // Process exit number
         if (maneuver.sign().exit_numbers_size() > 0) {
           writer.start_array("exit_number_elements");
-          for (int i = 0; i < maneuver.sign().exit_numbers_size(); ++i) {
+          for (int i = 0; i < (int) maneuver.sign().exit_numbers_size(); ++i) {
             writer.start_object();
             // Add the exit number text
             writer("text", maneuver.sign().exit_numbers(i).text());
@@ -393,7 +393,7 @@ void legs(valhalla::Api& api, int route_index, rapidjson::writer_wrapper_t& writ
         // Process exit branch
         if (maneuver.sign().exit_onto_streets_size() > 0) {
           writer.start_array("exit_branch_elements");
-          for (int i = 0; i < maneuver.sign().exit_onto_streets_size(); ++i) {
+          for (int i = 0; i < (int) maneuver.sign().exit_onto_streets_size(); ++i) {
             writer.start_object();
             // Add the exit branch text
             writer("text", maneuver.sign().exit_onto_streets(i).text());
@@ -409,7 +409,7 @@ void legs(valhalla::Api& api, int route_index, rapidjson::writer_wrapper_t& writ
         // Process exit toward
         if (maneuver.sign().exit_toward_locations_size() > 0) {
           writer.start_array("exit_toward_elements");
-          for (int i = 0; i < maneuver.sign().exit_toward_locations_size(); ++i) {
+          for (int i = 0; i < (int) maneuver.sign().exit_toward_locations_size(); ++i) {
             writer.start_object();
             // Add the exit toward text
             writer("text", maneuver.sign().exit_toward_locations(i).text());
@@ -426,7 +426,7 @@ void legs(valhalla::Api& api, int route_index, rapidjson::writer_wrapper_t& writ
         // Process exit name
         if (maneuver.sign().exit_names_size() > 0) {
           writer.start_array("exit_name_elements");
-          for (int i = 0; i < maneuver.sign().exit_names_size(); ++i) {
+          for (int i = 0; i < (int) maneuver.sign().exit_names_size(); ++i) {
             writer.start_object();
             // Add the exit name text
             writer("text", maneuver.sign().exit_names(i).text());
@@ -681,7 +681,7 @@ std::string serialize(Api& api) {
   rapidjson::writer_wrapper_t writer(4096);
 
   // for each route
-  for (int i = 0; i < api.directions().routes_size(); ++i) {
+  for (int i = 0; i < (int) api.directions().routes_size(); ++i) {
     if (i == 1) {
       writer.start_array("alternates");
     }

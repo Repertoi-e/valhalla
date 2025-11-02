@@ -23,7 +23,7 @@ std::string serializeExpansion(Api& request, const std::string& algo) {
     exp_props.insert(static_cast<Options_ExpansionProperties>(prop));
   }
   auto expansion = request.expansion();
-  for (int i = 0; i < expansion.geometries().size(); ++i) {
+  for (int i = 0; i < (int) expansion.geometries().size(); ++i) {
     // create features
     writer.start_object(); // feature object
     writer("type", "Feature");
@@ -34,7 +34,7 @@ std::string serializeExpansion(Api& request, const std::string& algo) {
 
     // make the geom
     const auto& geom = expansion.geometries(i);
-    for (int j = 0; j < geom.coords().size() - 1; j += 2) {
+    for (int j = 0; j < (int) geom.coords().size() - 1; j += 2) {
       writer.start_array();
       writer(static_cast<double>((geom.coords(j) / 1e6)));
       writer(static_cast<double>((geom.coords(j + 1) / 1e6)));

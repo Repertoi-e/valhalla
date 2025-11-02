@@ -729,10 +729,19 @@ TEST(GraphParser, TestImportBssNode) {
     valhalla::BikeShareStationInfo bss_station_info;
     bss_station_info.ParseFromString(search.first->second);
 
+    std::cout << "BSS Tag TaggedValue::kBssInfo bytes: ";
+    // print all bytes in search.first->second for debugging
+    for (auto c : search.first->second) {
+      std::cout << std::hex << static_cast<int>(c) << " ";
+    }
+    std::cout << std::dec << std::endl;
+
+
+
     ASSERT_EQ(bss_station_info.ref(), "2");
     ASSERT_EQ(bss_station_info.network(), "Atac Bikesharing");
     ASSERT_EQ(bss_station_info.capacity(), 13);
-    ASSERT_EQ(bss_station_info.operator_(), "ATAC");
+    ASSERT_EQ(bss_station_info._operator(), "ATAC");
   };
 
   auto bss_edge_idx = local_tile->node(count - 1)->edge_index();

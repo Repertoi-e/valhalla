@@ -49,7 +49,7 @@ public:
     auto* stat = request.mutable_info()->add_statistics();
     stat->set_key("DONE");
     stat->set_value(1);
-    stat->set_type(count);
+    stat->set_type(StatisticType::count);
     service_worker_t::enqueue_statistics(request);
     service_worker_t::cleanup();
   }

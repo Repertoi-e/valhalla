@@ -137,7 +137,7 @@ struct testable_sample_t : public skadi::sample {
   }
 
   bool store(const std::string& path, const std::vector<char>& raw_data) {
-    return skadi::sample::store(path, raw_data);
+    return skadi::sample::store(path, raw_data.data(), raw_data.size());
   }
 };
 

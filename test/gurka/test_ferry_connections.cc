@@ -161,7 +161,7 @@ TEST(Standalone, TruckFerryDuration) {
 
   // verify we took the ferry edge and the duration tag was respected
   auto ferry_edge = fastest.trip().routes(0).legs(0).node(1).edge();
-  ASSERT_EQ(ferry_edge.use(), valhalla::TripLeg_Use::TripLeg_Use_kFerryUse);
+  ASSERT_EQ(ferry_edge.use(), valhalla::TripLeg_Use_kFerryUse);
   ASSERT_NEAR(ferry_edge.speed(), ferry_edge.length_km() / (ferry_secs * kHourPerSec), 0.2);
   ASSERT_NEAR(fastest.directions().routes(0).legs(0).summary().time(), 50, 0.1);
 

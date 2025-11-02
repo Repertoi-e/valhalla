@@ -35,6 +35,11 @@ void admin_json(const AdminInfo& admin, uint16_t tz_index, rapidjson::writer_wra
   }
 }
 
+} // namespace
+
+namespace valhalla {
+namespace baldr {
+
 /**
  * Get the updated bit field.
  * @param dst  Data member to be updated.
@@ -49,11 +54,6 @@ OverwriteBits(const uint32_t dst, const uint32_t src, const uint32_t pos, const 
   uint32_t mask = (((uint32_t)1 << len) - 1) << shift;
   return (dst & ~mask) | (src << shift);
 }
-
-} // namespace
-
-namespace valhalla {
-namespace baldr {
 
 // Default constructor. Initialize to all 0's.
 NodeInfo::NodeInfo() {

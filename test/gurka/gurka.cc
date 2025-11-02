@@ -385,7 +385,7 @@ inline void build_pbf(const nodelayout& node_locations,
 }
 
 std::string
-to_string(const ::google::protobuf::RepeatedPtrField<::valhalla::StreetName>& street_names) {
+to_string(const ::std::vector<::valhalla::StreetName>& street_names) {
   std::string str;
 
   for (const auto& street_name : street_names) {

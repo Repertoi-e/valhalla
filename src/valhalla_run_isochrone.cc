@@ -211,8 +211,5 @@ int main(int argc, char* argv[]) {
     std::cout << "\n" << res << std::endl;
   }
 
-  // Shutdown protocol buffer library
-  google::protobuf::ShutdownProtobufLibrary();
-
   return EXIT_SUCCESS;
 }

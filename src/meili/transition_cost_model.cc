@@ -1,8 +1,11 @@
 #include "meili/transition_cost_model.h"
 #include "meili/routing.h"
 
+
 namespace valhalla {
 namespace meili {
+
+float GreatCircleDistance(const Measurement& left, const Measurement& right);
 
 TransitionCostModel::TransitionCostModel(baldr::GraphReader& graphreader,
                                          const IViterbiSearch& vs,

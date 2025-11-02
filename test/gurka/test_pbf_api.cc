@@ -46,7 +46,7 @@ TEST(pbf_api, pbf_in_out) {
   select_all.set_matrix(true);
   select_all.set_isochrone(true);
 
-  for (int action = Options::no_action + 1; action <= Options::Action_MAX; ++action) {
+  for (int action = (int) Options::no_action + 1; action <= (int) Options::Action_MAX; ++action) {
     // don't have convenient support of these in gurka yet
     if (action == Options::expansion)
       continue;
@@ -88,7 +88,12 @@ TEST(pbf_api, pbf_in_out) {
       auto pbf_bytes = gurka::do_action(map, pbf_out);
       Api actual_pbf;
       EXPECT_TRUE(actual_pbf.ParseFromString(pbf_bytes));
-      EXPECT_EQ(actual_pbf.trip().SerializeAsString(), expected_pbf.trip().SerializeAsString());
+
+      std::string actual_pbf_serialized, expected_pbf_serialized;
+      expected_pbf.SerializeToString(&expected_pbf_serialized);
+      actual_pbf.SerializeToString(&actual_pbf_serialized);
+
+      EXPECT_EQ(actual_pbf_serialized, expected_pbf_serialized);
       EXPECT_TRUE(actual_pbf.has_options());
       EXPECT_TRUE(actual_pbf.has_trip() || action == Options::status ||
                   action == Options::sources_to_targets || action == Options::isochrone);

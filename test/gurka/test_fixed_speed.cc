@@ -76,7 +76,7 @@ TEST_F(FixedSpeedTest, ClampMaxSpeed) {
   rapidjson::SetValueByPointer(dom, "/fixed_speed", 500);
 
   options.set_costing_type(Costing::auto_);
-  auto& co = (*options.mutable_costings())[Costing::auto_];
+  auto& co = options.mutable_costings()[Costing::auto_];
   sif::ParseBaseCostOptions(*rapidjson::GetValueByPointer(dom, ""), &co, {});
 
   ASSERT_EQ(co.options().fixed_speed(), baldr::kDisableFixedSpeed);

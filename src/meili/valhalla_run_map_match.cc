@@ -3,6 +3,7 @@
 #include "meili/map_matcher_factory.h"
 #include "meili/measurement.h"
 
+#include <iostream>
 #include <boost/property_tree/ptree.hpp>
 
 using namespace valhalla::midgard;

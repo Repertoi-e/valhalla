@@ -33,10 +33,12 @@
 
 using namespace valhalla::tyr;
 
+#if defined(__EMSCRIPTEN__)
 namespace valhalla {
 extern valhalla::odin::locales_singleton_t load_narrative_locals();
 extern std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_locals_for(const std::string& locale_string);
 }
+#endif
 
 namespace {
 
@@ -46,10 +48,26 @@ constexpr size_t kRegionIndex = 3;
 constexpr size_t kPrivateuseIndex = 4;
 
 #if !defined(__EMSCRIPTEN__)
+std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_locals_for(const std::string& locale_string)
+{
+  // Load the json
+  auto json_it = locales_json.find(locale_string);
+  if (json_it == locales_json.end()) {
+    throw std::runtime_error("Locale '" + locale_string + "' not found");
+  }
+  boost::property_tree::ptree narrative_pt;
+  std::stringstream ss;
+  ss << json_it->second;
+  rapidjson::read_json(ss, narrative_pt);
+
+  // Parse it into an object and return it
+  return std::make_shared<valhalla::odin::NarrativeDictionary>(locale_string, narrative_pt);
+}
+
 valhalla::odin::locales_singleton_t load_narrative_locals() {
   valhalla::odin::locales_singleton_t locales;
   // for each locale
-  for (const auto& json : valhalla::odin::locales_json) {
+  for (const auto& json : locales_json) {
     LOG_TRACE("LOCALES");
     LOG_TRACE("-------");
     LOG_TRACE("- " + json.first);

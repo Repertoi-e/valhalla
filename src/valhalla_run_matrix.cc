@@ -48,9 +48,9 @@ void LogResults(const bool optimize,
     int idx1 = 0;
     int idx2 = 0;
     for (int i = 0; i < matrix.times().size(); i++) {
-      auto distance = matrix.distances().Get(i);
+      auto distance = matrix.distances()[i];
       LOG_INFO(std::to_string(idx1) + "," + std::to_string(idx2) + ": Distance= " +
-               std::to_string(distance) + " Time= " + GetFormattedTime(matrix.times().Get(i)) +
+               std::to_string(distance) + " Time= " + GetFormattedTime(matrix.times()[i]) +
                " secs = " + std::to_string(distance));
       idx2++;
       if (idx2 == options.sources_size()) {
@@ -215,7 +215,7 @@ int main(int argc, char* argv[]) {
   hierarchy_limits_config_t hl_config =
       parse_hierarchy_limits_from_config(config, "costmatrix", false);
   check_hierarchy_limits(mode_costing[int(mode)]->GetHierarchyLimits(), mode_costing[int(mode)],
-                         options.costings().find(options.costing_type())->second.options(), hl_config,
+                         options.costings().find((int) options.costing_type())->second.options(), hl_config,
                          true, mode_costing[int(mode)]->UseHierarchyLimits());
   t0 = std::chrono::high_resolution_clock::now();
   for (uint32_t n = 0; n < iterations; n++) {
@@ -241,9 +241,6 @@ int main(int argc, char* argv[]) {
   avg = (static_cast<float>(ms) / static_cast<float>(iterations)) * 0.001f;
   LOG_INFO("TimeDistanceMatrix average time to compute: " + std::to_string(avg) + " sec");
   LogResults(optimize, options, request.matrix(), log_details);
-
-  // Shutdown protocol buffer library
-  google::protobuf::ShutdownProtobufLibrary();
 
   return EXIT_SUCCESS;
 }

@@ -634,7 +634,7 @@ TestMotorcycleCost* make_motorcyclecost_from_json(const std::string& property, f
      << testVal << "}}}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return new TestMotorcycleCost(request.options().costings().find(Costing::motorcycle)->second);
+  return new TestMotorcycleCost(request.options().costings().find((int) Costing::motorcycle)->second);
 }
 
 template <typename T>
@@ -650,7 +650,7 @@ TEST(MotorcycleCost, testMotorcycleCostParams) {
   std::shared_ptr<std::uniform_real_distribution<float>> distributor;
   std::shared_ptr<TestMotorcycleCost> ctorTester;
 
-  const auto& defaults = kBaseCostOptsConfig;
+  const auto& defaults = motorcyclecost_internal::kBaseCostOptsConfig;
 
   // maneuver_penalty_
   distributor.reset(make_distributor_from_range(defaults.maneuver_penalty_));

@@ -26,7 +26,7 @@ route_summary_cache::route_summary_cache(
   for (const auto& route : routes) {
     std::vector<std::vector<NamedSegment>> leg_segs_by_dist;
     leg_segs_by_dist.reserve(route.legs_size());
-    for (int j = 0; j < route.legs_size(); j++) {
+    for (int j = 0; j < (int) route.legs_size(); j++) {
       const DirectionsLeg& leg = route.legs(j);
       std::unordered_map<std::string, std::pair<uint32_t, float>> maneuver_summary_map;
       maneuver_summary_map.reserve(leg.maneuver_size());

@@ -35,22 +35,24 @@ void TryFindCommonStreetNames(const StreetNames& lhs,
       << "Incorrect street names returned from FindCommonStreetNames";
 }
 
+StreetNames StreetNamesInit(const std::vector<std::pair<std::string, bool>>& names) { return StreetNames(names); }
+
 TEST(Streetnames, TestFindCommonStreetNames) {
-  TryFindCommonStreetNames(StreetNames({{"Hershey Road", false}, {"PA 743 North", true}}),
-                           StreetNames({{"Fishburn Road", false}, {"PA 743 North", true}}),
-                           StreetNames({{"PA 743 North", true}}));
+  TryFindCommonStreetNames(StreetNamesInit({{"Hershey Road", false}, {"PA 743 North", true}}),
+                           StreetNamesInit({{"Fishburn Road", false}, {"PA 743 North", true}}),
+                           StreetNamesInit({{"PA 743 North", true}}));
 
-  TryFindCommonStreetNames(StreetNames({{"Hershey Road", false}, {"PA 743 North", true}}),
-                           StreetNames({{"Fishburn Road", false}, {"PA 743", true}}), StreetNames());
+  TryFindCommonStreetNames(StreetNamesInit({{"Hershey Road", false}, {"PA 743 North", true}}),
+                           StreetNamesInit({{"Fishburn Road", false}, {"PA 743", true}}), StreetNames());
 
-  TryFindCommonStreetNames(StreetNames({{"Capital Beltway", false},
+  TryFindCommonStreetNames(StreetNamesInit({{"Capital Beltway", false},
                                         {"I 95 South", true},
                                         {"I 495 South", true}}),
-                           StreetNames({{"I 95 South", true}}), StreetNames({{"I 95 South", true}}));
+                           StreetNamesInit({{"I 95 South", true}}), StreetNamesInit({{"I 95 South", true}}));
 
-  TryFindCommonStreetNames(StreetNames({{"Unter den Linden", false}, {"B 2", true}, {"B 5", true}}),
-                           StreetNames({{"B 2", true}, {"B 5", true}}),
-                           StreetNames({{"B 2", true}, {"B 5", true}}));
+  TryFindCommonStreetNames(StreetNamesInit({{"Unter den Linden", false}, {"B 2", true}, {"B 5", true}}),
+                           StreetNamesInit({{"B 2", true}, {"B 5", true}}),
+                           StreetNamesInit({{"B 2", true}, {"B 5", true}}));
 }
 
 void TryFindCommonBaseNames(const StreetNames& lhs,
@@ -62,13 +64,13 @@ void TryFindCommonBaseNames(const StreetNames& lhs,
 }
 
 TEST(Streetnames, TestFindCommonBaseNames) {
-  TryFindCommonBaseNames(StreetNames({{"Hershey Road", false}, {"PA 743 North", true}}),
-                         StreetNames({{"Fishburn Road", false}, {"PA 743 North", true}}),
-                         StreetNames({{"PA 743 North", true}}));
+  TryFindCommonBaseNames(StreetNamesInit({{"Hershey Road", false}, {"PA 743 North", true}}),
+                         StreetNamesInit({{"Fishburn Road", false}, {"PA 743 North", true}}),
+                         StreetNamesInit({{"PA 743 North", true}}));
 
-  TryFindCommonBaseNames(StreetNames({{"Unter den Linden", false}, {"B 2", true}, {"B 5", true}}),
-                         StreetNames({{"B 2", true}, {"B 5", true}}),
-                         StreetNames({{"B 2", true}, {"B 5", true}}));
+  TryFindCommonBaseNames(StreetNamesInit({{"Unter den Linden", false}, {"B 2", true}, {"B 5", true}}),
+                         StreetNamesInit({{"B 2", true}, {"B 5", true}}),
+                         StreetNamesInit({{"B 2", true}, {"B 5", true}}));
 }
 
 void TryGetRouteNumbers(const StreetNames& street_names, const StreetNames& expected) {
@@ -78,15 +80,15 @@ void TryGetRouteNumbers(const StreetNames& street_names, const StreetNames& expe
 }
 
 TEST(Streetnames, TestGetRouteNumbers) {
-  TryGetRouteNumbers(StreetNames({{"Hershey Road", false}, {"PA 743 North", true}}),
-                     StreetNames({{"PA 743 North", true}}));
+  TryGetRouteNumbers(StreetNamesInit({{"Hershey Road", false}, {"PA 743 North", true}}),
+                     StreetNamesInit({{"PA 743 North", true}}));
 
-  TryGetRouteNumbers(StreetNames({{"Unter den Linden", false}, {"B 2", true}, {"B 5", true}}),
-                     StreetNames({{"B 2", true}, {"B 5", true}}));
+  TryGetRouteNumbers(StreetNamesInit({{"Unter den Linden", false}, {"B 2", true}, {"B 5", true}}),
+                     StreetNamesInit({{"B 2", true}, {"B 5", true}}));
 
-  TryGetRouteNumbers(StreetNames({{"I 95 South", true}}), StreetNames({{"I 95 South", true}}));
+  TryGetRouteNumbers(StreetNamesInit({{"I 95 South", true}}), StreetNamesInit({{"I 95 South", true}}));
 
-  TryGetRouteNumbers(StreetNames({{"Sheridan Circle", false}}), StreetNames());
+  TryGetRouteNumbers(StreetNamesInit({{"Sheridan Circle", false}}), StreetNames());
 }
 
 void TryGetNonRouteNumbers(const StreetNames& street_names, const StreetNames& expected) {
@@ -96,16 +98,16 @@ void TryGetNonRouteNumbers(const StreetNames& street_names, const StreetNames& e
 }
 
 TEST(Streetnames, TestGetNonRouteNumbers) {
-  TryGetNonRouteNumbers(StreetNames({{"Hershey Road", false}, {"PA 743 North", true}}),
-                        StreetNames({{"Hershey Road", false}}));
+  TryGetNonRouteNumbers(StreetNamesInit({{"Hershey Road", false}, {"PA 743 North", true}}),
+                        StreetNamesInit({{"Hershey Road", false}}));
 
-  TryGetNonRouteNumbers(StreetNames({{"Unter den Linden", false}, {"B 2", true}, {"B 5", true}}),
-                        StreetNames({{"Unter den Linden", false}}));
+  TryGetNonRouteNumbers(StreetNamesInit({{"Unter den Linden", false}, {"B 2", true}, {"B 5", true}}),
+                        StreetNamesInit({{"Unter den Linden", false}}));
 
-  TryGetNonRouteNumbers(StreetNames({{"I 95 South", true}}), StreetNames());
+  TryGetNonRouteNumbers(StreetNamesInit({{"I 95 South", true}}), StreetNames());
 
-  TryGetNonRouteNumbers(StreetNames({{"Sheridan Circle", false}}),
-                        StreetNames({{"Sheridan Circle", false}}));
+  TryGetNonRouteNumbers(StreetNamesInit({{"Sheridan Circle", false}}),
+                        StreetNamesInit({{"Sheridan Circle", false}}));
 }
 
 } // namespace

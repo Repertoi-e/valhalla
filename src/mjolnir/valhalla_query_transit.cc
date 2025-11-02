@@ -19,42 +19,33 @@ using namespace valhalla::midgard;
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
 
-Transit read_pbf(const std::string& file_name) {
+valhalla::Transit read_pbf(const std::string& file_name) {
   std::fstream file(file_name, std::ios::in | std::ios::binary);
   if (!file) {
     throw std::runtime_error("Couldn't load " + file_name);
   }
   std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-  google::protobuf::io::ArrayInputStream as(static_cast<const void*>(buffer.c_str()), buffer.size());
-  google::protobuf::io::CodedInputStream cs(
-      static_cast<google::protobuf::io::ZeroCopyInputStream*>(&as));
-  auto limit = std::max(static_cast<size_t>(1), buffer.size() * 2);
-#if GOOGLE_PROTOBUF_VERSION >= 3006000
-  cs.SetTotalBytesLimit(limit);
-#else
-  cs.SetTotalBytesLimit(limit, limit);
-#endif
-  Transit transit;
-  if (!transit.ParseFromCodedStream(&cs)) {
+  valhalla::Transit transit;
+  if (!transit.ParseFromString(buffer)) {
     throw std::runtime_error("Couldn't load " + file_name);
   }
   return transit;
 }
 
 // Get PBF transit data given a GraphId / tile
-Transit read_pbf(const GraphId& id, const std::string& transit_dir, std::string& file_name) {
+valhalla::Transit read_pbf(const GraphId& id, const std::string& transit_dir, std::string& file_name) {
   std::string fname = GraphTile::FileSuffix(id);
   fname = fname.substr(0, fname.size() - 3) + "pbf";
   std::filesystem::path file_path{transit_dir};
   file_path.append(fname);
   file_name = file_path.string();
-  Transit transit;
+  valhalla::Transit transit;
   transit = read_pbf(file_name);
   return transit;
 }
 
 // Log all scheduled departures from a stop
-void LogDepartures(const Transit& transit, const GraphId& stopid, std::string& file) {
+void LogDepartures(const valhalla::Transit& transit, const GraphId& stopid, std::string& file) {
 
   std::size_t slash_found = file.find_last_of("/\\");
   std::string directory = file.substr(0, slash_found);
@@ -75,7 +66,7 @@ void LogDepartures(const Transit& transit, const GraphId& stopid, std::string& f
       if ((ext == ".pbf" && fname == file) ||
           (file_name.substr(file_name.size() - 4) == ".pbf" && file_name == file)) {
 
-        Transit spp;
+        valhalla::Transit spp;
         {
           // already loaded
           if (ext == ".pbf") {
@@ -95,7 +86,7 @@ void LogDepartures(const Transit& transit, const GraphId& stopid, std::string& f
         // Iterate through the stop pairs in this tile and form Valhalla departure
         // records
         for (int i = 0; i < spp.stop_pairs_size(); i++) {
-          const Transit_StopPair& sp = spp.stop_pairs(i);
+          const valhalla::Transit_StopPair& sp = spp.stop_pairs(i);
 
           // Skip stop pair if either stop graph Id is invalid
           GraphId orig_graphid = GraphId(sp.origin_graphid());
@@ -215,7 +206,7 @@ void LogSchedule(const std::string& transit_dir,
                  const GraphId& destid,
                  const uint32_t tripid,
                  const std::string& time,
-                 const Transit& transit,
+                 const valhalla::Transit& transit,
                  std::string& file,
                  const uint8_t local_level) {
 
@@ -236,7 +227,7 @@ void LogSchedule(const std::string& transit_dir,
       if ((ext == ".pbf" && fname == file) ||
           (file_name.substr(file_name.size() - 4) == ".pbf" && file_name == file)) {
 
-        Transit spp;
+        valhalla::Transit spp;
         {
           // already loaded
           if (ext == ".pbf") {
@@ -264,7 +255,7 @@ void LogSchedule(const std::string& transit_dir,
         GraphId orig_graphid;
         std::string origin_time;
         for (int i = 0; i < spp.stop_pairs_size(); i++) {
-          const Transit_StopPair& sp = spp.stop_pairs(i);
+          const valhalla::Transit_StopPair& sp = spp.stop_pairs(i);
 
           // Skip stop pair if either stop graph Id is invalid
           orig_graphid = GraphId(sp.origin_graphid());
@@ -324,7 +315,7 @@ void LogSchedule(const std::string& transit_dir,
 
           GraphId tile(originid.tileid(), local_level, 0);
           std::string file_name;
-          Transit transit = read_pbf(tile, transit_dir, file_name);
+          valhalla::Transit transit = read_pbf(tile, transit_dir, file_name);
           LogSchedule(transit_dir, originid, destid, tripid, origin_time, transit, file_name,
                       local_level);
         }
@@ -333,17 +324,17 @@ void LogSchedule(const std::string& transit_dir,
   }
 }
 // Log the list of routes within the tile
-void LogRoutes(const Transit& transit) {
+void LogRoutes(const valhalla::Transit& transit) {
   LOG_INFO("Routes:");
   for (int i = 0; i < transit.routes_size(); i++) {
-    const Transit_Route& r = transit.routes(i);
+    const valhalla::Transit_Route& r = transit.routes(i);
     LOG_INFO("Route idx = " + std::to_string(i) + ": " + r.name() + "," + r.route_long_name());
   }
 }
 
-GraphId GetGraphId(Transit& transit, const std::string& onestop_id) {
+GraphId GetGraphId(valhalla::Transit& transit, const std::string& onestop_id) {
   for (int i = 0; i < transit.nodes_size(); i++) {
-    const Transit_Node& node = transit.nodes(i);
+    const valhalla::Transit_Node& node = transit.nodes(i);
     if (node.onestop_id() == onestop_id) {
       LOG_INFO("Node: " + node.name());
       return GraphId(node.graphid());
@@ -421,7 +412,7 @@ int main(int argc, char* argv[]) {
   // Read transit tile
   GraphId tile(tileid, local_level, 0);
   std::string file_name;
-  Transit transit = read_pbf(tile, *transit_dir, file_name);
+  valhalla::Transit transit = read_pbf(tile, *transit_dir, file_name);
 
   // Get the graph Id of the stop
   GraphId originid = GetGraphId(transit, o_onestop_id);
@@ -444,7 +435,7 @@ int main(int argc, char* argv[]) {
       // Read transit tile
       GraphId tile(tileid, local_level, 0);
       std::string file_name;
-      Transit transit = read_pbf(tile, *transit_dir, file_name);
+      valhalla::Transit transit = read_pbf(tile, *transit_dir, file_name);
 
       LOG_INFO("Dest Tile " + std::to_string(tileid));
       // Get the graph Id of the stop

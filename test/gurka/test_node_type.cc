@@ -54,11 +54,11 @@ TEST_F(NodeType, Toll) {
 
   ASSERT_EQ(result.trip().routes(0).legs_size(), 1);
   auto leg = result.trip().routes(0).legs(0);
-  EXPECT_EQ(leg.node(1).type(), TripLeg::Node::Type::TripLeg_Node_Type_kTollBooth); // AE
+  EXPECT_EQ(leg.node(1).type(), valhalla::TripLeg_Node_Type_kTollBooth); // AE
 
   result = gurka::do_action(valhalla::Options::route, map, {"A", "F"}, "auto");
   leg = result.trip().routes(0).legs(0);
-  EXPECT_EQ(leg.node(3).type(), TripLeg::Node::Type::TripLeg_Node_Type_kTollGantry); // AF
+  EXPECT_EQ(leg.node(3).type(), valhalla::TripLeg_Node_Type_kTollGantry); // AF
 }
 
 TEST_F(NodeType, test_toll_response) {

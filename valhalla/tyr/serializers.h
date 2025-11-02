@@ -215,7 +215,7 @@ get_elevation(const TripLeg& path_leg, const float interval, const float start_d
     }
 
     // Iterate through the edge elevation (skip the first)
-    for (int32_t i = 1; i < path_edge.elevation_size(); ++i) {
+    for (int32_t i = 1; i < (int) path_edge.elevation_size(); ++i) {
       auto elev = path_edge.elevation(i);
 
       // Update distance from prior elevation posting

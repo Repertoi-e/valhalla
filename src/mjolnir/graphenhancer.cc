@@ -1020,7 +1020,7 @@ void enhance(const boost::property_tree::ptree& pt,
 
   // Config driven speed assignment
   auto speeds_config = pt.get_optional<std::string>("default_speeds_config");
-  SpeedAssigner speed_assigner(speeds_config);
+  SpeedAssigner speed_assigner(*speeds_config);
 
   // Get some things we need throughout
   enhancer_stats stats{std::numeric_limits<float>::min(), 0, 0, 0, 0, 0, 0, {}};

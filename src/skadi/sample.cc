@@ -475,7 +475,7 @@ template <class coords_t> std::vector<double> sample::get_all(const coords_t& co
   return values;
 }
 
-bool sample::store(const std::string& elev, const std::vector<char>& raw_data) {
+bool sample::store(const std::string& elev, const char* raw_data, size_t size) {
   // data_source never changes so we do not lock it. it is set only in sample constructor
 
   std::filesystem::path fpath{cache_->data_source + elev};
@@ -491,7 +491,7 @@ bool sample::store(const std::string& elev, const std::vector<char>& raw_data) {
     return false;
 
   // thread-safe by implementation
-  if (!filesystem_utils::save(fpath, raw_data))
+  if (!filesystem_utils::save(fpath, std::string_view{raw_data, size}))
     return false;
 
   return cache_->insert(data->first, fpath.string(), data->second);
@@ -515,7 +515,7 @@ bool sample::fetch(uint16_t index) {
   }
 
   #if !defined __EMSCRIPTEN__
-  if (!store(elev, result.bytes_)) {
+  if (!store(elev, result.data_, result.size_)) {
     LOG_WARN("Fail to save data loaded from remote server address: " + uri);
     return false;
   }

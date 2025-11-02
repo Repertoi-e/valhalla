@@ -198,7 +198,7 @@ void route_summary(json::MapPtr& route, const valhalla::Api& api, bool imperial,
     distance += leg.summary().length();
     duration += leg.summary().time();
     weight += leg_itr->node().rbegin()->cost().elapsed_cost().cost();
-    for (int i = 0; i < leg_itr->node().rbegin()->recosts_size(); ++i) {
+    for (int i = 0; i < (int) leg_itr->node().rbegin()->recosts_size(); ++i) {
       const auto& recost = leg_itr->node().rbegin()->recosts(i);
       if (!recost.has_elapsed_cost() || recosts[i].first < 0) {
         recosts[i].first = -1;
@@ -1745,7 +1745,7 @@ json::ArrayPtr serialize_legs(const std::vector<valhalla::DirectionsLeg>& legs,
       auto step = json::map({});
       step->reserve(15); // lots of conditional stuff here
       bool depart_maneuver = (maneuver_index == 0);
-      bool arrive_maneuver = (maneuver_index == leg->maneuver_size() - 1);
+      bool arrive_maneuver = (maneuver_index == (int) leg->maneuver_size() - 1);
 
       // TODO - iterate through TripLeg from prior maneuver end to
       // end of this maneuver - perhaps insert OSRM specific steps such as
@@ -2025,7 +2025,7 @@ summarize_route_legs(const std::vector<DirectionsRoute>& routes) {
   // Find the simplest summary for every leg of every route. Important note:
   // each route should have the same number of legs. Hence, we only need to make
   // unique the same leg (leg_idx) between all routes.
-  for (int route_i = 0; route_i < routes.size(); route_i++) {
+  for (int route_i = 0; route_i < (int) routes.size(); route_i++) {
 
     size_t num_legs_i = routes[route_i].legs_size();
     std::vector<std::string> leg_summaries;
@@ -2041,7 +2041,7 @@ summarize_route_legs(const std::vector<DirectionsRoute>& routes) {
       // Compare every jth route/leg summary vs the current ith route/leg summary.
       // We desire to compute num_named_segs_needed, which is the number of named
       // segments needed to uniquely identify the ith's summary.
-      for (int route_j = 0; route_j < routes.size(); route_j++) {
+      for (int route_j = 0; route_j < (int) routes.size(); route_j++) {
 
         // avoid self
         if (route_i == route_j)
@@ -2133,7 +2133,7 @@ std::string serialize(valhalla::Api& api) {
       summarize_route_legs(api.directions().routes());
 
   // For each route...
-  for (int i = 0; i < api.trip().routes_size(); ++i) {
+  for (int i = 0; i < (int) api.trip().routes_size(); ++i) {
     // Create a route to add to the array
     auto route = json::map({});
     route->reserve(10); // some of the things are conditional so we take a swag here
@@ -2233,7 +2233,7 @@ TEST(RouteSerializerOsrm, testserializeIncidents) {
     *incident->mutable_metadata() = meta;
 
     // Finally call the function under test to serialize to json
-    serializeIncidents(*incidents, intersection_doc);
+    serializeIncidents(leg.incidents(), intersection_doc);
 
     // Lastly, convert to rapidjson
     std::stringstream ss;
@@ -2288,7 +2288,7 @@ TEST(RouteSerializerOsrm, testserializeIncidentsMultipleIncidentsSingleEdge) {
     auto intersection_doc = json::Jmap();
     auto leg = TripLeg();
     // Sets up the incident
-    auto* incidents = leg.mutable_incidents();
+    auto incidents = leg.mutable_incidents();
     {
       // First incident
       auto incident = incidents->Add();
@@ -2324,7 +2324,7 @@ TEST(RouteSerializerOsrm, testserializeIncidentsMultipleIncidentsSingleEdge) {
     }
 
     // Finally call the function under test to serialize to json
-    serializeIncidents(*incidents, intersection_doc);
+    serializeIncidents(leg.incidents(), intersection_doc);
 
     // Lastly, convert to rapidjson
     std::stringstream ss;

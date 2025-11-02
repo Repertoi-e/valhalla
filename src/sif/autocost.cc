@@ -1101,7 +1101,7 @@ std::shared_ptr<TestAutoCost> make_autocost_from_json(const std::string& propert
      << "}}" << extra_json << "}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return std::make_shared<TestAutoCost>(request.options().costings().find(Costing::auto_)->second);
+  return std::make_shared<TestAutoCost>(request.options().costings().find((int) Costing::auto_)->second);
 }
 
 std::uniform_real_distribution<float>
@@ -1117,7 +1117,7 @@ TEST(AutoCost, testAutoCostParams) {
   std::uniform_real_distribution<float> distributor;
   std::shared_ptr<TestAutoCost> tester;
 
-  const auto& defaults = kBaseCostOptsConfig;
+  const auto& defaults = autocost_internal::kBaseCostOptsConfig;
 
   // maneuver_penalty_
   distributor = make_distributor_from_range(defaults.maneuver_penalty_);
@@ -1136,10 +1136,10 @@ TEST(AutoCost, testAutoCostParams) {
   }
 
   // alley_factor_
-  distributor = make_distributor_from_range(kAlleyFactorRange);
+  distributor = make_distributor_from_range(autocost_internal::kAlleyFactorRange);
   for (unsigned i = 0; i < testIterations; ++i) {
     tester = make_autocost_from_json("alley_factor", distributor(generator));
-    EXPECT_THAT(tester->alley_factor_, test::IsBetween(kAlleyFactorRange.min, kAlleyFactorRange.max));
+    EXPECT_THAT(tester->alley_factor_, test::IsBetween(autocost_internal::kAlleyFactorRange.min, autocost_internal::kAlleyFactorRange.max));
   }
 
   // destination_only_penalty_

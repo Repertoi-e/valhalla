@@ -169,8 +169,8 @@ TEST(Standalone, ElevationCompareToSkadi) {
       auto s =
           rapidjson::get_child_optional(result, ("/trip/legs/" + std::to_string(leg_index) + "/shape")
                                                     .c_str());
-      EXPECT_TRUE(s && s->IsString());
-      auto shape = json_escape(s->GetString());
+      EXPECT_TRUE(s && (*s)->IsString());
+      auto shape = json_escape((*s)->GetString());
 
       std::string height_json;
       std::string request =
@@ -182,9 +182,9 @@ TEST(Standalone, ElevationCompareToSkadi) {
           rapidjson::get_child_optional(result,
                                         ("/trip/legs/" + std::to_string(leg_index) + "/elevation")
                                             .c_str());
-      EXPECT_TRUE(elevation && elevation->IsArray());
+      EXPECT_TRUE(elevation && (*elevation)->IsArray());
       std::vector<float> elevation_along_edges;
-      for (const auto& e : elevation->GetArray()) {
+      for (const auto& e : (*elevation)->GetArray()) {
         elevation_along_edges.push_back(std::round(e.GetFloat() * 10) / 10);
         std::cout << std::round(e.GetFloat() * 10) / 10 << std::endl;
       }
@@ -192,9 +192,9 @@ TEST(Standalone, ElevationCompareToSkadi) {
       result.Parse(height_json.c_str());
       // pull out the elevation from the height result
       elevation = rapidjson::get_child_optional(result, "/height");
-      EXPECT_TRUE(elevation && elevation->IsArray());
+      EXPECT_TRUE(elevation && (*elevation)->IsArray());
       std::vector<float> elevation_from_skadi;
-      for (const auto& e : elevation->GetArray()) {
+      for (const auto& e : (*elevation)->GetArray()) {
         elevation_from_skadi.push_back(std::round(e.GetFloat() * 10) / 10);
         std::cout << std::round(e.GetFloat() * 10) / 10 << std::endl;
       }
@@ -227,7 +227,7 @@ TEST(Standalone, ElevationCompareToSkadi) {
           rapidjson::get_child_optional(result,
                                         ("/trip/legs/" + std::to_string(leg_index) + "/elevation")
                                             .c_str());
-      EXPECT_FALSE(elevation && elevation->IsArray());
+      EXPECT_FALSE(elevation && (*elevation)->IsArray());
     }
   }
 }

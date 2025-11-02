@@ -88,22 +88,22 @@ TEST_F(TaggedValues, Tunnel) {
   EXPECT_EQ(leg.node(0).edge().tunnel(), false);
 
   EXPECT_EQ(leg.node(1).edge().tunnel(), true);
-  EXPECT_EQ(leg.node(1).edge().tagged_value().Get(0).type(), TaggedValue_Type_kLayer);
-  EXPECT_EQ(leg.node(1).edge().tagged_value().Get(0).value(), std::string(1, char(-3)));
-  EXPECT_EQ(leg.node(1).edge().tagged_value().Get(1).type(), TaggedValue_Type_kTunnel);
-  EXPECT_EQ(leg.node(1).edge().tagged_value().Get(1).value(), "Fort McHenry Tunnel");
+  EXPECT_EQ(leg.node(1).edge().tagged_value()[0].type(), TaggedValue_Type_kLayer);
+  EXPECT_EQ(leg.node(1).edge().tagged_value()[0].value(), std::string(1, char(-3)));
+  EXPECT_EQ(leg.node(1).edge().tagged_value()[1].type(), TaggedValue_Type_kTunnel);
+  EXPECT_EQ(leg.node(1).edge().tagged_value()[1].value(), "Fort McHenry Tunnel");
 
   EXPECT_EQ(leg.node(2).edge().tunnel(), true);
-  EXPECT_EQ(leg.node(2).edge().tagged_value().Get(0).type(), TaggedValue_Type_kLayer);
-  EXPECT_EQ(leg.node(2).edge().tagged_value().Get(0).value(), std::string(1, char(-2)));
-  EXPECT_EQ(leg.node(2).edge().tagged_value().Get(1).type(), TaggedValue_Type_kTunnel);
-  EXPECT_EQ(leg.node(2).edge().tagged_value().Get(1).value(), "Fort McHenry Tunnel");
+  EXPECT_EQ(leg.node(2).edge().tagged_value()[0].type(), TaggedValue_Type_kLayer);
+  EXPECT_EQ(leg.node(2).edge().tagged_value()[0].value(), std::string(1, char(-2)));
+  EXPECT_EQ(leg.node(2).edge().tagged_value()[1].type(), TaggedValue_Type_kTunnel);
+  EXPECT_EQ(leg.node(2).edge().tagged_value()[1].value(), "Fort McHenry Tunnel");
 
   EXPECT_EQ(leg.node(3).edge().tunnel(), true);
-  EXPECT_EQ(leg.node(3).edge().tagged_value().Get(0).type(), TaggedValue_Type_kLayer);
-  EXPECT_EQ(leg.node(3).edge().tagged_value().Get(0).value(), std::string(1, char(-1)));
-  EXPECT_TRUE(leg.node(3).edge().tagged_value().Get(1).type() == TaggedValue_Type_kTunnel);
-  EXPECT_TRUE(leg.node(3).edge().tagged_value().Get(1).value() == "Fort McHenry Tunnel");
+  EXPECT_EQ(leg.node(3).edge().tagged_value()[0].type(), TaggedValue_Type_kLayer);
+  EXPECT_EQ(leg.node(3).edge().tagged_value()[0].value(), std::string(1, char(-1)));
+  EXPECT_TRUE(leg.node(3).edge().tagged_value()[1].type() == TaggedValue_Type_kTunnel);
+  EXPECT_TRUE(leg.node(3).edge().tagged_value()[1].value() == "Fort McHenry Tunnel");
 
   EXPECT_EQ(leg.node(4).edge().tunnel(), false);
 

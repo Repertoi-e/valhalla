@@ -9,7 +9,7 @@ using namespace valhalla;
 
 baldr::TimeDomain from_proto(const TripLeg_TimeDomain& proto) {
   baldr::TimeDomain td;
-  td.set_type(proto.day_dow_type());
+  td.set_type((int) proto.day_dow_type());
   td.set_dow(proto.dow_mask());
   td.set_begin_hrs(proto.begin_hrs());
   td.set_begin_mins(proto.begin_mins());

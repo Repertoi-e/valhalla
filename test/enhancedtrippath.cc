@@ -206,8 +206,8 @@ TEST(EnhancedTripPathHasNonDirectionalTurnLane, True) {
   TryHasNonDirectionalTurnLane(std::make_unique<EnhancedTripLeg_Edge>(&edge_2), true);
 }
 
-void ClearActiveTurnLanes(::google::protobuf::RepeatedPtrField<::valhalla::TurnLane>* turn_lanes) {
-  for (auto& turn_lane : *(turn_lanes)) {
+void ClearActiveTurnLanes(::google::protobuf::RepeatedPtrField<::valhalla::TurnLane> turn_lanes) {
+  for (auto& turn_lane : (turn_lanes)) {
     turn_lane.clear_state();
   }
 }
@@ -246,7 +246,7 @@ TEST(EnhancedTripPath, TestActivateTurnLanes) {
 
   float remaining_step_distance = 2.f; // kilometers
   DirectionsLeg_Maneuver_Type next_maneuver_type =
-      DirectionsLeg_Maneuver_Type::DirectionsLeg_Maneuver_Type_kRight;
+      DirectionsLeg_Maneuver_Type_kRight;
 
   // Reverse active
   TryActivateTurnLanes(std::make_unique<EnhancedTripLeg_Edge>(&edge_1), kTurnLaneReverse,
@@ -409,7 +409,7 @@ TEST(EnhancedTripPath, TestActivateTurnLanesShortNextRight) {
 
   float remaining_step_distance = 0.1f; // kilometers
   DirectionsLeg_Maneuver_Type next_maneuver_type =
-      DirectionsLeg_Maneuver_Type::DirectionsLeg_Maneuver_Type_kRight;
+      DirectionsLeg_Maneuver_Type_kRight;
 
   // Reverse active
   TryActivateTurnLanes(std::make_unique<EnhancedTripLeg_Edge>(&edge_1), kTurnLaneReverse,
@@ -536,7 +536,7 @@ TEST(EnhancedTripPath, TestActivateTurnLanesShortNextLeft) {
 
   float remaining_step_distance = 0.1f; // kilometers
   DirectionsLeg_Maneuver_Type next_maneuver_type =
-      DirectionsLeg_Maneuver_Type::DirectionsLeg_Maneuver_Type_kLeft;
+      DirectionsLeg_Maneuver_Type_kLeft;
 
   // Reverse active
   TryActivateTurnLanes(std::make_unique<EnhancedTripLeg_Edge>(&edge_1), kTurnLaneReverse,

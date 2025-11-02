@@ -387,13 +387,13 @@ void PopulateEdge(TripLeg_Edge* edge,
   edge->set_end_shape_index(end_shape_index);
   edge->set_traversability(traversability);
   if (ramp) {
-    edge->set_use(TripLeg_Use::TripLeg_Use_kRampUse);
+    edge->set_use(TripLeg_Use_kRampUse);
   } else if (turn_channel) {
-    edge->set_use(TripLeg_Use::TripLeg_Use_kTurnChannelUse);
+    edge->set_use(TripLeg_Use_kTurnChannelUse);
   } else if (ferry) {
-    edge->set_use(TripLeg_Use::TripLeg_Use_kFerryUse);
+    edge->set_use(TripLeg_Use_kFerryUse);
   } else if (rail_ferry) {
-    edge->set_use(TripLeg_Use::TripLeg_Use_kRailFerryUse);
+    edge->set_use(TripLeg_Use_kRailFerryUse);
   }
   edge->set_toll(toll);
   edge->set_unpaved(unpaved);

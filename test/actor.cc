@@ -77,6 +77,56 @@ TEST(Actor, TraceAttributes) {
   EXPECT_THROW(actor.trace_attributes(request, &interrupt), test_exception_t);
 }
 
+std::string Options_Action_Name(Options::Action action) {
+  switch (action) {
+    case Options::no_action:
+      return "no_action";
+    case Options::route:
+      return "route";
+    case Options::locate:
+      return "locate";
+    case Options::sources_to_targets:
+      return "sources_to_targets";
+    case Options::optimized_route:
+      return "optimized_route";
+    case Options::isochrone:
+      return "isochrone";
+    case Options::trace_route:
+      return "trace_route";
+    case Options::trace_attributes:
+      return "trace_attributes";
+    case Options::height:
+      return "height";
+    case Options::transit_available:
+      return "transit_available";
+    case Options::expansion:
+      return "expansion";
+    case Options::centroid:
+      return "centroid";
+    case Options::status:
+      return "status";
+    default:
+      return "unknown";
+  }
+}
+
+std::string Options_Format_Name(Options::Format format) {
+  switch (format) {
+    case Options::json:
+      return "json";
+    case Options::gpx:
+      return "gpx";
+    case Options::osrm:
+      return "osrm";
+    case Options::pbf:
+      return "pbf";
+    case Options::geotiff:
+      return "geotiff";
+    default:
+      return "unknown";
+  }
+}
+
 // TODO: test the rest of them
 
 TEST(Actor, SupportedFormats) {
@@ -90,9 +140,9 @@ TEST(Actor, SupportedFormats) {
 
   // Options that would work for all actions
   Options options;
-  options.set_costing_type(Costing_Type::Costing_Type_auto_);
+  options.set_costing_type(Costing_Type_auto_);
 
-  auto* locations = options.mutable_locations();
+  auto locations = options.mutable_locations();
   locations->Add()->CopyFrom(loc1);
   locations->Add()->CopyFrom(loc2);
 
@@ -111,7 +161,7 @@ TEST(Actor, SupportedFormats) {
   auto* contour = isochrone_options.mutable_contours()->Add();
   contour->set_color("ff0000");
   contour->set_time(10.0);
-  isochrone_options.set_costing_type(Costing_Type::Costing_Type_auto_);
+  isochrone_options.set_costing_type(Costing_Type_auto_);
   isochrone_options.mutable_locations()->Add()->CopyFrom(loc1);
 
   const struct {
@@ -139,8 +189,8 @@ TEST(Actor, SupportedFormats) {
 
   tyr::actor_t actor(conf);
   for (const auto& t : tests) {
-    for (int format = Options::Format_MIN; format <= Options::Format_MAX; format += 1) {
-      ASSERT_TRUE(Options::Format_IsValid(format));
+    for (int format = (int) Options::Format_MIN; format <= (int) Options::Format_MAX; format += 1) {
+      ASSERT_TRUE(Options_Format_IsValid(static_cast<Options::Format>(format)));
 
       valhalla::Api api;
       auto* options = api.mutable_options();
@@ -150,8 +200,8 @@ TEST(Actor, SupportedFormats) {
 
       actor.cleanup();
       EXPECT_NO_THROW((actor.*(t.action_fn))("", nullptr, &api))
-          << Options::Action_Name(t.action) << ": "
-          << Options::Format_Name(static_cast<Options::Format>(format));
+          << Options_Action_Name(t.action) << ": "
+          << Options_Format_Name(static_cast<Options::Format>(format));
     }
   }
 }

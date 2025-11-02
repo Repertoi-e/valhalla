@@ -960,7 +960,7 @@ TestPedestrianCost* make_pedestriancost_from_json(const std::string& property,
      << testVal << "}}}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return new TestPedestrianCost(request.options().costings().find(Costing::pedestrian)->second);
+  return new TestPedestrianCost(request.options().costings().find((int) Costing::pedestrian)->second);
 }
 
 std::uniform_real_distribution<float>*
@@ -977,6 +977,8 @@ make_distributor_from_range(const ranged_default_t<uint32_t>& range) {
 }
 
 TEST(PedestrianCost, testPedestrianCostParams) {
+  using namespace pedestriancost_internal;
+  
   constexpr unsigned testIterations = 250;
   constexpr unsigned seed = 0;
   std::mt19937 generator(seed);
@@ -984,7 +986,7 @@ TEST(PedestrianCost, testPedestrianCostParams) {
   std::shared_ptr<std::uniform_int_distribution<uint32_t>> int_distributor;
   std::shared_ptr<TestPedestrianCost> ctorTester;
 
-  const auto& defaults = kBaseCostOptsConfig;
+  const auto& defaults = pedestriancost_internal::kBaseCostOptsConfig;
 
   // maneuver_penalty_
   real_distributor.reset(make_distributor_from_range(defaults.maneuver_penalty_));
@@ -1005,12 +1007,12 @@ TEST(PedestrianCost, testPedestrianCostParams) {
   }
 
   // alley_factor_
-  real_distributor.reset(make_distributor_from_range(kAlleyFactorRange));
+  real_distributor.reset(make_distributor_from_range(pedestriancost_internal::kAlleyFactorRange));
   for (unsigned i = 0; i < testIterations; ++i) {
     ctorTester.reset(
         make_pedestriancost_from_json("alley_factor", (*real_distributor)(generator), "foot"));
     EXPECT_THAT(ctorTester->alley_factor_,
-                test::IsBetween(kAlleyFactorRange.min, kAlleyFactorRange.max));
+                test::IsBetween(pedestriancost_internal::kAlleyFactorRange.min, pedestriancost_internal::kAlleyFactorRange.max));
   }
 
   // ferry_cost_
@@ -1045,39 +1047,39 @@ TEST(PedestrianCost, testPedestrianCostParams) {
 
   // Wheelchair tests
   // max_distance_
-  int_distributor.reset(make_distributor_from_range(kMaxDistanceWheelchairRange));
+  int_distributor.reset(make_distributor_from_range(pedestriancost_internal::kMaxDistanceWheelchairRange));
   for (unsigned i = 0; i < 100; ++i) {
     ctorTester.reset(
         make_pedestriancost_from_json("max_distance", (*int_distributor)(generator), "wheelchair"));
     EXPECT_THAT(ctorTester->max_distance_,
-                test::IsBetween(kMaxDistanceWheelchairRange.min, kMaxDistanceWheelchairRange.max));
+                test::IsBetween(pedestriancost_internal::kMaxDistanceWheelchairRange.min, pedestriancost_internal::kMaxDistanceWheelchairRange.max));
   }
 
   // speed_
-  real_distributor.reset(make_distributor_from_range(kSpeedWheelchairRange));
+  real_distributor.reset(make_distributor_from_range(pedestriancost_internal::kSpeedWheelchairRange));
   for (unsigned i = 0; i < testIterations; ++i) {
     ctorTester.reset(
         make_pedestriancost_from_json("walking_speed", (*real_distributor)(generator), "wheelchair"));
     EXPECT_THAT(ctorTester->speed_,
-                test::IsBetween(kSpeedWheelchairRange.min, kSpeedWheelchairRange.max));
+                test::IsBetween(pedestriancost_internal::kSpeedWheelchairRange.min, pedestriancost_internal::kSpeedWheelchairRange.max));
   }
 
   // step_penalty_
-  real_distributor.reset(make_distributor_from_range(kStepPenaltyWheelchairRange));
+  real_distributor.reset(make_distributor_from_range(pedestriancost_internal::kStepPenaltyWheelchairRange));
   for (unsigned i = 0; i < testIterations; ++i) {
     ctorTester.reset(
         make_pedestriancost_from_json("step_penalty", (*real_distributor)(generator), "wheelchair"));
     EXPECT_THAT(ctorTester->step_penalty_,
-                test::IsBetween(kStepPenaltyWheelchairRange.min, kStepPenaltyWheelchairRange.max));
+                test::IsBetween(pedestriancost_internal::kStepPenaltyWheelchairRange.min, pedestriancost_internal::kStepPenaltyWheelchairRange.max));
   }
 
   // max_grade_
-  int_distributor.reset(make_distributor_from_range(kMaxGradeWheelchairRange));
+  int_distributor.reset(make_distributor_from_range(pedestriancost_internal::kMaxGradeWheelchairRange));
   for (unsigned i = 0; i < testIterations; ++i) {
     ctorTester.reset(
         make_pedestriancost_from_json("max_grade", (*int_distributor)(generator), "wheelchair"));
     EXPECT_THAT(ctorTester->max_grade_,
-                test::IsBetween(kMaxGradeWheelchairRange.min, kMaxGradeWheelchairRange.max));
+                test::IsBetween(pedestriancost_internal::kMaxGradeWheelchairRange.min, pedestriancost_internal::kMaxGradeWheelchairRange.max));
   }
 
   // Foot tests
@@ -1087,7 +1089,7 @@ TEST(PedestrianCost, testPedestrianCostParams) {
     ctorTester.reset(
         make_pedestriancost_from_json("max_distance", (*int_distributor)(generator), "foot"));
     EXPECT_THAT(ctorTester->max_distance_,
-                test::IsBetween(kMaxDistanceFootRange.min, kMaxDistanceFootRange.max));
+                test::IsBetween(pedestriancost_internal::kMaxDistanceFootRange.min, pedestriancost_internal::kMaxDistanceFootRange.max));
   }
 
   // speed_
@@ -1104,7 +1106,7 @@ TEST(PedestrianCost, testPedestrianCostParams) {
     ctorTester.reset(
         make_pedestriancost_from_json("step_penalty", (*real_distributor)(generator), "foot"));
     EXPECT_THAT(ctorTester->step_penalty_,
-                test::IsBetween(kStepPenaltyFootRange.min, kStepPenaltyFootRange.max));
+                test::IsBetween(pedestriancost_internal::kStepPenaltyFootRange.min, pedestriancost_internal::kStepPenaltyFootRange.max));
   }
 
   // max_grade_
@@ -1113,7 +1115,7 @@ TEST(PedestrianCost, testPedestrianCostParams) {
     ctorTester.reset(
         make_pedestriancost_from_json("max_grade", (*int_distributor)(generator), "foot"));
     EXPECT_THAT(ctorTester->max_grade_,
-                test::IsBetween(kMaxGradeFootRange.min, kMaxGradeFootRange.max));
+                test::IsBetween(pedestriancost_internal::kMaxGradeFootRange.min, pedestriancost_internal::kMaxGradeFootRange.max));
   }
 
   // Non type dependent tests

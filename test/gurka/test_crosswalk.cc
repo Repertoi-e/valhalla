@@ -29,7 +29,7 @@ TEST(Crosswalk, CrosswalkInstructions) {
   gurka::assert::raw::expect_path(result, {"", "", ""});
 
   auto leg = result.trip().routes(0).legs(0);
-  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kPedestrianCrossingUse);
+  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use_kPedestrianCrossingUse);
 
   int maneuver_index = 1;
   gurka::assert::raw::expect_instructions_at_maneuver_index(result, maneuver_index,
@@ -70,7 +70,7 @@ TEST(Crosswalk, StraightRoute) {
 
   // verify there are only two maneuvers (start and end)
   auto legs = result.directions().routes(0).legs();
-  EXPECT_EQ(legs.Get(0).maneuver().size(), 2);
+  EXPECT_EQ(legs[0].maneuver().size(), 2);
 
   // Verify instructions for start and end maneuvers
   gurka::assert::raw::expect_instructions_at_maneuver_index(result, 0, "Walk east on the walkway.",
@@ -109,11 +109,11 @@ TEST(Crosswalk, TransitionFromNonFootways) {
   auto leg = result.trip().routes(0).legs(0);
 
   // Ensure the first right turn edge is a crosswalk
-  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kPedestrianCrossingUse);
+  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use_kPedestrianCrossingUse);
 
   // verify there are only three maneuvers (start, turn and end)
   auto legs = result.directions().routes(0).legs();
-  EXPECT_EQ(legs.Get(0).maneuver().size(), 3);
+  EXPECT_EQ(legs[0].maneuver().size(), 3);
 
   // Ensure the first right turn instruction does not call out crosswalk even though the edge use is
   // TripLeg_Use_kPedestrianCrossingUse

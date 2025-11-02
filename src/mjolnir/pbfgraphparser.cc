@@ -2020,7 +2020,7 @@ struct graph_parser {
           bss_info.set_capacity(capacity);
         }
       } else if (key_value.first == "operator") {
-        bss_info.set_operator_(key_value.second);
+        bss_info.set__operator(key_value.second);
       }
     }
 

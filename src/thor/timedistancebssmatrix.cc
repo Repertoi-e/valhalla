@@ -11,6 +11,8 @@ using namespace valhalla::sif;
 namespace valhalla {
 namespace thor {
 
+travel_mode_t get_other_travel_mode(const travel_mode_t current_mode);
+
 // Constructor with cost threshold.
 TimeDistanceBSSMatrix::TimeDistanceBSSMatrix(const boost::property_tree::ptree& config)
     : MatrixAlgorithm(config), settled_count_(0), current_cost_threshold_(0),
@@ -181,7 +183,7 @@ bool TimeDistanceBSSMatrix::ComputeMatrix(Api& request,
   reserve_pbf_arrays(*request.mutable_matrix(), origins.size() * destinations.size(),
                      request.options().verbose());
 
-  for (int origin_index = 0; origin_index < origins.size(); ++origin_index) {
+  for (int origin_index = 0; origin_index < (int) origins.size(); ++origin_index) {
     edgelabels_.reserve(max_reserved_labels_count_);
     const auto& origin = origins.Get(origin_index);
 

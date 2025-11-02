@@ -10,17 +10,15 @@ using namespace valhalla::sif;
 // TODO: make a class that extends std::exception, with messages and
 // error codes and return the appropriate error codes
 
-namespace {
+namespace valhalla {
+namespace thor {
 
-static travel_mode_t get_other_travel_mode(const travel_mode_t current_mode) {
+travel_mode_t get_other_travel_mode(const travel_mode_t current_mode) {
   static const auto bss_modes =
       std::vector<travel_mode_t>{travel_mode_t::kPedestrian, travel_mode_t::kBicycle};
   return bss_modes[static_cast<size_t>(current_mode == travel_mode_t::kPedestrian)];
 }
-} // namespace
 
-namespace valhalla {
-namespace thor {
 // Number of iterations to allow with no convergence to the destination
 constexpr uint32_t kMaxIterationsWithoutConvergence = 200000;
 

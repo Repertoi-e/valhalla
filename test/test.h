@@ -45,8 +45,11 @@ MATCHER_P2(IsBetween,
   return a <= arg && arg <= b;
 }
 
-template <typename pbf_message_t> bool pbf_equals(const pbf_message_t& a, const pbf_message_t& b) {
-  return a.SerializeAsString() == b.SerializeAsString();
+template <typename pbf_message_t> bool pbf_equals(const pbf_message_t& a, const pbf_message_t& b) { 
+  std::string as, bs;
+  a.SerializeToString(&as);
+  b.SerializeToString(&bs);
+  return as == bs;
 }
 
 boost::property_tree::ptree json_to_pt(const std::string& json);

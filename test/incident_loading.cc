@@ -58,7 +58,9 @@ TEST_F(incident_loading, read_tile) {
   IncidentsTile t;
   {
     std::ofstream f(filepath, std::ofstream::out | std::ofstream::trunc);
-    f << t.SerializeAsString();
+    std::string t_;
+    t.SerializeToString(&t_);
+    f << t_;
   }
   ASSERT_FALSE(testable_singleton::read_tile(filepath)) << " should ignore empty tile";
 
@@ -70,7 +72,9 @@ TEST_F(incident_loading, read_tile) {
   loc->set_metadata_index(0);
   {
     std::ofstream f(filepath, std::ofstream::out | std::ofstream::trunc);
-    f << t.SerializeAsString();
+    std::string t_;
+    t.SerializeToString(&t_);
+    f << t_;
   }
   ASSERT_TRUE(testable_singleton::read_tile(filepath)) << " should return valid tile";
 }
@@ -172,7 +176,9 @@ TEST_F(incident_loading, watch) {
           {
             std::ofstream f(snake_eyes_name, std::ofstream::out | std::ofstream::binary);
             EXPECT_TRUE(f.is_open());
-            f << snake_eyes_tile.SerializeAsString();
+            std::string t_;
+            snake_eyes_tile.SerializeToString(&t_);
+            f << t_;
           }
           // update log
           while (log.size() < 1)
@@ -203,7 +209,9 @@ TEST_F(incident_loading, watch) {
             std::ofstream f(snake_eyes_name,
                             std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
             EXPECT_TRUE(f.is_open());
-            f << snake_eyes_tile.SerializeAsString();
+            std::string t_;
+            snake_eyes_tile.SerializeToString(&t_);
+            f << t_;
           }
           // update log
           log[0] = snake_eyes | (static_cast<uint64_t>(time(nullptr)) << 25);
@@ -231,7 +239,9 @@ TEST_F(incident_loading, watch) {
           {
             std::ofstream f(snake_eyes_name, std::ofstream::out | std::ofstream::binary);
             EXPECT_TRUE(f.is_open());
-            f << snake_eyes_tile.SerializeAsString();
+            std::string t_;
+            snake_eyes_tile.SerializeToString(&t_);
+            f << t_;
           }
           auto* loc = box_cars_tile.mutable_locations()->Add();
           loc->set_edge_index(12);
@@ -247,7 +257,9 @@ TEST_F(incident_loading, watch) {
           {
             std::ofstream f(box_cars_name, std::ofstream::out | std::ofstream::binary);
             EXPECT_TRUE(f.is_open());
-            f << box_cars_tile.SerializeAsString();
+            std::string t_;
+            box_cars_tile.SerializeToString(&t_);
+            f << t_;
           }
           // update log
           log[0] = snake_eyes | (static_cast<uint64_t>(time(nullptr)) << 25);
@@ -334,7 +346,9 @@ TEST_F(incident_loading, get) {
   {
     std::ofstream f(box_cars_name, std::ofstream::out | std::ofstream::binary);
     EXPECT_TRUE(f.is_open());
-    f << box_cars_tile.SerializeAsString();
+    std::string t_;
+    box_cars_tile.SerializeToString(&t_);
+    f << t_;
   }
 
   // get the one that is there

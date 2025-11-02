@@ -38,6 +38,9 @@ uint32_t OverwriteBit(const uint32_t dst, const uint32_t src, const uint32_t pos
 namespace valhalla {
 namespace baldr {
 
+uint32_t
+OverwriteBits(const uint32_t dst, const uint32_t src, const uint32_t pos, const uint32_t len);
+
 // Default constructor
 DirectedEdge::DirectedEdge() {
   memset(this, 0, sizeof(DirectedEdge));

@@ -218,7 +218,7 @@ TEST_F(AvoidTest, TestInvalidAvoidPolygons) {
   auto res = gurka::do_action(Options::route, avoid_map, req_str);
   EXPECT_TRUE(request.options().exclude_polygons_size() == 0);
   EXPECT_EQ(res.info().warnings().size(), 1);
-  EXPECT_EQ(res.info().warnings().Get(0).code(), 204);
+  EXPECT_EQ(res.info().warnings()[0].code(), 204);
 
   // array of empty array and empty object
   req_str = req_base + R"("avoid_polygons": [[]]})";
@@ -240,7 +240,7 @@ TEST_F(AvoidTest, TestInvalidAvoidPolygons) {
   valhalla::Api vanilla_request;
   vanilla_request.mutable_options()->set_costing_type(valhalla::Costing_Type_auto_);
   vanilla_request.mutable_options()->mutable_exclude_polygons()->Add();
-  (*vanilla_request.mutable_options()->mutable_costings())[valhalla::Costing::auto_];
+  vanilla_request.mutable_options()->mutable_costings()[valhalla::Costing::auto_] = {};
 
   // adding an empty polygon was previously causing a segfault
   loki_worker.parse_costing(vanilla_request);
@@ -250,11 +250,11 @@ TEST_F(AvoidTest, TestInvalidAvoidPolygons) {
 TEST_F(AvoidTest, TestAvoidShortcutsTruck) {
   valhalla::Options options;
   options.set_costing_type(valhalla::Costing::truck);
-  auto& co = (*options.mutable_costings())[Costing::truck];
+  auto& co = options.mutable_costings()[Costing::truck];
   co.set_type(valhalla::Costing::truck);
 
   // create the polygon intersecting a shortcut
-  auto* rings = options.mutable_exclude_polygons();
+  auto rings = options.mutable_exclude_polygons();
   auto* ring = rings->Add();
   for (const auto& coord :
        {avoid_map.nodes["p"], avoid_map.nodes["q"], avoid_map.nodes["r"], avoid_map.nodes["s"]}) {
@@ -268,7 +268,7 @@ TEST_F(AvoidTest, TestAvoidShortcutsTruck) {
 
   // should return the shortcut edge ID as well
   size_t found_shortcuts = 0;
-  auto avoid_edges = vl::edges_in_rings(*rings, reader, costing, 10000);
+  auto avoid_edges = vl::edges_in_rings(options.exclude_polygons(), reader, costing, 10000);
   for (const auto& edge_id : avoid_edges) {
     if (reader.GetGraphTile(edge_id)->directededge(edge_id)->is_shortcut()) {
       found_shortcuts++;

@@ -86,8 +86,11 @@ std::string makePbfRequest(std::vector<std::pair<uint32_t, std::optional<float>>
     costing.mutable_options()->mutable_hierarchy_limits()->insert(
         {static_cast<unsigned int>(i), hierarchylims});
   }
-  opts->mutable_costings()->insert({valhalla::Costing::auto_, costing});
-  return request.SerializeAsString();
+  opts->mutable_costings()->insert({(int) valhalla::Costing::auto_, costing});
+
+  std::string request_str;
+  request.SerializeToString(&request_str);
+  return request_str;
 }
 
 HierarchyLimitsTestParams
@@ -134,7 +137,7 @@ TEST_P(TestHierarchyLimits, from_request) {
     ParseApi(test_params.request, Options::sources_to_targets, request);
   }
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find(request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
   mode_costing[0] = CreateAutoCost(costings);
 
   // Now make sure the costmatrix hierarchy limits match up with what we expect
@@ -178,7 +181,7 @@ TEST(StandAlone, ClampHierarchyLimitsMatrix) {
   }
 
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find(request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
   mode_costing[0] = CreateAutoCost(costings);
 
   Costing_Options opts;
@@ -208,7 +211,7 @@ TEST(StandAlone, ClampHierarchyLimitsBidirAStar) {
   }
 
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find(request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
   mode_costing[0] = CreateAutoCost(costings);
 
   Costing_Options opts;
@@ -239,7 +242,7 @@ TEST(StandAlone, ClampHierarchyLimitsUnidirAStar) {
   }
 
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find(request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
   mode_costing[0] = CreateAutoCost(costings);
 
   Costing_Options opts;

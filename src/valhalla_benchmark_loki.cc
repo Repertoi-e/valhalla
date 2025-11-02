@@ -74,7 +74,7 @@ valhalla::sif::cost_ptr_t create_costing() {
   } else {
     options.set_costing_type(valhalla::Costing::none_);
   }
-  (*options.mutable_costings())[costing];
+  options.mutable_costings()[costing] = {};
   return valhalla::sif::CostFactory{}.Create(options);
 }
 

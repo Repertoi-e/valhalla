@@ -111,7 +111,7 @@ inline std::string country_code_from_edge(const graph_tile_ptr& tile,
 const valhalla::IncidentsTile::Metadata&
 GetIncidentMetadata(const std::shared_ptr<const valhalla::IncidentsTile>& tile,
                     const valhalla::IncidentsTile::Location& incident_location) {
-  const int64_t metadata_index = incident_location.metadata_index();
+  const uint32_t metadata_index = incident_location.metadata_index();
   if (metadata_index >= tile->metadata_size()) {
     throw std::runtime_error(std::string("Invalid incident tile with an incident_index of ") +
                              std::to_string(metadata_index) + " but total incident metadata of " +
@@ -266,7 +266,7 @@ void SetShapeAttributes(const AttributesController& controller,
   // sort the start and ends of the incidents along this edge
   for (auto incident_location_index = incidents.start_index;
        incident_location_index != incidents.end_index; ++incident_location_index) {
-    if (incident_location_index >= incidents.tile->locations_size()) {
+    if (incident_location_index >= (int) incidents.tile->locations_size()) {
       throw std::logic_error(
           "invalid incident_location_index: " + std::to_string(incident_location_index) + " vs " +
           std::to_string(incidents.tile->locations_size()));
@@ -744,7 +744,7 @@ void SetElevation(TripLeg_Edge* trip_edge,
     }
 
     // Validate new size
-    if (trip_edge->elevation_size() - 1 != static_cast<int32_t>(partial_length / new_interval)) {
+    if (trip_edge->elevation_size() - 1 != static_cast<size_t>(partial_length / new_interval)) {
       LOG_ERROR("TRIMMED elevation is wrong size");
     }
   } else {
@@ -1742,7 +1742,7 @@ void AccumulateRecostingInfoForward(const valhalla::Options& options,
     catch (...) {
       int should_have = leg.node(0).recosts_size();
       for (auto& node : leg.mutable_node()) {
-        if (node.recosts_size() == should_have) {
+        if ((int) node.recosts_size() == should_have) {
           node.mutable_recosts()->RemoveLast();
         }
         node.mutable_recosts()->Add();

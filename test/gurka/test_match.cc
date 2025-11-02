@@ -255,11 +255,11 @@ uint32_t speed_from_edge(const valhalla::Api& api, bool compare_with_previous_ed
   uint32_t kmh = midgard::invalid<uint32_t>();
   const auto& nodes = api.trip().routes(0).legs(0).node();
   for (int i = 0; i < nodes.size() - 1; ++i) {
-    const auto& node = nodes.Get(i);
+    const auto& node = nodes[i];
     if (!node.has_edge())
       break;
     auto km = node.edge().length_km();
-    auto h = (nodes.Get(i + 1).cost().elapsed_cost().seconds() -
+    auto h = (nodes[i + 1].cost().elapsed_cost().seconds() -
               node.cost().elapsed_cost().seconds() - node.cost().transition_cost().seconds()) /
              3600.0;
     auto new_kmh = static_cast<uint32_t>(km / h + .5);

@@ -96,7 +96,7 @@ struct StopEdges {
 std::unordered_multimap<GraphId, Departure>
 ProcessStopPairs(GraphTileBuilder& transit_tilebuilder,
                  const uint32_t tile_date,
-                 const Transit& tile_pbf,
+                 const valhalla::Transit& tile_pbf,
                  std::unordered_map<GraphId, uint16_t>& stop_no_access,
                  const std::filesystem::path& pbf_fp,
                  std::mutex& lock,
@@ -139,7 +139,7 @@ ProcessStopPairs(GraphTileBuilder& transit_tilebuilder,
       if ((ext == ".pbf" && fname == pbf_fp) ||
           (file_name.substr(file_name.size() - 4) == ".pbf" && file_name == pbf_fp)) {
 
-        Transit curr_tile_pbf;
+        valhalla::Transit curr_tile_pbf;
         {
           // already loaded or it's with a xxx.pbf.y extension
           if (ext == ".pbf") {
@@ -332,12 +332,12 @@ ProcessStopPairs(GraphTileBuilder& transit_tilebuilder,
 }
 
 // Add routes to the tile. Return a vector of route types.
-std::vector<uint32_t> AddRoutes(const Transit& pbf_tile, GraphTileBuilder& tilebuilder) {
+std::vector<uint32_t> AddRoutes(const valhalla::Transit& pbf_tile, GraphTileBuilder& tilebuilder) {
   // Route types vs. index
   std::vector<uint32_t> route_types;
 
   for (uint32_t i = 0; i < (uint32_t)pbf_tile.routes_size(); i++) {
-    const Transit_Route& r = pbf_tile.routes(i);
+    const valhalla::Transit_Route& r = pbf_tile.routes(i);
 
     // These should all be correctly set in the fetcher as it tosses types that we
     // don't support.  However, let's report an error if we encounter one.
@@ -369,7 +369,7 @@ std::vector<uint32_t> AddRoutes(const Transit& pbf_tile, GraphTileBuilder& tileb
     tilebuilder.AddTransitRoute(route);
 
     // Route type - need this to store in edge.
-    route_types.push_back(r.vehicle_type());
+    route_types.push_back((uint32_t) r.vehicle_type());
   }
   return route_types;
 }
@@ -513,7 +513,7 @@ std::list<PointLL> GetShape(const PointLL& stop_ll,
 //  until this is rectified
 void AddToGraph(GraphTileBuilder& tilebuilder_transit,
                 const GraphId& tileid,
-                const Transit& tile_pbf,
+                const valhalla::Transit& tile_pbf,
                 const std::string& transit_dir,
                 std::mutex& lock,
                 const std::map<GraphId, StopEdges>& stop_edge_map,
@@ -552,7 +552,7 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
   for (const auto& stop_edges : stop_edge_map) {
     // Get the platform information
     GraphId platform_graphid = stop_edges.second.origin_pbf_graphid;
-    const Transit_Node& platform = tile_pbf.nodes(platform_graphid.id());
+    const valhalla::Transit_Node& platform = tile_pbf.nodes(platform_graphid.id());
     if (GraphId(platform.graphid()) != platform_graphid) {
       LOG_ERROR("Platform key not equal!");
     }
@@ -564,7 +564,7 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
     // the prev_type_graphid is actually the station or parent in
     // platforms
     GraphId parent(platform.prev_type_graphid());
-    const Transit_Node& station = tile_pbf.nodes(parent.id());
+    const valhalla::Transit_Node& station = tile_pbf.nodes(parent.id());
 
     // Get the Valhalla graphId of the station node
     GraphId station_graphid(station.graphid());
@@ -613,7 +613,7 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
       uint32_t index = eg.id();
 
       while (true) {
-        const Transit_Node& egress = tile_pbf.nodes(index);
+        const valhalla::Transit_Node& egress = tile_pbf.nodes(index);
         if (static_cast<NodeType>(egress.type()) != NodeType::kTransitEgress) {
           break;
         }
@@ -701,7 +701,7 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
       // index now points to the station.
       for (uint32_t j = eg.id(); j < index; j++) {
 
-        const Transit_Node& egress = tile_pbf.nodes(j);
+        const valhalla::Transit_Node& egress = tile_pbf.nodes(j);
         PointLL egress_ll = {egress.lon(), egress.lat()};
 
         // Get the Valhalla graphId of the origin node (transit stop)
@@ -745,7 +745,7 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
           break;
         }
 
-        const Transit_Node& platform = tile_pbf.nodes(index);
+        const valhalla::Transit_Node& platform = tile_pbf.nodes(index);
         if (static_cast<NodeType>(platform.type()) != NodeType::kMultiUseTransitPlatform) {
           break;
         }
@@ -881,7 +881,7 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
       std::string endstopname;
       if (end_platform_graphid.Tile_Base() == tileid) {
         // End stop is in the same pbf transit tile
-        const Transit_Node& endplatform = tile_pbf.nodes(end_platform_graphid.id());
+        const valhalla::Transit_Node& endplatform = tile_pbf.nodes(end_platform_graphid.id());
         endstopname = endplatform.name();
         endll = {endplatform.lon(), endplatform.lat()};
       } else {
@@ -893,8 +893,8 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
         file_name += ".pbf";
         std::filesystem::path file_path{transit_dir};
         file_path.append(file_name);
-        Transit endtransit = read_pbf(file_path.string(), lock);
-        const Transit_Node& endplatform = endtransit.nodes(end_platform_graphid.id());
+        valhalla::Transit endtransit = read_pbf(file_path.string(), lock);
+        const valhalla::Transit_Node& endplatform = endtransit.nodes(end_platform_graphid.id());
         endstopname = endplatform.name();
         endll = {endplatform.lon(), endplatform.lat()};
       }
@@ -1018,7 +1018,7 @@ void build_tiles(const boost::property_tree::ptree& pt,
       return;
     }
 
-    Transit tile_pbf = read_pbf(pbf_fp.string(), lock);
+    valhalla::Transit tile_pbf = read_pbf(pbf_fp.string(), lock);
     // Get Valhalla tile - get a read only instance for reference and
     // a writeable instance (deserialize it so we can add to it)
     lock.lock();

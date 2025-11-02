@@ -280,7 +280,7 @@ TEST_F(MatrixTrafficTest, TDSources) {
                             nullptr, &res);
   res_doc.Parse(res.c_str());
   check_matrix(res_doc, {0.0f, 3.2f}, false, Matrix::CostMatrix);
-  ASSERT_EQ(result.info().warnings().Get(0).code(), 202);
+  ASSERT_EQ(result.info().warnings()[0].code(), 202);
   ASSERT_EQ(result.info().warnings().size(), 1);
 
   // date_time on the sources, disallowed reverse
@@ -292,7 +292,7 @@ TEST_F(MatrixTrafficTest, TDSources) {
                             nullptr, &res);
   res_doc.Parse(res.c_str());
   check_matrix(res_doc, {0.0f, 3.2f}, false, Matrix::CostMatrix);
-  ASSERT_EQ(result.info().warnings().Get(0).code(), 201);
+  ASSERT_EQ(result.info().warnings()[0].code(), 201);
   ASSERT_EQ(result.info().warnings().size(), 1);
 }
 
@@ -316,7 +316,7 @@ TEST_F(MatrixTrafficTest, TDTargets) {
   res_doc.Parse(res.c_str());
   check_matrix(res_doc, {0.0f, 3.2f}, false, Matrix::CostMatrix);
   ASSERT_EQ(result.info().warnings().size(), 1);
-  ASSERT_EQ(result.info().warnings().Get(0).code(), 201);
+  ASSERT_EQ(result.info().warnings()[0].code(), 201);
 
   // date_time on the targets, disallowed forward
   options = {{"/targets/0/date_time", "current"}, {"/targets/1/date_time", "2016-07-03T08:06"}};
@@ -326,7 +326,7 @@ TEST_F(MatrixTrafficTest, TDTargets) {
   res_doc.Parse(res.c_str());
   check_matrix(res_doc, {0.0f, 3.2f}, false, Matrix::CostMatrix);
   ASSERT_EQ(result.info().warnings().size(), 1);
-  ASSERT_EQ(result.info().warnings().Get(0).code(), 202);
+  ASSERT_EQ(result.info().warnings()[0].code(), 202);
 }
 
 TEST(StandAlone, CostMatrixDeadends) {

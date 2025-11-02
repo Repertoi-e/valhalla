@@ -1027,10 +1027,10 @@ TEST(Mapmatch, test_leg_duration_trimming) {
       EXPECT_EQ(rlegs.size(), mlegs.size()) << "Number of legs differs";
       printf("Route %d\n", i);
       for (int j = 0; j < rlegs.size(); ++j) {
-        auto rtime = rlegs.Get(j).node().rbegin()->cost().elapsed_cost().seconds();
-        auto mtime = mlegs.Get(j).node().rbegin()->cost().elapsed_cost().seconds();
-        printf("r: %.2f %s\n", rtime, rlegs.Get(j).shape().c_str());
-        printf("m: %.2f %s\n", mtime, mlegs.Get(j).shape().c_str());
+        auto rtime = rlegs[j].node().rbegin()->cost().elapsed_cost().seconds();
+        auto mtime = mlegs[j].node().rbegin()->cost().elapsed_cost().seconds();
+        printf("r: %.2f %s\n", rtime, rlegs[j].shape().c_str());
+        printf("m: %.2f %s\n", mtime, mlegs[j].shape().c_str());
         EXPECT_NEAR(rtime, mtime, 0.1) << "Leg time differs";
       }
     }

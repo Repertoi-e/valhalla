@@ -16,7 +16,7 @@ namespace {
 
 // <Confidence score, raw score, match results, trip path> tuple indexes
 constexpr size_t kConfidenceScoreIndex = 0;
-// constexpr size_t kRawScoreIndex = 1; defined in trace_route_action.cc
+constexpr size_t kRawScoreIndex_ = 1;
 constexpr size_t kMatchResultsIndex = 2;
 
 void serialize_admins(const TripLeg& trip_path, rapidjson::writer_wrapper_t& writer) {
@@ -78,7 +78,7 @@ void serialize_edges(const AttributesController& controller,
   };
 
   // Loop over edges to add attributes
-  for (int i = 1; i < trip_path.node().size(); i++) {
+  for (int i = 1; i < (int) trip_path.node().size(); i++) {
     if (trip_path.node(i - 1).has_edge()) {
       const auto& edge = trip_path.node(i - 1).edge();
 
@@ -546,7 +546,7 @@ void append_trace_info(
   // Add raw_score
   if (controller(kRawScore)) {
     writer.set_precision(tyr::kDefaultPrecision);
-    writer("raw_score", std::get<kRawScoreIndex>(map_match_result));
+    writer("raw_score", std::get<kRawScoreIndex_>(map_match_result));
   }
 
   // Add admins list

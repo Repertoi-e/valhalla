@@ -731,7 +731,7 @@ TransitCost* make_transitcost_from_json(const std::string& property, float testV
      << "}}}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return new TransitCost(request.options().costings().find(Costing::transit)->second);
+  return new TransitCost(request.options().costings().find((int) Costing::transit)->second);
 }
 
 std::uniform_real_distribution<float>*
@@ -741,6 +741,8 @@ make_distributor_from_range(const ranged_default_t<float>& range) {
 }
 
 TEST(TransitCost, testTransitCostParams) {
+  using namespace transitcost_internal;
+
   constexpr unsigned testIterations = 250;
   constexpr unsigned seed = 0;
   std::mt19937 generator(seed);

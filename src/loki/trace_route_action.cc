@@ -21,7 +21,7 @@ void check_shape(const std::vector<valhalla::Location>& shape,
   if (shape.size() < 2) {
     throw valhalla_exception_t{123};
     // Validate shape is not larger than the configured max
-  } else if (shape.size() > static_cast<int>(max_shape)) {
+  } else if (shape.size() > max_shape) {
     throw valhalla_exception_t{153, "(" + std::to_string(shape.size()) + "). The limit is " +
                                         std::to_string(max_shape)};
   };
@@ -64,7 +64,7 @@ void check_alternates_shape(unsigned int alternates,
                             size_t max_alternates_shape) {
 
   // Validate shape is not larger than the configured best paths shape max
-  if ((alternates > 1) && (shape.size() > static_cast<int>(max_alternates_shape))) {
+  if ((alternates > 1) && (shape.size() > max_alternates_shape)) {
     throw valhalla_exception_t{153, "(" + std::to_string(shape.size()) +
                                         "). The best paths shape limit is " +
                                         std::to_string(max_alternates_shape)};

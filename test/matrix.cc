@@ -228,7 +228,7 @@ TEST(Matrix, test_matrix) {
 
   sif::mode_costing_t mode_costing;
   mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find(request.options().costing_type())->second);
+      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
   CostMatrix cost_matrix;
   cost_matrix.SourceToTarget(request, reader, mode_costing, sif::TravelMode::kDrive, 400000.0);
@@ -313,7 +313,7 @@ TEST(Matrix, test_timedistancematrix_forward) {
 
   sif::mode_costing_t mode_costing;
   mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find(request.options().costing_type())->second);
+      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
 
   TimeDistanceMatrix timedist_matrix;
@@ -364,7 +364,7 @@ TEST(Matrix, test_timedistancematrix_reverse) {
 
   sif::mode_costing_t mode_costing;
   mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find(request.options().costing_type())->second);
+      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
 
   TimeDistanceMatrix timedist_matrix;
@@ -401,7 +401,7 @@ TEST(Matrix, test_matrix_osrm) {
 
   sif::mode_costing_t mode_costing;
   mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find(request.options().costing_type())->second);
+      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
 
   CostMatrix cost_matrix;
@@ -443,7 +443,7 @@ TEST(Matrix, partial_matrix) {
 
   sif::mode_costing_t mode_costing;
   mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find(request.options().costing_type())->second);
+      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
 
   TimeDistanceMatrix timedist_matrix;

@@ -29,13 +29,20 @@ const std::unordered_map<std::string, float> kMaxDistances = {
 constexpr float kDistanceScale = 10.f;
 
 void adjust_scores(Options& options) {
-  for (auto* locations :
-       {options.mutable_locations(), options.mutable_sources(), options.mutable_targets()}) {
+  auto options_locations = options.mutable_locations();
+  auto options_sources = options.mutable_sources();
+  auto options_targets = options.mutable_targets();
+  auto locations_list = {&options_locations, &options_sources, &options_targets};
+
+  for (auto locations : locations_list) {
     for (auto& location : *locations) {
       // get the minimum score for all the candidates
       auto minScore = std::numeric_limits<float>::max();
-      for (auto* candidates : {location.mutable_correlation()->mutable_edges(),
-                               location.mutable_correlation()->mutable_filtered_edges()}) {
+
+      auto edges = location.mutable_correlation()->mutable_edges();
+      auto filtered_edges = location.mutable_correlation()->mutable_filtered_edges();
+      auto all_candidates = {&edges, &filtered_edges};
+      for (auto candidates : all_candidates) {
         for (auto& candidate : *candidates) {
           // completely disable scores for this location
           if (location.skip_ranking_candidates())
@@ -51,8 +58,7 @@ void adjust_scores(Options& options) {
 
       // subtract off the min score and cap at max so that path algorithm doesnt go too far
       auto max_score = kMaxDistances.find(Costing_Enum_Name(options.costing_type()));
-      for (auto* candidates : {location.mutable_correlation()->mutable_edges(),
-                               location.mutable_correlation()->mutable_filtered_edges()}) {
+      for (auto candidates : all_candidates) {
         for (auto& candidate : *candidates) {
           candidate.set_distance(candidate.distance() - minScore);
           if (candidate.distance() > max_score->second)

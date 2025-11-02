@@ -788,7 +788,7 @@ TestTruckCost* make_truckcost_from_json(const std::string& property, float testV
      << "}}}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return new TestTruckCost(request.options().costings().find(Costing::truck)->second);
+  return new TestTruckCost(request.options().costings().find((int) Costing::truck)->second);
 }
 
 std::uniform_real_distribution<float>*
@@ -804,6 +804,7 @@ TEST(TruckCost, testTruckCostParams) {
   std::shared_ptr<std::uniform_real_distribution<float>> distributor;
   std::shared_ptr<TestTruckCost> ctorTester;
 
+  using namespace truckcost_internal;
   const auto& defaults = kBaseCostOptsConfig;
 
   // maneuver_penalty_

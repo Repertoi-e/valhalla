@@ -252,7 +252,7 @@ select_transit_tiles(const std::filesystem::path& gtfs_path) {
   return queue;
 }
 
-void setup_stops(Transit& tile,
+void setup_stops(valhalla::Transit& tile,
                  const gtfs::Stop& tile_stop,
                  GraphId& node_id,
                  std::unordered_map<feed_object_t, GraphId>& platform_node_ids,
@@ -301,7 +301,7 @@ void setup_stops(Transit& tile,
  *         later on we use these ids to connect platforms that reference each other in the schedule
  */
 std::unordered_map<feed_object_t, GraphId>
-write_stops(Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& feeds) {
+write_stops(valhalla::Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& feeds) {
   const auto& tile_children = tile_info.station_children;
   auto node_id = tile_info.graphid;
 
@@ -313,7 +313,7 @@ write_stops(Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& f
     auto station_as_stop = feed.get_stop(station.id);
 
     // Add the Egress
-    int node_count = tile.nodes_size();
+    size_t node_count = tile.nodes_size();
     for (const auto& child : tile_children) {
       const auto& child_stop = feed.get_stop(child.second);
       if (child.first.id == station.id && child.first.feed == station.feed &&
@@ -412,13 +412,13 @@ float get_stop_pair_dist(const gtfs::Stop& stop_connect,
 
 // return dangling stop_pairs, write stop data from feed
 bool write_stop_pair(
-    Transit& tile,
+    valhalla::Transit& tile,
     const tile_transit_info_t& tile_info,
     const feed_object_t& feed_trip,
     const gtfs::Feed& feed,
     const std::unordered_map<feed_object_t, GraphId>& platform_node_ids,
     unique_transit_t& uniques,
-    const google::protobuf::RepeatedPtrField<valhalla::mjolnir::Transit_Node>& tile_nodes,
+    const std::vector<valhalla::Transit_Node>& tile_nodes,
     const std::unordered_map<feed_object_t, size_t>& routes_ids) {
   bool dangles = false;
 
@@ -461,24 +461,24 @@ bool write_stop_pair(
     // if it's not in the tile, we can't do anything else than take it's gtfs stop_id
     // we check further down when stitching and adjust if it's was generated
     std::string origin_onestop_id = origin_is_in_tile
-                                        ? tile_nodes.Get(origin_graphid_it->second.id()).onestop_id()
+                                        ? tile_nodes[origin_graphid_it->second.id()].onestop_id()
                                         : get_onestop_id_base(origin_stopId, feed_trip.feed);
     std::string dest_onestop_id = dest_is_in_tile
-                                      ? tile_nodes.Get(dest_graphid_it->second.id()).onestop_id()
+                                      ? tile_nodes[dest_graphid_it->second.id()].onestop_id()
                                       : get_onestop_id_base(dest_stopId, feed_trip.feed);
 
     // we don't use this value unless the origin is in the tile, so it's fine to set it false
     bool origin_is_generated =
-        origin_is_in_tile ? tile_nodes.Get(origin_graphid_it->second.id()).generated() : false;
+        origin_is_in_tile ? tile_nodes[origin_graphid_it->second.id()].generated() : false;
     bool dest_is_generated =
-        dest_is_in_tile ? tile_nodes.Get(dest_graphid_it->second.id()).generated() : false;
+        dest_is_in_tile ? tile_nodes[dest_graphid_it->second.id()].generated() : false;
 
     // check if this stop_pair (the origin of the pair) is inside the current tile
     if ((origin_is_in_tile || dest_is_in_tile) && origin_stopTime.trip_id == dest_stopTime.trip_id) {
       auto* stop_pair = tile.add_stop_pairs();
 
       // add information from calendar.txt and calendar_dates.txt
-      auto* service_dow = stop_pair->mutable_service_days_of_week();
+      auto service_dow = stop_pair->mutable_service_days_of_week();
       service_dow->Add(gtfs::Monday & dow_mask);
       service_dow->Add(gtfs::Tuesday & dow_mask);
       service_dow->Add(gtfs::Wednesday & dow_mask);
@@ -611,7 +611,7 @@ bool write_stop_pair(
 
 // read routes data from feed
 std::unordered_map<feed_object_t, size_t>
-write_routes(Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& feeds) {
+write_routes(valhalla::Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& feeds) {
 
   const auto& tile_routeIds = tile_info.routes;
 
@@ -641,7 +641,7 @@ write_routes(Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& 
     route->set_route_long_name(currRoute.route_long_name);
     route->set_route_text_color(strtol(currRoute.route_text_color.c_str(), nullptr, 16));
     route->set_vehicle_type(
-        (valhalla::mjolnir::Transit_VehicleType)(static_cast<int>(currRoute.route_type)));
+        (valhalla::Transit_VehicleType)(static_cast<int>(currRoute.route_type)));
 
     routes_ids.emplace(feed_route.first, idx);
     idx++;
@@ -651,7 +651,7 @@ write_routes(Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& 
 }
 
 // grab feed data from feed
-void write_shapes(Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& feeds) {
+void write_shapes(valhalla::Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& feeds) {
 
   // loop through all shapes inside the tile
   for (const auto& feed_shape : tile_info.shapes) {
@@ -689,7 +689,7 @@ void ingest_tiles(const std::filesystem::path& gtfs_dir,
     queue.pop();
     uniques.lock.unlock();
 
-    Transit tile;
+    valhalla::Transit tile;
     bool dangles = false;
     uint16_t ext = 0;
 
@@ -819,7 +819,7 @@ void stitch_tiles(const std::filesystem::path& transit_dir,
 
       // get the ids fixed up and write pbf to file
       std::unordered_set<std::string> not_found;
-      for (auto& stop_pair : *tile.mutable_stop_pairs()) {
+      for (auto& stop_pair : tile.mutable_stop_pairs()) {
         if (!stop_pair.has_origin_graphid()) {
           auto found_stop = needed.find(stop_pair.origin_onestop_id())->second;
           if (found_stop.Is_Valid()) {
@@ -961,17 +961,8 @@ Transit read_pbf(const std::filesystem::path& file_name, std::mutex& lock) {
   }
   std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
   lock.unlock();
-  google::protobuf::io::ArrayInputStream as(static_cast<const void*>(buffer.c_str()), buffer.size());
-  google::protobuf::io::CodedInputStream cs(
-      static_cast<google::protobuf::io::ZeroCopyInputStream*>(&as));
-  auto limit = std::max(static_cast<size_t>(1), buffer.size() * 2);
-#if GOOGLE_PROTOBUF_VERSION >= 3006000
-  cs.SetTotalBytesLimit(limit);
-#else
-  cs.SetTotalBytesLimit(limit, limit);
-#endif
   Transit transit;
-  if (!transit.ParseFromCodedStream(&cs)) {
+  if (!transit.ParseFromString(buffer)) {
     throw std::runtime_error("Couldn't load " + file_name.string());
   }
   return transit;
@@ -983,17 +974,8 @@ Transit read_pbf(const std::filesystem::path& file_name) {
     throw std::runtime_error("Couldn't load " + file_name.string());
   }
   std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-  google::protobuf::io::ArrayInputStream as(static_cast<const void*>(buffer.c_str()), buffer.size());
-  google::protobuf::io::CodedInputStream cs(
-      static_cast<google::protobuf::io::ZeroCopyInputStream*>(&as));
-  auto limit = std::max(static_cast<size_t>(1), buffer.size() * 2);
-#if GOOGLE_PROTOBUF_VERSION >= 3006000
-  cs.SetTotalBytesLimit(limit);
-#else
-  cs.SetTotalBytesLimit(limit, limit);
-#endif
   Transit transit;
-  if (!transit.ParseFromCodedStream(&cs)) {
+  if (!transit.ParseFromString(buffer)) {
     throw std::runtime_error("Couldn't load " + file_name.string());
   }
   return transit;

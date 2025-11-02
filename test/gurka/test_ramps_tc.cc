@@ -170,28 +170,28 @@ TEST(RampsTCs, test_tc_no_infer) {
   ASSERT_EQ(result.trip().routes(0).legs_size(), 1);
   auto leg = result.trip().routes(0).legs(0);
   gurka::assert::raw::expect_path(result, {"AM", "MN", "NJ"});
-  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRampUse);
+  EXPECT_EQ(leg.node(1).edge().use(), TripLeg_Use_kRampUse);
   EXPECT_EQ(leg.node(1).edge().internal_intersection(), 0);
 
   result = gurka::do_action(valhalla::Options::route, map, {"K", "D"}, "auto");
   ASSERT_EQ(result.trip().routes(0).legs_size(), 1);
   leg = result.trip().routes(0).legs(0);
   gurka::assert::raw::expect_path(result, {"KO", "OP", "PD"});
-  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kTurnChannelUse);
+  EXPECT_EQ(leg.node(1).edge().use(), TripLeg_Use_kTurnChannelUse);
   EXPECT_EQ(leg.node(1).edge().internal_intersection(), 0);
 
   result = gurka::do_action(valhalla::Options::route, map, {"E", "L"}, "auto");
   ASSERT_EQ(result.trip().routes(0).legs_size(), 1);
   leg = result.trip().routes(0).legs(0);
   gurka::assert::raw::expect_path(result, {"EQ", "QR", "RL"});
-  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRampUse);
+  EXPECT_EQ(leg.node(1).edge().use(), TripLeg_Use_kRampUse);
   EXPECT_EQ(leg.node(1).edge().internal_intersection(), 0);
 
   result = gurka::do_action(valhalla::Options::route, map, {"A", "D"}, "auto");
   ASSERT_EQ(result.trip().routes(0).legs_size(), 1);
   leg = result.trip().routes(0).legs(0);
   gurka::assert::raw::expect_path(result, {"AM", "MB", "BC", "CP", "PD"});
-  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRoadUse);
+  EXPECT_EQ(leg.node(1).edge().use(), TripLeg_Use_kRoadUse);
   EXPECT_EQ(leg.node(1).edge().internal_intersection(), 1);
 }
 
@@ -255,19 +255,19 @@ TEST(RampsTCs, test_tc_infer) {
   auto leg = result.trip().routes(0).legs(0);
   gurka::assert::raw::expect_path(result, {"AB", "BE", "EG", "GK", "KJ"});
 
-  EXPECT_EQ(leg.node(0).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRoadUse);
+  EXPECT_EQ(leg.node(0).edge().use(), TripLeg_Use_kRoadUse);
   EXPECT_EQ(leg.node(0).edge().internal_intersection(), 0);
 
-  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRampUse);
+  EXPECT_EQ(leg.node(1).edge().use(), TripLeg_Use_kRampUse);
   EXPECT_EQ(leg.node(1).edge().internal_intersection(), 0);
 
-  EXPECT_EQ(leg.node(2).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRampUse);
+  EXPECT_EQ(leg.node(2).edge().use(), TripLeg_Use_kRampUse);
   EXPECT_EQ(leg.node(2).edge().internal_intersection(), 0);
 
-  EXPECT_EQ(leg.node(3).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kTurnChannelUse);
+  EXPECT_EQ(leg.node(3).edge().use(), TripLeg_Use_kTurnChannelUse);
   EXPECT_EQ(leg.node(3).edge().internal_intersection(), 1);
 
-  EXPECT_EQ(leg.node(4).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRoadUse);
+  EXPECT_EQ(leg.node(4).edge().use(), TripLeg_Use_kRoadUse);
   EXPECT_EQ(leg.node(4).edge().internal_intersection(), 0);
 
   gurka::assert::raw::expect_maneuver_begin_path_indexes(result, {0, 1, 4, 5});
@@ -374,19 +374,19 @@ TEST(RampsNoReclass, test_tc_infer) {
   auto leg = result.trip().routes(0).legs(0);
   gurka::assert::raw::expect_path(result, {"AB", "BE", "EG", "GK", "KJ"});
 
-  EXPECT_EQ(leg.node(0).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRoadUse);
+  EXPECT_EQ(leg.node(0).edge().use(), TripLeg_Use_kRoadUse);
   EXPECT_EQ(leg.node(0).edge().internal_intersection(), 0);
 
-  EXPECT_EQ(leg.node(1).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRampUse);
+  EXPECT_EQ(leg.node(1).edge().use(), TripLeg_Use_kRampUse);
   EXPECT_EQ(leg.node(1).edge().internal_intersection(), 0);
 
-  EXPECT_EQ(leg.node(2).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRampUse);
+  EXPECT_EQ(leg.node(2).edge().use(), TripLeg_Use_kRampUse);
   EXPECT_EQ(leg.node(2).edge().internal_intersection(), 0);
 
-  EXPECT_EQ(leg.node(3).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kTurnChannelUse);
+  EXPECT_EQ(leg.node(3).edge().use(), TripLeg_Use_kTurnChannelUse);
   EXPECT_EQ(leg.node(3).edge().internal_intersection(), 1);
 
-  EXPECT_EQ(leg.node(4).edge().use(), valhalla::TripLeg_Use::TripLeg_Use_kRoadUse);
+  EXPECT_EQ(leg.node(4).edge().use(), TripLeg_Use_kRoadUse);
   EXPECT_EQ(leg.node(4).edge().internal_intersection(), 0);
 
   gurka::assert::raw::expect_maneuver_begin_path_indexes(result, {0, 1, 4, 5});

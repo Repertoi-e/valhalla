@@ -1281,7 +1281,7 @@ gurka::nodelayout LevelSearchFilter::layout = {};
 TEST_F(LevelSearchFilter, TraverseLevels) {
   auto result = Route({{"x", 0}, {"y", 1}});
   ASSERT_EQ(result.info().warnings().size(), 1);
-  EXPECT_EQ(result.info().warnings().Get(0).code(), 302);
+  EXPECT_EQ(result.info().warnings()[0].code(), 302);
   gurka::assert::raw::expect_path(result, {"CD", "AC", "AE", "EG", "GH"});
 }
 

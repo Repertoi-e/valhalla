@@ -61,13 +61,13 @@ TEST_F(Use, EdgeUse) {
   // rest_area
   ASSERT_EQ(result.trip().routes(0).legs_size(), 1);
   auto leg = result.trip().routes(0).legs(0);
-  EXPECT_EQ(leg.node(1).edge().use(), TripLeg::Use::TripLeg_Use_kRestAreaUse); // BC
+  EXPECT_EQ(leg.node(1).edge().use(), TripLeg_Use_kRestAreaUse); // BC
 
   // service_area
   result = gurka::do_action(valhalla::Options::route, map, {"A", "F"}, "auto");
 
   leg = result.trip().routes(0).legs(0);
-  EXPECT_EQ(leg.node(3).edge().use(), TripLeg::Use::TripLeg_Use_kServiceAreaUse); // EF
+  EXPECT_EQ(leg.node(3).edge().use(), TripLeg_Use_kServiceAreaUse); // EF
 }
 
 TEST_F(Use, test_passing_rest_area) {

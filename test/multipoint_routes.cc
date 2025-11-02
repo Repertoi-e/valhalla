@@ -44,7 +44,7 @@ float mid_break_distance;
 float mid_through_distance;
 
 void check_dates(bool time_dependent,
-                 const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+                 const std::vector<valhalla::Location>& locations,
                  baldr::GraphReader& reader) {
   // non-time dependent should get no dates, time dependent should all have dates that increase
   uint64_t epoch = 0;

@@ -1191,10 +1191,10 @@ std::string serialize_error(const valhalla_exception_t& exception, Api& request)
 
   // pbf format output, we only send back the info with errors in it
   if (request.options().format() == Options::pbf) {
-#if !defined __EMSCRIPTEN__
     Api error_only;
     error_only.mutable_info()->Swap(request.mutable_info());
-    auto bytes = error_only.SerializeAsString();
+    std::string bytes;
+    error_only.SerializeToString(&bytes);
     // if we are handling a service request we need the request intact
     if (error_only.info().is_service())
       error_only.mutable_info()->Swap(request.mutable_info());
@@ -1202,9 +1202,6 @@ std::string serialize_error(const valhalla_exception_t& exception, Api& request)
     else
       request.Swap(&error_only);
     return bytes;
-#else
-    throw std::runtime_error("PBF format not implemented in Emscripten builds");
-#endif
   }
 
   // json

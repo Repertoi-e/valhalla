@@ -85,9 +85,10 @@ protected:
   /**
    * @brief Add tile to cache and store it in local filesystem.
    * @param[in] path path to the tile
-   * @param[in] raw_data Data to store.
+   * @param[in] raw_data raw tile data
+   * @param[in] size size of raw tile data
    */
-  bool store(const std::string& path, const std::vector<char>& raw_data);
+  bool store(const std::string& path, const char* raw_data, size_t size);
 
   friend cache_t;
   std::unique_ptr<cache_t> cache_;

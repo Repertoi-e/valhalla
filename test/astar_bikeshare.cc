@@ -79,7 +79,7 @@ void test_request(const std::string& request,
   EXPECT_EQ(legs.size(), 1) << "Should have 1 leg";
 
   // We going to count how many times the travel_mode has been changed
-  std::vector<TravelMode> travel_modes;
+  std::vector<int> travel_modes;
 
   std::vector<std::string> route;
 
@@ -93,7 +93,7 @@ void test_request(const std::string& request,
       auto it = expected_bss_maneuver.find(++idx);
       if (it == expected_bss_maneuver.end()) {
         EXPECT_EQ(m.bss_maneuver_type(),
-                  BssManeuverType::DirectionsLeg_Maneuver_BssManeuverType_kNoneAction)
+                  DirectionsLeg_Maneuver_BssManeuverType_kNoneAction)
             << "BSS maneuver type at " + std::to_string(idx) + " is incorrect";
 
       } else {
@@ -105,7 +105,7 @@ void test_request(const std::string& request,
         EXPECT_EQ(m.bss_info().ref(), search->second)
             << "bss_info.osm_node_id at " + std::to_string(idx) + " is incorrect";
       }
-      travel_modes.push_back(m.travel_mode());
+      travel_modes.push_back((int) m.travel_mode());
       std::string name;
       for (const auto& n : m.street_name()) {
         name += n.value() + " ";

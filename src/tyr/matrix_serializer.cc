@@ -87,7 +87,7 @@ std::string serialize(const Api& request) {
   osrm::waypoints(options.targets(), writer);
   writer.end_array();
   writer.start_array("durations");
-  for (int source_index = 0; source_index < options.sources_size(); ++source_index) {
+  for (int source_index = 0; source_index < (int) options.sources_size(); ++source_index) {
     const auto first_td = source_index * options.targets_size();
     writer.start_array();
     serialize_duration(request.matrix(), writer, first_td, options.targets_size());
@@ -96,7 +96,7 @@ std::string serialize(const Api& request) {
   writer.end_array();
 
   writer.start_array("distances");
-  for (int source_index = 0; source_index < options.sources_size(); ++source_index) {
+  for (int source_index = 0; source_index < (int) options.sources_size(); ++source_index) {
     const auto first_td = source_index * options.targets_size();
     writer.start_array();
     serialize_distance(request.matrix(), writer, first_td, options.targets_size(), 1.0);
@@ -223,7 +223,7 @@ std::string serialize(const Api& request, double distance_scale) {
 
   if (options.verbose()) {
     writer.start_array("sources_to_targets");
-    for (int source_index = 0; source_index < options.sources_size(); ++source_index) {
+    for (int source_index = 0; source_index < (int) options.sources_size(); ++source_index) {
       serialize_row(request.matrix(), writer, source_index * options.targets_size(),
                     options.targets_size(), source_index, 0, distance_scale, options.shape_format());
     }
@@ -240,7 +240,7 @@ std::string serialize(const Api& request, double distance_scale) {
     writer.start_object("sources_to_targets");
 
     writer.start_array("durations");
-    for (int source_index = 0; source_index < options.sources_size(); ++source_index) {
+    for (int source_index = 0; source_index < (int) options.sources_size(); ++source_index) {
       const auto first_td = source_index * options.targets_size();
       writer.start_array();
       serialize_duration(request.matrix(), writer, first_td, options.targets_size());
@@ -249,7 +249,7 @@ std::string serialize(const Api& request, double distance_scale) {
     writer.end_array();
 
     writer.start_array("distances");
-    for (int source_index = 0; source_index < options.sources_size(); ++source_index) {
+    for (int source_index = 0; source_index < (int) options.sources_size(); ++source_index) {
       const auto first_td = source_index * options.targets_size();
       writer.start_array();
       serialize_distance(request.matrix(), writer, first_td, options.targets_size(), distance_scale);
@@ -260,7 +260,7 @@ std::string serialize(const Api& request, double distance_scale) {
     if (!(options.shape_format() == ShapeFormat::no_shape ||
           (request.matrix().algorithm() != Matrix::CostMatrix))) {
       writer.start_array("shapes");
-      for (int source_index = 0; source_index < options.sources_size(); ++source_index) {
+      for (int source_index = 0; source_index < (int) options.sources_size(); ++source_index) {
         const auto first_td = source_index * options.targets_size();
         writer.start_array();
         serialize_shape(request.matrix(), writer, first_td, options.targets_size(),

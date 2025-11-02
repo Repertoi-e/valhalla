@@ -11,7 +11,7 @@ using namespace valhalla::thor;
 namespace {
 const std::string get_unfound_indices(const std::vector<bool>& result) {
   std::string indices;
-  for (int i = 0; i != result.size(); ++i) {
+  for (int i = 0; i != (int) result.size(); ++i) {
     if (result[i]) {
       indices += std::to_string(i) + ",";
     }

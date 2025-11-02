@@ -218,13 +218,13 @@ void validate(const std::string& key,
 void validate(const std::string& key,
               const std::vector<std::string>& expected_values,
               const bool has_pbf_values,
-              const google::protobuf::RepeatedPtrField<std::string>& pbf_values) {
+              const std::vector<std::string>& pbf_values) {
   ASSERT_TRUE(has_pbf_values) << "string values not found in pbf for key=" + key;
 
   ASSERT_EQ(expected_values.size(), pbf_values.size()) << "invalid count in pbf for key=" + key;
 
   for (size_t i = 0; i < expected_values.size(); ++i) {
-    ASSERT_EQ(pbf_values.Get(i), expected_values.at(i)) << "incorrect " << key;
+    ASSERT_EQ(pbf_values[i], expected_values.at(i)) << "incorrect " << key;
   }
 }
 
@@ -460,7 +460,7 @@ void test_default_base_auto_cost_options(const Costing::Type costing_type,
 
   // Get cost request with no cost options
   Api request = get_request(get_request_str(key, costing_str), action);
-  const auto& costing = request.options().costings().find(costing_type)->second;
+  const auto& costing = request.options().costings().find((int) costing_type)->second;
   const auto& options = costing.options();
   validate("maneuver_penalty", kDefaultAuto_ManeuverPenalty, options.maneuver_penalty());
   validate("destination_only_penalty", kDefaultAuto_DestinationOnlyPenalty,
@@ -494,7 +494,7 @@ void test_default_motor_scooter_cost_options(const Costing::Type costing_type,
 
   // Get cost request with no cost options
   Api request = get_request(get_request_str(key, costing_str), action);
-  const auto& costing = request.options().costings().find(costing_type)->second;
+  const auto& costing = request.options().costings().find((int) costing_type)->second;
   const auto& options = costing.options();
   validate("maneuver_penalty", kDefaultMotorScooter_ManeuverPenalty, options.maneuver_penalty());
   validate("destination_only_penalty", kDefaultMotorScooter_DestinationOnlyPenalty,
@@ -526,7 +526,7 @@ void test_default_motorcycle_cost_options(const Costing::Type costing_type,
 
   // Get cost request with no cost options
   Api request = get_request(get_request_str(key, costing_str), action);
-  const auto& costing = request.options().costings().find(costing_type)->second;
+  const auto& costing = request.options().costings().find((int) costing_type)->second;
   const auto& options = costing.options();
   validate("maneuver_penalty", kDefaultMotorcycle_ManeuverPenalty, options.maneuver_penalty());
   validate("destination_only_penalty", kDefaultMotorcycle_DestinationOnlyPenalty,
@@ -556,7 +556,7 @@ void test_default_pedestrian_cost_options(const Costing::Type costing_type,
 
   // Get cost request with no cost options
   Api request = get_request(get_request_str(key, costing_str), action);
-  const auto& costing = request.options().costings().find(costing_type)->second;
+  const auto& costing = request.options().costings().find((int) costing_type)->second;
   const auto& options = costing.options();
   validate("type", "foot", options.transport_type());
   validate("maneuver_penalty", kDefaultPedestrian_ManeuverPenalty, options.maneuver_penalty());
@@ -596,7 +596,7 @@ void test_default_bicycle_cost_options(const Costing::Type costing_type,
 
   // Get cost request with no cost options
   Api request = get_request(get_request_str(key, costing_str), action);
-  const auto& costing = request.options().costings().find(costing_type)->second;
+  const auto& costing = request.options().costings().find((int) costing_type)->second;
   const auto& options = costing.options();
   validate("bicycle_type", kDefaultBicycle_BicycleType, options.transport_type());
   validate("maneuver_penalty", kDefaultBicycle_ManeuverPenalty, options.maneuver_penalty());
@@ -628,7 +628,7 @@ void test_default_truck_cost_options(const Costing::Type costing_type, const Opt
 
   // Get cost request with no cost options
   Api request = get_request(get_request_str(key, costing_str), action);
-  const auto& costing = request.options().costings().find(costing_type)->second;
+  const auto& costing = request.options().costings().find((int) costing_type)->second;
   const auto& options = costing.options();
   validate("maneuver_penalty", kDefaultTruck_ManeuverPenalty, options.maneuver_penalty());
   validate("destination_only_penalty", kDefaultTruck_DestinationOnlyPenalty,
@@ -666,7 +666,7 @@ void test_default_transit_cost_options(const Costing::Type costing_type,
 
   // Get cost request with no cost options
   Api request = get_request(get_request_str(key, costing_str), action);
-  const auto& costing = request.options().costings().find(costing_type)->second;
+  const auto& costing = request.options().costings().find((int) costing_type)->second;
   const auto& options = costing.options();
   validate("mode_factor", kDefaultTransit_ModeFactor, options.mode_factor());
   validate("wheelchair", false, options.wheelchair());
@@ -685,7 +685,7 @@ void test_default_base_cost_options(const Costing::Type costing_type, const Opti
 
   // Get cost request with no cost options
   Api request = get_request(get_request_str(key, costing_str), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(costing_str + " closure_factor", kDefaultClosureFactor, options.closure_factor());
   // TODO: Validate more common cost attributes
 }
@@ -702,7 +702,7 @@ void test_transport_type_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.transport_type());
 }
 
@@ -718,7 +718,7 @@ void test_maneuver_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.maneuver_penalty());
 }
 
@@ -734,7 +734,7 @@ void test_destination_only_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.destination_only_penalty());
 }
 
@@ -750,7 +750,7 @@ void test_gate_cost_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.gate_cost());
 }
 
@@ -766,7 +766,7 @@ void test_gate_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.gate_penalty());
 }
 
@@ -782,7 +782,7 @@ void test_private_access_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.private_access_penalty());
 }
 
@@ -798,7 +798,7 @@ void test_toll_booth_cost_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.toll_booth_cost());
 }
 
@@ -814,7 +814,7 @@ void test_toll_booth_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.toll_booth_penalty());
 }
 
@@ -830,7 +830,7 @@ void test_alley_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.alley_penalty());
 }
 
@@ -846,7 +846,7 @@ void test_country_crossing_cost_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.country_crossing_cost());
 }
 
@@ -862,7 +862,7 @@ void test_country_crossing_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.country_crossing_penalty());
 }
 
@@ -878,7 +878,7 @@ void test_ferry_cost_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.ferry_cost());
 }
 
@@ -894,7 +894,7 @@ void test_use_ferry_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_ferry());
 }
 
@@ -910,7 +910,7 @@ void test_use_highways_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_highways());
 }
 
@@ -926,7 +926,7 @@ void test_use_tolls_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_tolls());
 }
 
@@ -942,7 +942,7 @@ void test_use_tracks_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_tracks());
 }
 
@@ -958,7 +958,7 @@ void test_use_living_streets_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_living_streets());
 }
 
@@ -974,7 +974,7 @@ void test_use_hills_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_hills());
 }
 
@@ -990,7 +990,7 @@ void test_use_primary_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_primary());
 }
 
@@ -1006,7 +1006,7 @@ void test_top_speed_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.top_speed());
 }
 
@@ -1022,7 +1022,7 @@ void test_use_trails_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_trails());
 }
 
@@ -1041,7 +1041,7 @@ void test_max_distance_parsing(const Costing::Type costing_type,
   Api request = get_request(get_request_str(grandparent_key, parent_key, sibling_key, transport_type,
                                             key, specified_value),
                             action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.max_distance());
 }
 
@@ -1060,7 +1060,7 @@ void test_walking_speed_parsing(const Costing::Type costing_type,
   Api request = get_request(get_request_str(grandparent_key, parent_key, sibling_key, transport_type,
                                             key, specified_value),
                             action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.walking_speed());
 }
 
@@ -1079,7 +1079,7 @@ void test_cycling_speed_parsing(const Costing::Type costing_type,
   Api request = get_request(get_request_str(grandparent_key, parent_key, sibling_key, transport_type,
                                             key, specified_value),
                             action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.cycling_speed());
 }
 
@@ -1098,7 +1098,7 @@ void test_step_penalty_parsing(const Costing::Type costing_type,
   Api request = get_request(get_request_str(grandparent_key, parent_key, sibling_key, transport_type,
                                             key, specified_value),
                             action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.step_penalty());
 }
 
@@ -1117,7 +1117,7 @@ void test_max_grade_parsing(const Costing::Type costing_type,
   Api request = get_request(get_request_str(grandparent_key, parent_key, sibling_key, transport_type,
                                             key, specified_value),
                             action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.max_grade());
 }
 
@@ -1133,7 +1133,7 @@ void test_max_hiking_difficulty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.max_hiking_difficulty());
 }
 
@@ -1149,7 +1149,7 @@ void test_mode_factor_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.mode_factor());
 }
 
@@ -1165,7 +1165,7 @@ void test_walkway_factor_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.walkway_factor());
 }
 
@@ -1181,7 +1181,7 @@ void test_sidewalk_factor_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.sidewalk_factor());
 }
 
@@ -1197,7 +1197,7 @@ void test_alley_factor_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.alley_factor());
 }
 
@@ -1213,7 +1213,7 @@ void test_driveway_factor_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.driveway_factor());
 }
 
@@ -1229,7 +1229,7 @@ void test_use_roads_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_roads());
 }
 
@@ -1245,7 +1245,7 @@ void test_avoid_bad_surfaces_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.avoid_bad_surfaces());
 }
 
@@ -1261,7 +1261,7 @@ void test_transit_start_end_max_distance_parsing(const Costing::Type costing_typ
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.transit_start_end_max_distance());
 }
 
@@ -1277,7 +1277,7 @@ void test_transit_transfer_max_distance_parsing(const Costing::Type costing_type
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.transit_transfer_max_distance());
 }
 
@@ -1293,7 +1293,7 @@ void test_low_class_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.low_class_penalty());
 }
 
@@ -1309,7 +1309,7 @@ void test_weight_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.weight());
 }
 
@@ -1325,7 +1325,7 @@ void test_axle_load_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.axle_load());
 }
 
@@ -1341,7 +1341,7 @@ void test_axle_count_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.axle_count());
 }
 
@@ -1357,7 +1357,7 @@ void test_height_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.height());
 }
 
@@ -1373,7 +1373,7 @@ void test_width_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.width());
 }
 
@@ -1389,7 +1389,7 @@ void test_length_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.length());
 }
 
@@ -1405,7 +1405,7 @@ void test_use_bus_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_bus());
 }
 
@@ -1421,7 +1421,7 @@ void test_use_rail_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_rail());
 }
 
@@ -1437,7 +1437,7 @@ void test_use_transfers_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.use_transfers());
 }
 
@@ -1453,7 +1453,7 @@ void test_transfer_cost_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.transfer_cost());
 }
 
@@ -1469,7 +1469,7 @@ void test_transfer_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.transfer_penalty());
 }
 
@@ -1485,7 +1485,7 @@ void test_hazmat_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.hazmat());
 }
 
@@ -1501,7 +1501,7 @@ void test_wheelchair_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.wheelchair());
 }
 
@@ -1517,7 +1517,7 @@ void test_bicycle_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.bicycle());
 }
 
@@ -1534,7 +1534,7 @@ void test_filter_stop_parsing(const Costing::Type costing_type,
   Api request =
       get_request(get_filter_request_str(costing_str, filter_type, filter_action, filter_ids),
                   action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(action_key, filter_action, true, options.filter_stop_action());
   validate(ids_key, filter_ids, (options.filter_stop_ids_size() > 0), options.filter_stop_ids());
 }
@@ -1552,7 +1552,7 @@ void test_filter_route_parsing(const Costing::Type costing_type,
   Api request =
       get_request(get_filter_request_str(costing_str, filter_type, filter_action, filter_ids),
                   action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(action_key, filter_action, true, options.filter_route_action());
   validate(ids_key, filter_ids, (options.filter_route_ids_size() > 0), options.filter_route_ids());
 }
@@ -1570,7 +1570,7 @@ void test_filter_operator_parsing(const Costing::Type costing_type,
   Api request =
       get_request(get_filter_request_str(costing_str, filter_type, filter_action, filter_ids),
                   action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(action_key, filter_action, true, options.filter_operator_action());
   validate(ids_key, filter_ids, (options.filter_operator_ids_size() > 0),
            options.filter_operator_ids());
@@ -1588,7 +1588,7 @@ void test_service_penalty_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.service_penalty());
 }
 
@@ -1604,7 +1604,7 @@ void test_service_factor_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.service_factor());
 }
 
@@ -1620,7 +1620,7 @@ void test_closure_factor_parsing(const Costing::Type costing_type,
 
   Api request =
       get_request(get_request_str(grandparent_key, parent_key, key, specified_value), action);
-  const auto& options = request.options().costings().find(costing_type)->second.options();
+  const auto& options = request.options().costings().find((int) costing_type)->second.options();
   validate(key, expected_value, options.closure_factor());
 }
 
@@ -1634,7 +1634,7 @@ void create_costing_options(Options& options, Costing::Type type) {
 
 // Set disable_hierarchy_pruning to true in costing options
 void set_disable_hierarchy_pruning(Options& options, Costing::Type type) {
-  Costing* costing = &(*options.mutable_costings())[type];
+  Costing* costing = &(options.mutable_costings())[type];
   auto* co = costing->mutable_options();
   co->set_disable_hierarchy_pruning(true);
 }

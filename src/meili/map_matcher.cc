@@ -10,20 +10,26 @@
 #include <array>
 #include <cmath>
 
+namespace valhalla {
+namespace meili {
+
+float GreatCircleDistanceSquared(const Measurement& left, const Measurement& right) {
+  return left.lnglat().DistanceSquared(right.lnglat());
+}
+
+float GreatCircleDistance(const Measurement& left, const Measurement& right) {
+  return left.lnglat().Distance(right.lnglat());
+}
+
+} // namespace meili
+} // namespace valhalla
+
 namespace {
 
 using namespace valhalla;
 using namespace valhalla::meili;
 
 constexpr float MAX_ACCUMULATED_COST = 99999999.f;
-
-inline float GreatCircleDistanceSquared(const Measurement& left, const Measurement& right) {
-  return left.lnglat().DistanceSquared(right.lnglat());
-}
-
-inline float GreatCircleDistance(const Measurement& left, const Measurement& right) {
-  return left.lnglat().Distance(right.lnglat());
-}
 
 inline float ClockDistance(const Measurement& left, const Measurement& right) {
   return right.epoch_time() < 0 || left.epoch_time() < 0 ? -1

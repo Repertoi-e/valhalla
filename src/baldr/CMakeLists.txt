@@ -130,7 +130,8 @@ valhalla_module(NAME baldr
   SYSTEM_INCLUDE_DIRECTORIES
     PUBLIC
       ${system_includes}
-
+    PRIVATE
+      ${protozero_include_dir}
   DEPENDS
     valhalla::midgard
     valhalla::proto

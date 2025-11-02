@@ -25,13 +25,13 @@ TEST(Standalone, OsrmSerializerShape) {
   // Test that full shape is returned by default
   auto result = gurka::do_action(valhalla::Options::route, map, {"A", "D"}, "auto",
                                  {{"/shape_format", "geojson"}});
-  auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  auto json = gurka::convert_to_json(result, Options_Format_osrm);
   EXPECT_EQ(json["routes"][0]["geometry"]["coordinates"].GetArray().Size(), 4);
 
   // Test that shape is simplified (should simplify out C but not B)
   result = gurka::do_action(valhalla::Options::route, map, {"A", "D"}, "auto",
                             {{"/generalize", "0"}, {"/shape_format", "geojson"}});
-  json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  json = gurka::convert_to_json(result, Options_Format_osrm);
   EXPECT_EQ(json["routes"][0]["geometry"]["coordinates"].GetArray().Size(), 3);
 }
 
@@ -55,7 +55,7 @@ TEST(Standalone, HeadingNumberTurnLeft) {
   auto result = gurka::do_action(valhalla::Options::route, map, {"A", "D"}, "pedestrian",
                                  {{"/shape_format", "geojson"}});
   //
-  auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  auto json = gurka::convert_to_json(result, Options_Format_osrm);
   std::vector<int> expected_headings{1, 2, 1};
   for (rapidjson::SizeType i = 0; i < json["routes"][0]["legs"][0]["steps"].GetArray().Size(); ++i)
     ASSERT_EQ(expected_headings[i],
@@ -83,7 +83,7 @@ TEST(Standalone, HeadingNumberTRoute) {
 
   auto result = gurka::do_action(valhalla::Options::route, map, {"A", "F"}, "pedestrian");
 
-  auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  auto json = gurka::convert_to_json(result, Options_Format_osrm);
   std::vector<int> expected_headings{1, 3, 1};
   for (rapidjson::SizeType i = 0; i < json["routes"][0]["legs"][0]["steps"].GetArray().Size(); ++i) {
     for (rapidjson::SizeType j = 0;
@@ -148,7 +148,7 @@ TEST(Standalone, HeadingNumberCrossRoad) {
 
   auto result = gurka::do_action(valhalla::Options::route, map, {"A", "F"}, "pedestrian");
 
-  auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  auto json = gurka::convert_to_json(result, Options_Format_osrm);
   std::vector<int> expected_headings{1, 4, 1};
   for (rapidjson::SizeType i = 0; i < json["routes"][0]["legs"][0]["steps"].GetArray().Size(); ++i) {
     for (rapidjson::SizeType j = 0;
@@ -183,7 +183,7 @@ TEST(Standalone, HeadingNumber2CrossRoadPedestrian) {
 
   auto result = gurka::do_action(valhalla::Options::route, map, {"C", "G"}, "pedestrian");
 
-  auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  auto json = gurka::convert_to_json(result, Options_Format_osrm);
   std::vector<int> expected_headings{1, 4, 4, 1};
   int index{0};
   for (rapidjson::SizeType i = 0; i < json["routes"][0]["legs"][0]["steps"].GetArray().Size(); ++i) {
@@ -197,7 +197,7 @@ TEST(Standalone, HeadingNumber2CrossRoadPedestrian) {
   }
 
   result = gurka::do_action(valhalla::Options::route, map, {"A", "G"}, "pedestrian");
-  json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  json = gurka::convert_to_json(result, Options_Format_osrm);
   index = 0;
   for (rapidjson::SizeType i = 0; i < json["routes"][0]["legs"][0]["steps"].GetArray().Size(); ++i) {
     for (rapidjson::SizeType j = 0;
@@ -235,7 +235,7 @@ TEST(Standalone, HeadingNumber2CrossRoadAuto) {
   // route C-G
   {
     auto result = gurka::do_action(valhalla::Options::route, map, {"C", "G"}, "auto");
-    auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+    auto json = gurka::convert_to_json(result, Options_Format_osrm);
     int index{0};
 
     std::vector<int> out_indexes{0, 1, 1}; // `out` field expected values
@@ -294,7 +294,7 @@ TEST(Standalone, HeadingNumber2CrossRoadAuto) {
   // route A-G
   {
     auto result = gurka::do_action(valhalla::Options::route, map, {"A", "G"}, "auto");
-    auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+    auto json = gurka::convert_to_json(result, Options_Format_osrm);
     int index{0};
 
     // Expected `out` edge indexes.
@@ -427,7 +427,7 @@ TEST(Standalone, HeadingNumberAutoRoute) {
   gurka::assert::osrm::expect_steps(result, {"JA", "AB", "CG", "GK"});
   gurka::assert::raw::expect_path(result, {"JA", "AB", "BC", "CG", "GK"});
 
-  auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  auto json = gurka::convert_to_json(result, Options_Format_osrm);
 
   // 5 steps/maneuvers expected for route `J-A-C-G-K`.
   ASSERT_EQ(json["routes"][0]["legs"][0]["steps"].GetArray().Size(), 5);
@@ -565,7 +565,7 @@ protected:
          std::to_string(map.nodes.at(to).lat()) % std::to_string(map.nodes.at(to).lng()) % language)
             .str();
     auto result = gurka::do_action(valhalla::Options::route, map, request);
-    return gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+    return gurka::convert_to_json(result, Options_Format_osrm);
   }
 };
 
@@ -763,7 +763,7 @@ TEST(Standalone, BannerInstructions) {
           .str();
   auto result = gurka::do_action(valhalla::Options::route, map, request);
 
-  auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  auto json = gurka::convert_to_json(result, Options_Format_osrm);
 
   auto steps = json["routes"][0]["legs"][0]["steps"].GetArray();
   ASSERT_TRUE(steps.Size() > 0);
@@ -977,7 +977,7 @@ TEST(Standalone, BannerInstructionsRoundabout) {
           .str();
   auto result = gurka::do_action(valhalla::Options::route, map, request);
 
-  auto json = gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+  auto json = gurka::convert_to_json(result, Options_Format_osrm);
 
   auto steps = json["routes"][0]["legs"][0]["steps"].GetArray();
   ASSERT_TRUE(steps.Size() > 0);
@@ -1077,7 +1077,7 @@ protected:
          std::to_string(map.nodes.at(to).lat()) % std::to_string(map.nodes.at(to).lng()))
             .str();
     auto result = gurka::do_action(valhalla::Options::route, map, request);
-    return gurka::convert_to_json(result, Options::Format::Options_Format_osrm);
+    return gurka::convert_to_json(result, Options_Format_osrm);
   }
 };
 

@@ -268,7 +268,8 @@ std::string serializePbf(Api &request) {
     request.clear_expansion();
 
   // serialize the bytes
-  auto bytes = request.SerializeAsString();
+  std::string bytes;
+  request.SerializeToString(&bytes);
 
   // we do need to keep the options object though because downstream request
   // handling relies on it
@@ -467,7 +468,7 @@ json::ArrayPtr waypoints(const valhalla::Trip &trip) {
   auto waypoints = json::array({});
   // For multi-route the same waypoints are used for all routes.
   for (const auto &leg : trip.routes(0).legs()) {
-    for (int i = 0; i < leg.location_size(); ++i) {
+    for (int i = 0; i < (int) leg.location_size(); ++i) {
       // we skip the first location of legs > 0 because that would duplicate
       // waypoints
       if (i == 0 && !waypoints->empty()) {

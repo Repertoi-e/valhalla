@@ -357,7 +357,7 @@ MotorScooterCost::MotorScooterCost(const Costing& costing)
   // Scale from 0 (avoid hills) to 1 (don't avoid hills)
   float use_hills = costing_options.use_hills();
   float avoid_hills = (1.0f - use_hills);
-  for (uint32_t i = 0; i <= kMaxGradeFactor; ++i) {
+  for (uint32_t i = 0; i <= motorscootercost_internal::kMaxGradeFactor; ++i) {
     grade_penalty_[i] = avoid_hills * motorscootercost_internal::kAvoidHillsStrength[i];
   }
 
@@ -659,7 +659,7 @@ TestMotorScooterCost* make_motorscootercost_from_json(const std::string& propert
      << testVal << "}}}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return new TestMotorScooterCost(request.options().costings().find(Costing::motor_scooter)->second);
+  return new TestMotorScooterCost(request.options().costings().find((int) Costing::motor_scooter)->second);
 }
 
 template <typename T>
@@ -683,7 +683,7 @@ TEST(MotorscooterCost, testMotorScooterCostParams) {
   std::shared_ptr<std::uniform_int_distribution<uint32_t>> iDistributor;
   std::shared_ptr<TestMotorScooterCost> ctorTester;
 
-  const auto& defaults = kBaseCostOptsConfig;
+  const auto& defaults = motorscootercost_internal::kBaseCostOptsConfig;
 
   // maneuver_penalty_
   fDistributor.reset(make_real_distributor_from_range(defaults.maneuver_penalty_));
@@ -756,10 +756,10 @@ TEST(MotorscooterCost, testMotorScooterCostParams) {
   }
 
   // top_speed_
-  iDistributor.reset(make_int_distributor_from_range(kTopSpeedRange));
+  iDistributor.reset(make_int_distributor_from_range(motorscootercost_internal::kTopSpeedRange));
   for (unsigned i = 0; i < testIterations; ++i) {
     ctorTester.reset(make_motorscootercost_from_json("top_speed", (*iDistributor)(generator)));
-    EXPECT_THAT(ctorTester->top_speed_, test::IsBetween(kTopSpeedRange.min, kTopSpeedRange.max));
+    EXPECT_THAT(ctorTester->top_speed_, test::IsBetween(motorscootercost_internal::kTopSpeedRange.min, motorscootercost_internal::kTopSpeedRange.max));
   }
 
   // service_penalty_

@@ -8,7 +8,7 @@ namespace skadi {
 
 double energy_weighting(double& grade) {
   // dont consider anything steeper than -10% or +15%
-  grade = clamp(grade, -10.0, 15.0);
+  grade = std::clamp(grade, -10.0, 15.0);
   // ascent gets weighted more than descent
   return 1.0 + grade / (grade > 0 ? 7.0 : 17.0);
 }

@@ -46,7 +46,7 @@ valhalla_module(NAME thor
     PRIVATE
       ${rapidjson_include_dir}
       ${unordered_dense_include_dir}
-
+      ${protozero_include_dir}
   DEPENDS
     valhalla::proto
     valhalla::sif
