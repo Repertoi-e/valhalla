@@ -13,7 +13,6 @@
 #include "scoped_timer.h"
 
 #include <valhalla/property_tree/ptree.hpp>
-#include <boost/range/algorithm.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -352,7 +351,7 @@ void add_bss_nodes_and_edges(GraphTileBuilder& tilebuilder_local,
   }
 }
 
-void project_and_add_bss_nodes(const boost::property_tree::ptree& pt,
+void project_and_add_bss_nodes(const valhalla::property_tree& pt,
                                std::mutex& lock,
                                bss_by_tile_t::const_iterator tile_start,
                                bss_by_tile_t::const_iterator tile_end,
@@ -504,7 +503,7 @@ void create_edges(GraphTileBuilder& tilebuilder_local,
 }
 
 void create_edges_from_way_node(
-    const boost::property_tree::ptree& pt,
+    const valhalla::property_tree& pt,
     std::mutex& lock,
     std::unordered_map<GraphId, std::vector<BSSConnection>>::const_iterator tile_start,
     std::unordered_map<GraphId, std::vector<BSSConnection>>::const_iterator tile_end) {
@@ -591,7 +590,7 @@ namespace mjolnir {
  *
  *
  * */
-void BssBuilder::Build(const boost::property_tree::ptree& pt,
+void BssBuilder::Build(const property_tree& pt,
                        const OSMData& osmdata,
                        const std::string& bss_nodes_bin) {
 
@@ -660,7 +659,7 @@ void BssBuilder::Build(const boost::property_tree::ptree& pt,
   }
 
   // the collection is sorted so that the search will be much faster later.
-  boost::sort(all);
+  std::sort(all.begin(), all.end());
 
   // outboud edges from way node are grouped by tiles.
   std::unordered_map<GraphId, std::vector<BSSConnection>> map;

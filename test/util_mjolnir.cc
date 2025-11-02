@@ -17,7 +17,6 @@
 #endif
 
 namespace {
-using boost::property_tree::ptree;
 using valhalla::baldr::GraphId;
 using valhalla::mjolnir::build_tile_set;
 using valhalla::mjolnir::TileManifest;
@@ -26,7 +25,7 @@ using namespace valhalla::midgard;
 
 // Verify that this function runs
 TEST(UtilMjolnir, BuildTileSet) {
-  ptree config;
+  valhalla::property_tree config;
   const std::string tile_dir("test/data/util_mjolnir_test_tiles");
   config.put("mjolnir.tile_dir", tile_dir);
   config.put("mjolnir.concurrency", 1);
@@ -58,7 +57,7 @@ TEST(UtilMjolnir, NonEmptyTileManifestToString) {
   TileManifest manifest{tileset};
   std::stringstream buf;
   buf << manifest.ToString();
-  ptree json;
+  valhalla::property_tree json;
   rapidjson::read_json(buf, json);
   // Check for expected:
   // "{\"tiles\":[{\"node_index\":0,\"graphid\":{\"value\":5970538,\"id\":0,\"tile_id\":746317,\"level\":2}}]}"

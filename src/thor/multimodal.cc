@@ -39,7 +39,7 @@ namespace valhalla {
 namespace thor {
 
 // Default constructor
-MultiModalPathAlgorithm::MultiModalPathAlgorithm(const boost::property_tree::ptree& config)
+MultiModalPathAlgorithm::MultiModalPathAlgorithm(const property_tree& config)
     : PathAlgorithm(config.get<uint32_t>("max_reserved_labels_count_astar",
                                          kInitialEdgeLabelCountAstar),
                     config.get<bool>("clear_reserved_memory", false)),

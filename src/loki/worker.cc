@@ -179,7 +179,7 @@ void loki_worker_t::parse_costing(Api& api, bool allow_none) {
     options.set_alternates(max_trace_alternates);
 }
 
-loki_worker_t::loki_worker_t(const boost::property_tree::ptree& config,
+loki_worker_t::loki_worker_t(const property_tree& config,
                              const std::shared_ptr<baldr::GraphReader>& graph_reader)
     : service_worker_t(config), config(config),
       reader(graph_reader ? graph_reader
@@ -437,7 +437,7 @@ loki_worker_t::work(const std::list<zmq::message_t>& job,
   return result;
 }
 
-void run_service(const boost::property_tree::ptree& config) {
+void run_service(const property_tree& config) {
   // gracefully shutdown when asked via SIGTERM
   prime_server::quiesce(config.get<unsigned int>("httpd.service.drain_seconds", 28),
                         config.get<unsigned int>("httpd.service.shutting_seconds", 1));

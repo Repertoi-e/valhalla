@@ -14,15 +14,15 @@ namespace {
 
 // configuring multiple times is wasteful/ineffectual but not harmful
 // TODO: make this threadsafe just in case its abused
-const boost::property_tree::ptree configure(const std::string& config) {
-  boost::property_tree::ptree pt;
+const property_tree configure(const std::string& config) {
+  property_tree pt;
   try {
     // parse the config and configure logging
     rapidjson::read_json(config, pt);
 
     auto logging_subtree = pt.get_child_optional("mjolnir.logging");
     if (logging_subtree) {
-      auto logging_config = valhalla::midgard::ToMap<const boost::property_tree::ptree&,
+      auto logging_config = valhalla::midgard::ToMap<const property_tree&,
                                                      std::unordered_map<std::string, std::string>>(
           logging_subtree.get());
       valhalla::midgard::logging::Configure(logging_config);

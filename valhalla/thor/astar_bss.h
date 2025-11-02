@@ -32,7 +32,7 @@ public:
    * Constructor.
    * @param config A config object of key, value pairs
    */
-  explicit AStarBSSAlgorithm(const boost::property_tree::ptree& config = {});
+  explicit AStarBSSAlgorithm(const property_tree& config = {});
 
   /**
    * Destructor

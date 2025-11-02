@@ -120,7 +120,7 @@ TEST(AdminTest, TestBuildAdminFromPBF) {
 
   valhalla::gurka::map admin_map = BuildPBF(workdir);
 
-  boost::property_tree::ptree& pt = admin_map.config;
+  property_tree& pt = admin_map.config;
   pt.put("mjolnir.concurrency", 1);
   pt.put("mjolnir.id_table_size", 1000);
   pt.put("mjolnir.tile_dir", workdir + "/tiles");

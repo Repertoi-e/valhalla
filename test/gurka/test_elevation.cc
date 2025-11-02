@@ -143,7 +143,7 @@ TEST(Standalone, ElevationCompareToSkadi) {
   valhalla::gurka::map map;
   map.nodes = layout;
   map.config = test::make_config(workdir, {});
-  boost::property_tree::ptree& pt = map.config;
+  property_tree& pt = map.config;
   pt.put("mjolnir.tile_dir", workdir + "/tiles");
   pt.put("additional_data.elevation", workdir);
 

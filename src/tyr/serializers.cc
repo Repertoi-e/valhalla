@@ -11,8 +11,6 @@
 #include "proto/trip.pb.h"
 #include "proto_conversions.h"
 
-#include <boost/algorithm/string/replace.hpp>
-
 #include <cstdint>
 #include <stdexcept>
 #include <string>

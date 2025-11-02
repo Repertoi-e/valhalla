@@ -97,7 +97,7 @@ struct api_tester {
     odin_worker.cleanup();
     return request;
   }
-  boost::property_tree::ptree conf_;
+  property_tree conf_;
   std::shared_ptr<valhalla::baldr::GraphReader> reader;
   valhalla::loki::loki_worker_t loki_worker;
   valhalla::thor::thor_worker_t thor_worker;
@@ -177,7 +177,7 @@ TEST(Mapmatch, test_matcher) {
     // get a route shape
     PointLL start, end;
     auto test_case = make_test_case(start, end);
-    boost::property_tree::ptree route;
+    property_tree route;
     std::string route_json;
     try {
       route_json = actor.route(test_case);
@@ -200,7 +200,7 @@ TEST(Mapmatch, test_matcher) {
         looped = looped || !names.insert(name.second.get_value<std::string>()).second;
     }
     // get the edges along that route shape
-    boost::property_tree::ptree walked;
+    property_tree walked;
     std::string walked_json;
 
     try {

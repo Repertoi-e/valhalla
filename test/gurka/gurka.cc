@@ -433,7 +433,7 @@ map buildtiles(const nodelayout& layout,
                const ways& ways,
                const nodes& nodes,
                const relations& relations,
-               const boost::property_tree::ptree& config) {
+               const property_tree& config) {
 
   map result{config, layout};
   auto workdir = config.get<std::string>("mjolnir.tile_dir");

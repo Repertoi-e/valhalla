@@ -5,7 +5,6 @@
 #include "proto/trip.pb.h"
 #include "tyr/serializers.h"
 
-#include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 
 #include <iomanip>
@@ -291,10 +290,10 @@ std::vector<OpenLR::OpenLr> LegToOpenLrs(TripLeg&& leg) {
 
   // serialize some b64 encoded openlrs and get them back out as openlr objects
   tyr::route_references(container, route, options);
-  auto references = boost::get<baldr::json::ArrayPtr>(container->find("linear_references")->second);
+  auto references = std::get<baldr::json::ArrayPtr>(container->find("linear_references")->second);
   std::vector<OpenLR::OpenLr> openlrs;
   for (const auto& reference : *references) {
-    auto b64 = boost::get<std::string>(reference);
+    auto b64 = std::get<std::string>(reference);
     openlrs.emplace_back(b64, true);
   }
 

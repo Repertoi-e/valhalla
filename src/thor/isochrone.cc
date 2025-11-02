@@ -46,7 +46,7 @@ namespace valhalla {
 namespace thor {
 
 // Default constructor
-Isochrone::Isochrone(const boost::property_tree::ptree& config)
+Isochrone::Isochrone(const property_tree& config)
     : Dijkstras(config), shape_interval_(50.0f) {
 }
 

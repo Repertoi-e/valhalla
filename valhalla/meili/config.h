@@ -11,9 +11,9 @@ struct Config {
   // create config with default parameters
   Config() = default;
   // read parameters from boost::ptree (use default values for missing params)
-  explicit Config(const boost::property_tree::ptree& params);
+  explicit Config(const property_tree& params);
   // override default config parameters
-  void Read(const boost::property_tree::ptree& params);
+  void Read(const property_tree& params);
 
   struct CandidateSearch {
     // default search radius (meters) for measurements; it's used to determine maximum search radius
@@ -26,7 +26,7 @@ struct Config {
     size_t cache_size = 100240;
     size_t grid_size = 500;
 
-    void Read(const boost::property_tree::ptree& params);
+    void Read(const property_tree& params);
   };
 
   struct TransitionCost {
@@ -45,7 +45,7 @@ struct Config {
     // define if 'turn_penalty_factor' option can be reassigned with user request
     bool is_turn_penalty_factor_customizable = true;
 
-    void Read(const boost::property_tree::ptree& params);
+    void Read(const property_tree& params);
   };
 
   struct EmissionCost {
@@ -56,7 +56,7 @@ struct Config {
     // define if 'gps_accuracy' option can be reassigned with user request
     bool is_gps_accuracy_customizable = false;
 
-    void Read(const boost::property_tree::ptree& params);
+    void Read(const property_tree& params);
   };
 
   struct Routing {
@@ -65,7 +65,7 @@ struct Config {
     // define if 'interpolation_distance' option can be reassigned with user request
     bool is_interpolation_distance_customizable = false;
 
-    void Read(const boost::property_tree::ptree& params);
+    void Read(const property_tree& params);
   };
 
   CandidateSearch candidate_search{};

@@ -25,7 +25,7 @@ namespace gurka {
 using nodelayout = std::map<std::string, midgard::PointLL>;
 
 struct map {
-  boost::property_tree::ptree config;
+  property_tree config;
   nodelayout nodes;
 };
 
@@ -132,7 +132,7 @@ map buildtiles(const nodelayout& layout,
                const ways& ways,
                const nodes& nodes,
                const relations& relations,
-               const boost::property_tree::ptree& config);
+               const property_tree& config);
 
 /**
  * Finds a directed edge in the generated map.  Helpful because the IDs assigned

@@ -3,15 +3,17 @@
 #include "baldr/timedomain.h"
 #include "midgard/logging.h"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/range/algorithm/remove_if.hpp>
+#include "midgard/string_utils.h"
 
 #include <ctime>
+#include <algorithm>
 #include <regex>
 #include <sstream>
 
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
+using valhalla::midgard::string_utils::split;
+using valhalla::midgard::string_utils::SplitMode;
 
 namespace {
 // Dec Su[-1]-Mar 3 => Dec#Su#[5]-Mar#3
@@ -87,11 +89,7 @@ const std::pair<std::regex, std::string> kMonthRange =
 const std::pair<std::regex, std::string> kLastWeekday = {std::regex("\\[-1\\]"), "[5]"};
 
 std::vector<std::string> GetTokens(const std::string& tag_value, char delim) {
-  std::vector<std::string> tokens;
-  boost::algorithm::split(tokens, tag_value,
-                          std::bind(std::equal_to<char>(), delim, std::placeholders::_1),
-                          boost::algorithm::token_compress_on);
-  return tokens;
+  return split(tag_value, delim, SplitMode::SkipEmpty);
 }
 
 bool RegexFound(const std::string& source, const std::regex& regex) {
@@ -115,7 +113,7 @@ uint8_t get_dow_mask(const std::string& dow) {
 
   std::string str = dow;
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-  str.erase(boost::remove_if(str, boost::is_any_of(":")), str.end());
+  std::erase_if(str, [](unsigned char c) { return c == ':'; });
 
   if (str == "SUNDAY" || str == "SUN" || str == "SU") {
     return kSunday;
@@ -146,7 +144,7 @@ DOW get_dow(const std::string& dow) {
 
   std::string str = dow;
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-  str.erase(boost::remove_if(str, boost::is_any_of(":")), str.end());
+  std::erase_if(str, [](unsigned char c) { return c == ':'; });
 
   if (str == "SUNDAY" || str == "SUN" || str == "SU") {
     return DOW::kSunday;
@@ -177,7 +175,7 @@ MONTH get_month(const std::string& month) {
 
   std::string str = month;
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-  str.erase(boost::remove_if(str, boost::is_any_of(":")), str.end());
+  std::erase_if(str, [](unsigned char c) { return c == ':'; });
 
   if (str == "JANUARY" || str == "JAN") {
     return MONTH::kJan;
@@ -226,10 +224,10 @@ std::vector<uint64_t> get_time_range(const std::string& str) {
   // rm ()
   try {
     std::string condition = str;
-    condition.erase(boost::remove_if(condition, boost::is_any_of("()")), condition.end());
+    midgard::string_utils::remove_chars_in_place(condition, "()");
 
     // rm white space at both ends
-    boost::algorithm::trim(condition);
+    midgard::string_utils::trim_in_place(condition);
 
     // Holidays and school hours skip for now
     if (condition.starts_with("PH") || condition.starts_with("SH")) {
@@ -364,7 +362,7 @@ std::vector<uint64_t> get_time_range(const std::string& str) {
     // and etc.
     for (auto& mdt : months_dow_times) {
       // rm white space at both ends
-      boost::algorithm::trim(mdt);
+      midgard::string_utils::trim_in_place(mdt);
 
       std::vector<std::string> months_dow;
       bool is_range = false;
@@ -500,7 +498,7 @@ std::vector<uint64_t> get_time_range(const std::string& str) {
               }
 
             } else if (md.find('[') != std::string::npos && md.find(']') != std::string::npos) {
-              md.erase(boost::remove_if(md, boost::is_any_of("[]")), md.end());
+              midgard::string_utils::remove_chars_in_place(md, "[]");
 
               if (timedomain.begin_week() == 0 && !ends_nth_week) {
                 timedomain.set_begin_week(std::stoi(md));
@@ -537,7 +535,7 @@ std::vector<uint64_t> get_time_range(const std::string& str) {
             // Su[1] every 1st Sunday of every month.
             if (week.find('[') != std::string::npos && week.find(']') != std::string::npos) {
               timedomain.set_type(kNthDow);
-              week.erase(boost::remove_if(week, boost::is_any_of("[]")), week.end());
+              midgard::string_utils::remove_chars_in_place(week, "[]");
               timedomain.set_begin_week(std::stoi(week));
               break;
             }

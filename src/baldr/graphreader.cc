@@ -104,7 +104,7 @@ tile_gone_error_t::tile_gone_error_t(std::string prefix, baldr::GraphId edgeid)
                          std::to_string(edgeid.Tile_Base())) {
 }
 
-GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& pt,
+GraphReader::tile_extract_t::tile_extract_t(const property_tree& pt,
                                             bool traffic_readonly) {
   // A lambda for loading the contents of a graph tile tar from an index file
   bool traffic_from_index = false;
@@ -492,7 +492,7 @@ graph_tile_ptr SynchronizedTileCache::Put(const GraphId& graphid, graph_tile_ptr
 }
 
 // Constructs tile cache.
-TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& pt) {
+TileCache* TileCacheFactory::createTileCache(const property_tree& pt) {
   size_t max_cache_size = pt.get<size_t>("max_cache_size", DEFAULT_MAX_CACHE_SIZE);
 
   bool use_lru_cache = pt.get<bool>("use_lru_mem_cache", false);
@@ -536,7 +536,7 @@ TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& 
 }
 
 // Constructor using separate tile files
-GraphReader::GraphReader(const boost::property_tree::ptree& pt,
+GraphReader::GraphReader(const property_tree& pt,
                          std::unique_ptr<tile_getter_t>&& tile_getter,
                          bool traffic_readonly)
     : tile_extract_(new tile_extract_t(pt, traffic_readonly)),

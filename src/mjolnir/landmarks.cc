@@ -258,7 +258,7 @@ std::vector<Landmark> LandmarkDatabase::get_landmarks_by_bbox(const double minln
   return landmarks;
 }
 
-bool BuildLandmarkFromPBF(const boost::property_tree::ptree& pt,
+bool BuildLandmarkFromPBF(const property_tree& pt,
                           const std::vector<std::string>& input_files) {
   // parse pbf to get landmark nodes
   const std::string db_name = pt.get<std::string>("landmarks", "");
@@ -298,7 +298,7 @@ bool BuildLandmarkFromPBF(const boost::property_tree::ptree& pt,
 
 // Find landmarks in the tiles and the edges correlated to each landmark,
 // and return the sequence file name where we wrote the correlations
-void FindLandmarkEdges(const boost::property_tree::ptree& pt,
+void FindLandmarkEdges(const property_tree& pt,
                        const std::vector<GraphId>& tileset,
                        const size_t& thread_number,
                        const size_t& total_threads,
@@ -437,7 +437,7 @@ void UpdateTiles(midgard::sequence<std::pair<GraphId, uint64_t>>& seq_file,
 }
 
 // Add all landmarks to tiles
-bool AddLandmarks(const boost::property_tree::ptree& pt) {
+bool AddLandmarks(const property_tree& pt) {
   LOG_INFO("Starting adding landmarks to tiles...");
 
   const size_t num_threads =

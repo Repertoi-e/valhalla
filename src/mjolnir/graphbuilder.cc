@@ -6,6 +6,7 @@
 #include "baldr/signinfo.h"
 #include "baldr/tilehierarchy.h"
 #include "midgard/logging.h"
+#include "midgard/string_utils.h"
 #include "midgard/pointll.h"
 #include "midgard/sequence.h"
 #include "midgard/tiles.h"
@@ -20,7 +21,6 @@
 #include "mjolnir/util.h"
 #include "scoped_timer.h"
 
-#include <boost/algorithm/string/case_conv.hpp>
 #include <valhalla/property_tree/ptree.hpp>
 
 #include <filesystem>
@@ -32,6 +32,7 @@
 using namespace valhalla::midgard;
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
+using valhalla::midgard::string_utils::to_lower_in_place;
 
 namespace {
 
@@ -412,7 +413,7 @@ void BuildTileSet(const std::string& ways_file,
                   std::queue<std::pair<GraphId, size_t>>& tiles,
                   std::mutex& tiles_lock,
                   const uint32_t tile_creation_date,
-                  const boost::property_tree::ptree& pt,
+                  const valhalla::property_tree& pt,
                   std::promise<DataQuality>& result) {
 
   sequence<OSMWay> ways(ways_file, false);
@@ -1320,7 +1321,7 @@ void BuildLocalTiles(const unsigned int thread_count,
                      const std::map<GraphId, size_t>& tiles,
                      const std::string& tile_dir,
                      DataQuality& stats,
-                     const boost::property_tree::ptree& pt) {
+                     const valhalla::property_tree& pt) {
   SCOPED_TIMER();
   auto tz = DateTime::get_tz_db().from_index(DateTime::get_tz_db().to_index("America/New_York"));
   uint32_t tile_creation_date =
@@ -1410,7 +1411,7 @@ uint32_t GetGridId(const OSMNode& node,
   }
 }
 
-std::map<GraphId, size_t> GraphBuilder::BuildEdges(const boost::property_tree::ptree& pt,
+std::map<GraphId, size_t> GraphBuilder::BuildEdges(const property_tree& pt,
                                                    const std::string& ways_file,
                                                    const std::string& way_nodes_file,
                                                    const std::string& nodes_file,
@@ -1440,7 +1441,7 @@ std::map<GraphId, size_t> GraphBuilder::BuildEdges(const boost::property_tree::p
 }
 
 // Build the graph from the input
-void GraphBuilder::Build(const boost::property_tree::ptree& pt,
+void GraphBuilder::Build(const property_tree& pt,
                          const OSMData& osmdata,
                          const std::string& ways_file,
                          const std::string& way_nodes_file,
@@ -2111,7 +2112,7 @@ bool GraphBuilder::CreateSignInfoList(
 
         tmp = exit_to;
 
-        boost::algorithm::to_lower(tmp);
+  to_lower_in_place(tmp);
 
         // remove the "To" For example:  US 11;To I 81;Carlisle;Harrisburg
         if (tmp.starts_with("to ")) {

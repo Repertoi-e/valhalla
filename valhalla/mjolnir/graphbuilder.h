@@ -39,7 +39,7 @@ public:
    * memory
    *
    */
-  static void Build(const boost::property_tree::ptree& pt,
+  static void Build(const property_tree& pt,
                     const OSMData& osmdata,
                     const std::string& ways_file,
                     const std::string& way_nodes_file,
@@ -50,7 +50,7 @@ public:
                     const std::string& linguistic_node_file,
                     const std::map<baldr::GraphId, size_t>& tiles);
 
-  static std::map<baldr::GraphId, size_t> BuildEdges(const boost::property_tree::ptree& conf,
+  static std::map<baldr::GraphId, size_t> BuildEdges(const property_tree& conf,
                                                      const std::string& ways_file,
                                                      const std::string& way_nodes_file,
                                                      const std::string& nodes_file,

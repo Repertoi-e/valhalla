@@ -19,7 +19,7 @@ public:
   /**
    * Loads given input files
    */
-  static OSMAdminData Parse(const boost::property_tree::ptree& pt,
+  static OSMAdminData Parse(const property_tree& pt,
                             const std::vector<std::string>& input_files);
 };
 

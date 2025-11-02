@@ -83,7 +83,7 @@ TEST(Standalone, StopSigns) {
   valhalla::gurka::map map = BuildPBF(workdir);
 
   const std::string sqlite = {VALHALLA_SOURCE_DIR "test/data/netherlands_admin.sqlite"};
-  boost::property_tree::ptree& pt = map.config;
+  property_tree& pt = map.config;
   pt.put("mjolnir.tile_dir", workdir + "/tiles");
   pt.put("mjolnir.admin", sqlite);
 

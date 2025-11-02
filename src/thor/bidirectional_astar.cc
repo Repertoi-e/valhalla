@@ -50,7 +50,7 @@ namespace valhalla {
 namespace thor {
 
 // Default constructor
-BidirectionalAStar::BidirectionalAStar(const boost::property_tree::ptree& config)
+BidirectionalAStar::BidirectionalAStar(const property_tree& config)
     : PathAlgorithm(config.get<uint32_t>("max_reserved_labels_count_bidir_astar",
                                          kInitialEdgeLabelCountBidirAstar),
                     config.get<bool>("clear_reserved_memory", false)),

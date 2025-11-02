@@ -47,7 +47,7 @@ protected:
   std::thread watcher;
 
   // prototype for the watch function. we need this so unit tests can safely test all functionality
-  using watch_function_t = std::function<void(boost::property_tree::ptree,
+  using watch_function_t = std::function<void(valhalla::property_tree,
                                               std::unordered_set<valhalla::baldr::GraphId>,
                                               std::shared_ptr<state_t>,
                                               std::function<bool(size_t)>)>;
@@ -58,7 +58,7 @@ protected:
    * @param tileset     an mmapped graph tileset (ie static) allows incident loading to be lock-free
    * @param watch_func  the function the background thread will run to keep incident caches up to date
    */
-  incident_singleton_t(const boost::property_tree::ptree& config,
+  incident_singleton_t(const valhalla::property_tree& config,
                        const std::unordered_set<valhalla::baldr::GraphId>& tileset,
                        const watch_function_t& watch_func = incident_singleton_t::watch)
       : state{new state_t{}}, watcher(watch_func, config, tileset, state, interrupt()) {
@@ -189,7 +189,7 @@ protected:
    * @param state      inter thread communication object (mainly tile cache)
    * @param interrupt  functor that, if set and returns true, stops the main loop of this function
    */
-  static void watch(boost::property_tree::ptree config,
+  static void watch(valhalla::property_tree config,
                     std::unordered_set<valhalla::baldr::GraphId> tileset,
                     std::shared_ptr<state_t> state,
                     std::function<bool(size_t)> interrupt) {
@@ -345,7 +345,7 @@ public:
    */
   static std::shared_ptr<const valhalla::IncidentsTile>
   get(const valhalla::baldr::GraphId& tile_id,
-      const boost::property_tree::ptree& config = {},
+      const valhalla::property_tree& config = {},
       const std::unordered_set<valhalla::baldr::GraphId>& tileset = {}) {
     // spawn a daemon to watch for incidents
     static incident_singleton_t singleton{config, tileset};

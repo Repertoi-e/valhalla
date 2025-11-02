@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  boost::property_tree::ptree config;
+  property_tree config;
   rapidjson::read_json(argv[1], config);
   const std::string modename = config.get<std::string>("meili.mode");
   valhalla::Costing::Type costing;

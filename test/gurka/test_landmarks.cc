@@ -257,7 +257,7 @@ TEST(LandmarkTest, TestParseLandmarks) {
 
   // parse and store
   BuildPBF();
-  boost::property_tree::ptree& pt = landmark_map.config;
+  property_tree& pt = landmark_map.config;
   pt.put("mjolnir.landmarks", db_path);
 
   std::vector<std::string> input_files = {workdir + "/map.pbf"};

@@ -297,7 +297,7 @@ float tangent_angle(size_t index,
                     size_t last_segment_index = std::numeric_limits<size_t>::max());
 
 // useful in converting from one iterable map to another
-// for example: ToMap<boost::property_tree::ptree, std::unordered_map<std::string, std::string>
+// for example: ToMap<property_tree, std::unordered_map<std::string, std::string>
 // >(some_ptree)
 /*
  * @param inmap the map to be converted
@@ -312,7 +312,7 @@ template <class T1, class T2> inline T2 ToMap(const T1& inmap) {
 }
 
 // useful in converting from one iterable set to another
-// for example ToSet<boost::property_tree::ptree, std::unordered_set<std::string> >(some_ptree)
+// for example ToSet<property_tree, std::unordered_set<std::string> >(some_ptree)
 /*
  * @param inset the set to be converted
  * @return the converted set of another type

@@ -52,9 +52,9 @@ template <typename pbf_message_t> bool pbf_equals(const pbf_message_t& a, const 
   return as == bs;
 }
 
-boost::property_tree::ptree json_to_pt(const std::string& json);
+valhalla::property_tree json_to_pt(const std::string& json);
 
-boost::property_tree::ptree
+valhalla::property_tree
 make_config(const std::string& path_prefix,
             const std::unordered_map<std::string, std::string>& overrides = {},
             const std::unordered_set<std::string>& removes = {});
@@ -96,7 +96,7 @@ void json_equality(const rapidjson::Value& j1, const rapidjson::Value& j2);
  * process
  */
 std::shared_ptr<valhalla::baldr::GraphReader>
-make_clean_graphreader(const boost::property_tree::ptree& mjolnir_conf);
+make_clean_graphreader(const valhalla::property_tree& mjolnir_conf);
 
 /*************************************************************/
 // Creates an empty traffic file
@@ -104,7 +104,7 @@ make_clean_graphreader(const boost::property_tree::ptree& mjolnir_conf);
 // To actually customize the traffic data, use `customize_live_traffic_data`
 //
 /*************************************************************/
-void build_live_traffic_data(const boost::property_tree::ptree& config,
+void build_live_traffic_data(const valhalla::property_tree& config,
                              uint32_t traffic_tile_version = valhalla::baldr::TRAFFIC_TILE_VERSION);
 
 /*************************************************************/
@@ -118,19 +118,19 @@ using LiveTrafficCustomize = std::function<void(valhalla::baldr::GraphReader&,
                                                 int,
                                                 valhalla::baldr::TrafficSpeed*)>;
 
-void customize_live_traffic_data(const boost::property_tree::ptree& config,
+void customize_live_traffic_data(const valhalla::property_tree& config,
                                  const LiveTrafficCustomize& setter_cb);
 
 #ifdef DATA_TOOLS
 using HistoricalTrafficCustomize =
     std::function<std::optional<std::array<float, valhalla::baldr::kBucketsPerWeek>>(
         valhalla::baldr::DirectedEdge&)>;
-void customize_historical_traffic(const boost::property_tree::ptree& config,
+void customize_historical_traffic(const valhalla::property_tree& config,
                                   const HistoricalTrafficCustomize& cb);
 
 using EdgesCustomize =
     std::function<void(const valhalla::baldr::GraphId&, valhalla::baldr::DirectedEdge&)>;
-void customize_edges(const boost::property_tree::ptree& config, const EdgesCustomize& setter_cb);
+void customize_edges(const valhalla::property_tree& config, const EdgesCustomize& setter_cb);
 #endif
 
 } // namespace test

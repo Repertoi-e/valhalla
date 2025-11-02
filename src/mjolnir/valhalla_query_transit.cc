@@ -350,7 +350,7 @@ int main(int argc, char* argv[]) {
   double o_lng, o_lat, d_lng, d_lat;
   std::string o_onestop_id, d_onestop_id, time;
   int tripid;
-  boost::property_tree::ptree config;
+  property_tree config;
 
   try {
     // clang-format off

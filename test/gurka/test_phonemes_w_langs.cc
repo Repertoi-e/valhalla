@@ -37,7 +37,7 @@ protected:
   static gurka::ways ways;
   static std::string ascii_map;
   static std::map<std::string, midgard::PointLL> layout;
-  static boost::property_tree::ptree pt;
+  static property_tree pt;
   static void SetUpTestSuite() {
     ascii_map = R"(
 	      B----C
@@ -54,7 +54,7 @@ protected:
 gurka::ways PhonemesWithLangsTest::ways = {};
 std::string PhonemesWithLangsTest::ascii_map = {};
 std::map<std::string, midgard::PointLL> PhonemesWithLangsTest::layout = {};
-boost::property_tree::ptree PhonemesWithLangsTest::pt = {};
+property_tree PhonemesWithLangsTest::pt = {};
 
 TEST_P(PhonemesWithLangsTest, Names) {
   const auto& param_tag = std::get<0>(GetParam());

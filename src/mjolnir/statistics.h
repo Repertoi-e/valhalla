@@ -144,7 +144,7 @@ public:
 
     void Add(const RouletteData& rd);
 
-    void GenerateTasks(const boost::property_tree::ptree& pt) const;
+    void GenerateTasks(const property_tree& pt) const;
   } roulette_data;
 
   void add_tile_road(const uint64_t& tile_id, const baldr::RoadClass& rclass, const float length);

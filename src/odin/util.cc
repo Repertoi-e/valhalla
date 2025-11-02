@@ -6,12 +6,10 @@
 #endif
 
 #include "midgard/logging.h"
+#include "midgard/string_utils.h"
 #include "odin/util.h"
 #include "tyr/serializer_constants.h"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/replace.hpp>
 #include <valhalla/property_tree/ptree.hpp>
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -26,10 +24,12 @@
 #pragma GCC diagnostic pop
 #endif
 
+#include <algorithm>
 #include <cctype>
 #include <chrono>
 #include <regex>
 #include <sstream>
+#include <string_view>
 
 using namespace valhalla::tyr;
 
@@ -41,6 +41,11 @@ extern std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_local
 #endif
 
 namespace {
+
+using valhalla::midgard::string_utils::replace_all;
+using valhalla::midgard::string_utils::to_lower_copy;
+using valhalla::midgard::string_utils::to_upper_in_place;
+using valhalla::midgard::string_utils::trim_in_place;
 
 constexpr size_t kLanguageIndex = 1;
 constexpr size_t kScriptIndex = 2;
@@ -55,7 +60,7 @@ std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_locals_for(c
   if (json_it == locales_json.end()) {
     throw std::runtime_error("Locale '" + locale_string + "' not found");
   }
-  boost::property_tree::ptree narrative_pt;
+  valhalla::property_tree narrative_pt;
   std::stringstream ss;
   ss << json_it->second;
   rapidjson::read_json(ss, narrative_pt);
@@ -72,7 +77,7 @@ valhalla::odin::locales_singleton_t load_narrative_locals() {
     LOG_TRACE("-------");
     LOG_TRACE("- " + json.first);
     // load the json
-    boost::property_tree::ptree narrative_pt;
+    valhalla::property_tree narrative_pt;
     std::stringstream ss;
     ss << json.second;
     rapidjson::read_json(ss, narrative_pt);
@@ -150,13 +155,13 @@ std::string get_localized_time(const std::string& date_time, const std::locale& 
       }
     }
   } else {
-    boost::replace_all(time, ":00 ", " ");
+    replace_all(time, ":00 ", " ");
     if (time.substr(0, 1) == "0") {
       time = time.substr(1, time.size());
     }
   }
 
-  boost::algorithm::trim(time);
+  trim_in_place(time);
   return time;
 }
 
@@ -204,8 +209,8 @@ const std::unordered_map<std::string, std::string>& get_locales_json() {
 
 Bcp47Locale parse_string_into_locale(const std::string& locale_string) {
   // Normalize
-  std::string source = boost::to_lower_copy(locale_string);
-  boost::replace_all(source, "_", "-");
+  std::string source = to_lower_copy(locale_string);
+  replace_all(source, "_", "-");
 
   Bcp47Locale locale;
   std::smatch matches;
@@ -231,7 +236,7 @@ Bcp47Locale parse_string_into_locale(const std::string& locale_string) {
     if (matches[kRegionIndex].matched) {
       locale.region = matches[kRegionIndex].str();
       if (!locale.region.empty()) {
-        boost::to_upper(locale.region);
+  to_upper_in_place(locale.region);
         locale.langtag += "-";
         locale.langtag += locale.region;
       }

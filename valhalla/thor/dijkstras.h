@@ -37,7 +37,7 @@ public:
    * Constructor.
    * @param config A config object of key, value pairs
    */
-  explicit Dijkstras(const boost::property_tree::ptree& config = {});
+  explicit Dijkstras(const property_tree& config = {});
 
   Dijkstras(const Dijkstras&) = delete;
   Dijkstras& operator=(const Dijkstras&) = delete;

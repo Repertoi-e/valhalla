@@ -26,7 +26,7 @@ public:
    * @param  pronunciation_file             where to store the pronunciations so they are not in
    * memory
    */
-  static OSMData ParseWays(const boost::property_tree::ptree& pt,
+  static OSMData ParseWays(const property_tree& pt,
                            const std::vector<std::string>& input_files,
                            const std::string& ways_file,
                            const std::string& way_nodes_file,
@@ -43,7 +43,7 @@ public:
    * @param  osmdata                        OSM data
    *
    */
-  static void ParseRelations(const boost::property_tree::ptree& pt,
+  static void ParseRelations(const property_tree& pt,
                              const std::vector<std::string>& input_files,
                              const std::string& complex_restriction_from_file,
                              const std::string& complex_restriction_to_file,
@@ -60,7 +60,7 @@ public:
    *
    * @param  osmdata                        OSM data
    */
-  static void ParseNodes(const boost::property_tree::ptree& pt,
+  static void ParseNodes(const property_tree& pt,
                          const std::vector<std::string>& input_files,
                          const std::string& way_nodes_file,
                          const std::string& bss_nodes_file,

@@ -22,10 +22,10 @@ protected:
 
 struct testable_singleton : public incident_singleton_t {
   // make an incident singleton and inject a watch function that either passes or fails initialization
-  testable_singleton(const boost::property_tree::ptree& config, bool initialize)
+  testable_singleton(const property_tree& config, bool initialize)
       : incident_singleton_t(config,
                              {},
-                             [initialize](const boost::property_tree::ptree&,
+                             [initialize](const property_tree&,
                                           const std::unordered_set<valhalla::baldr::GraphId>&,
                                           const std::shared_ptr<state_t>& state,
                                           const std::function<bool(size_t)>&) {
@@ -110,7 +110,7 @@ TEST_F(incident_loading, update_tile) {
 
 TEST_F(incident_loading, disabled) {
   // check that it bails early
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("mjolnir.incident_log", "/foo/bar/baz/qux");
   config.put("mjolnir.incident_dir", "/foo/bar/baz/");
   std::shared_ptr<testable_singleton::state_t> state{new testable_singleton::state_t{}};
@@ -130,7 +130,7 @@ TEST_F(incident_loading, watch) {
            {"incident_log", log_path, {baldr::GraphId{11, 1, 0}, baldr::GraphId{66, 2, 0}}},
        }) {
     // build config
-    boost::property_tree::ptree config;
+    property_tree config;
     config.put(std::get<0>(conf), std::get<1>(conf).string());
     config.put("incident_max_loading_latency", 0);
 
@@ -316,7 +316,7 @@ TEST_F(incident_loading, watch) {
 }
 
 TEST_F(incident_loading, constructor) {
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("incident_max_loading_latency", 1);
 
   // this should not throw because the watcher function will say its initialized
@@ -352,7 +352,7 @@ TEST_F(incident_loading, get) {
   }
 
   // get the one that is there
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("incident_dir", scratch_dir.string());
   auto got = incident_singleton_t::get(box_cars, config, {});
   ASSERT_TRUE(got);

@@ -164,7 +164,7 @@ std::string shape = "";
 int main(int argc, char* argv[]) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
-  boost::property_tree::ptree config;
+  property_tree config;
 
   try {
     // clang-format off
@@ -213,7 +213,7 @@ int main(int argc, char* argv[]) {
   std::vector<std::vector<valhalla::baldr::Location>> paths;
 
   // argument checking and verification
-  boost::property_tree::ptree json_ptree;
+  property_tree json_ptree;
   Api request;
   ////////////////////////////////////////////////////////////////////////////
   // Process json input

@@ -5,6 +5,7 @@
 #include "baldr/rapidjson_utils.h"
 #include "baldr/tilehierarchy.h"
 #include "midgard/logging.h"
+#include "midgard/string_utils.h"
 #include "mjolnir/bssbuilder.h"
 #include "mjolnir/elevationbuilder.h"
 #include "mjolnir/graphbuilder.h"
@@ -18,18 +19,17 @@
 #include "mjolnir/transitbuilder.h"
 #include "scoped_timer.h"
 
-#include <boost/algorithm/string/constants.hpp>
-#include <boost/algorithm/string/split.hpp>
 #include <valhalla/property_tree/ptree.hpp>
 #include <openssl/evp.h>
 
 #include <filesystem>
 #include <regex>
 
-using boost::property_tree::ptree;
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;
 using namespace valhalla::mjolnir;
+using valhalla::midgard::string_utils::split;
+using valhalla::midgard::string_utils::SplitMode;
 
 namespace {
 
@@ -414,13 +414,7 @@ namespace mjolnir {
  * Splits a tag into a vector of strings.  Delim defaults to ;
  */
 std::vector<std::string> GetTagTokens(const std::string& tag_value, char delim) {
-  std::vector<std::string> tokens;
-  boost::algorithm::split(
-      tokens, tag_value,
-      [delim](auto&& PH1) { return std::equal_to<char>()(delim, std::forward<decltype(PH1)>(PH1)); },
-      boost::algorithm::token_compress_off);
-
-  return tokens;
+  return split(tag_value, delim, SplitMode::KeepEmpty);
 }
 
 std::vector<std::string> GetTagTokens(const std::string& tag_value, const std::string& delim_str) {
@@ -610,7 +604,7 @@ void ProcessEdgeTransitions(const uint32_t idx,
   }
 }
 
-bool build_tile_set(const boost::property_tree::ptree& original_config,
+bool build_tile_set(const valhalla::property_tree& original_config,
                     const std::vector<std::string>& input_files,
                     const BuildStage start_stage,
                     const BuildStage end_stage) {
@@ -868,12 +862,12 @@ void TileManifest::LogToFile(const std::string& filename) const {
 }
 
 TileManifest TileManifest::ReadFromFile(const std::string& filename) {
-  ptree manifest;
+  valhalla::property_tree manifest;
   rapidjson::read_json(filename, manifest);
   LOG_INFO("Reading tile manifest from " + filename);
   std::map<baldr::GraphId, size_t> tileset;
   for (const auto& tile_info : manifest.get_child("tiles")) {
-    const ptree& graph_id = tile_info.second.get_child("graphid");
+    const valhalla::property_tree& graph_id = tile_info.second.get_child("graphid");
     const baldr::GraphId id(graph_id.get<uint64_t>("value"));
     const size_t node_index = tile_info.second.get<size_t>("node_index");
     tileset.insert({id, node_index});

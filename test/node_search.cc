@@ -313,7 +313,7 @@ void make_tile() {
   json << "{ \"mjolnir\": { \"tile_dir\": \"" << test_tile_dir << "\" }";
   json << ", \"concurrency\": 1";
   json << " }";
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(json, conf);
 
   vj::GraphValidator::Validate(conf);
@@ -323,7 +323,7 @@ TEST(Search, test_single_node) {
   // make the config file
   std::stringstream json;
   json << "{ \"tile_dir\": \"" << test_tile_dir << "\" }";
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(json, conf);
 
   vb::GraphReader reader(conf);
@@ -339,7 +339,7 @@ TEST(Search, test_small_node_block) {
   // make the config file
   std::stringstream json;
   json << "{ \"tile_dir\": \"" << test_tile_dir << "\" }";
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(json, conf);
 
   vb::GraphReader reader(conf);
@@ -357,7 +357,7 @@ TEST(Search, test_node_at_tile_boundary) {
   // make the config file
   std::stringstream json;
   json << "{ \"tile_dir\": \"" << test_tile_dir << "\" }";
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(json, conf);
 
   vb::GraphReader reader(conf);
@@ -395,7 +395,7 @@ TEST(Search, test_opposite_in_another_tile) {
   // make the config file
   std::stringstream json;
   json << "{ \"tile_dir\": \"" << test_tile_dir << "\" }";
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(json, conf);
 
   vb::GraphReader reader(conf);

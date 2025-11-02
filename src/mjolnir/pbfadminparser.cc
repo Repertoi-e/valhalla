@@ -4,8 +4,7 @@
 #include "midgard/logging.h"
 #include "mjolnir/luatagtransform.h"
 #include "mjolnir/osmadmindata.h"
-
-#include <boost/algorithm/string.hpp>
+#include "midgard/string_utils.h"
 #include <valhalla/property_tree/ptree.hpp>
 #include <osmium/io/pbf_input.hpp>
 #include <osmium/osm/entity_bits.hpp>
@@ -16,6 +15,7 @@
 using namespace valhalla::midgard;
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
+using valhalla::midgard::string_utils::join;
 
 namespace {
 // This value controls the initial size of the Id table. If this is exceeded
@@ -25,7 +25,7 @@ constexpr uint64_t kMaxOSMNodesHint = 1300000000;
 
 struct admin_parser {
   // Construct PBFAdminParser based on properties file and input PBF extract
-  admin_parser(const boost::property_tree::ptree& pt, OSMAdminData& osmdata)
+  admin_parser(const valhalla::property_tree& pt, OSMAdminData& osmdata)
       : lua_(std::string(lua_admin_lua, lua_admin_lua + lua_admin_lua_len)),
         shape_(pt.get<unsigned long>("id_table_size", kMaxOSMNodesHint)),
         members_(pt.get<unsigned long>("id_table_size", kMaxOSMNodesHint)), osm_admin_data_(osmdata) {
@@ -132,14 +132,14 @@ struct admin_parser {
 namespace valhalla {
 namespace mjolnir {
 
-OSMAdminData PBFAdminParser::Parse(const boost::property_tree::ptree& pt,
+OSMAdminData PBFAdminParser::Parse(const property_tree& pt,
                                    const std::vector<std::string>& input_files) {
   // Create OSM data. Set the member pointer so that the parsing callback
   // methods can use it.
   OSMAdminData osmdata{};
   admin_parser parser(pt, osmdata);
 
-  LOG_INFO("Parsing files: " + boost::algorithm::join(input_files, ", "));
+  LOG_INFO("Parsing files: " + join(input_files, ", "));
 
   // Parse each input file for relations
   LOG_INFO("Parsing relations...");

@@ -41,7 +41,7 @@ void ParseApi(const std::string& json_request, Options::Action action, Api& api)
  * @param uses_dist      if true, also parses values for 'expansion within distance'
  */
 hierarchy_limits_config_t
-parse_hierarchy_limits_from_config(const boost::property_tree::ptree& config,
+parse_hierarchy_limits_from_config(const property_tree& config,
                                    const std::string& path,
                                    const bool uses_dist);
 
@@ -98,7 +98,7 @@ prime_server::worker_t::result_t to_response(const std::string& data,
 struct statsd_client_t;
 class service_worker_t {
 public:
-  service_worker_t(const boost::property_tree::ptree& config);
+  service_worker_t(const property_tree& config);
 
   virtual ~service_worker_t();
 

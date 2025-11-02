@@ -307,7 +307,7 @@ TEST(Isochrones, LongEdge) {
 
 class IsochroneTest : public thor::Isochrone {
 public:
-  explicit IsochroneTest(const boost::property_tree::ptree& config = {}) : Isochrone(config) {
+  explicit IsochroneTest(const property_tree& config = {}) : Isochrone(config) {
   }
 
   void Clear() {
@@ -323,7 +323,7 @@ public:
 };
 
 TEST(Isochrones, test_clear_reserved_memory) {
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("clear_reserved_memory", true);
 
   IsochroneTest isochrone(config);
@@ -331,7 +331,7 @@ TEST(Isochrones, test_clear_reserved_memory) {
 }
 
 TEST(Isochrones, test_max_reserved_labels_count) {
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("max_reserved_labels_count_dijkstras", 10);
 
   IsochroneTest isochrone(config);

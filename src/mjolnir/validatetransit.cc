@@ -6,13 +6,12 @@
 #include "baldr/graphtile.h"
 #include "baldr/tilehierarchy.h"
 #include "midgard/logging.h"
+#include "midgard/string_utils.h"
 #include "mjolnir/graphtilebuilder.h"
 #include "mjolnir/servicedays.h"
 #include "mjolnir/util.h"
 
-#include <boost/algorithm/string.hpp>
 #include <valhalla/property_tree/ptree.hpp>
-#include <boost/tokenizer.hpp>
 
 #include <filesystem>
 #include <fstream>
@@ -23,6 +22,8 @@
 using namespace valhalla::midgard;
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
+using valhalla::midgard::string_utils::split;
+using valhalla::midgard::string_utils::SplitMode;
 
 // Struct to hold stats information during each threads work
 struct validate_stats {
@@ -158,7 +159,7 @@ bool WalkTransitLines(const GraphId& n_graphId,
 }
 
 // validate the transit data using the one_stop tests.
-void validate(const boost::property_tree::ptree& pt,
+void validate(const valhalla::property_tree& pt,
               std::mutex& lock,
               std::unordered_set<GraphId>::const_iterator tile_start,
               std::unordered_set<GraphId>::const_iterator tile_end,
@@ -291,8 +292,6 @@ namespace mjolnir {
 
 // Parse the generated test file.
 std::vector<OneStopTest> ParseTestFile(const std::string& filename) {
-  typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
-  boost::char_separator<char> sep{","};
   std::vector<OneStopTest> onestoptests;
   std::string default_date_time = get_testing_date_time();
 
@@ -301,10 +300,10 @@ std::vector<OneStopTest> ParseTestFile(const std::string& filename) {
   std::ifstream file(filename);
   if (file.is_open()) {
     while (getline(file, line)) {
-      tokenizer tok{line, sep};
+      auto tokens = split(line, ',', SplitMode::KeepEmpty);
       uint32_t field_num = 0;
       OneStopTest onestoptest{};
-      for (const auto& t : tok) {
+      for (const auto& t : tokens) {
         switch (field_num) {
           case 0:
             onestoptest.origin = remove_double_quotes(t);
@@ -373,9 +372,6 @@ from_onestop_id,to_onestop_id,via_route_onestop_id
 s-dr5ru65ku6-33rdstreet<781740,s-dr5rdxjncx-journalsquare<781724,r-dr5re-path
 */
 void ParseLogFile(const std::string& filename) {
-  typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
-  boost::char_separator<char> sep{" "};
-
   std::string type, origin, dest, tranisit_route;
   bool route = false;
   origin = "";
@@ -386,10 +382,10 @@ void ParseLogFile(const std::string& filename) {
   std::ifstream file(filename);
   if (file.is_open()) {
     while (getline(file, line)) {
-      tokenizer tok{line, sep};
+      auto tokens = split(line, ' ', SplitMode::SkipEmpty);
       uint32_t field_num = 0;
       OneStopTest onestoptest{};
-      for (const auto& t : tok) {
+      for (const auto& t : tokens) {
         switch (field_num) {
           case 2:
             type = remove_double_quotes(t);
@@ -446,7 +442,7 @@ void ParseLogFile(const std::string& filename) {
 }
 
 // Enhance the local level of the graph
-bool ValidateTransit::Validate(const boost::property_tree::ptree& pt,
+bool ValidateTransit::Validate(const property_tree& pt,
                                const std::unordered_set<GraphId>& tiles,
                                const std::vector<OneStopTest>& onestoptests) {
 
@@ -456,7 +452,7 @@ bool ValidateTransit::Validate(const boost::property_tree::ptree& pt,
 
   std::unordered_set<GraphId> all_tiles;
   LOG_INFO("Validating transit network.");
-  boost::property_tree::ptree local_pt = pt;
+  property_tree local_pt = pt;
 
   // if we called validate from valhalla_validate_transit then tiles is empty....go get the tiles.
   if (!tiles.size()) {

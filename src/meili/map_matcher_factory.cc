@@ -19,7 +19,7 @@ inline float local_tile_size() {
 namespace valhalla {
 namespace meili {
 
-MapMatcherFactory::MapMatcherFactory(const boost::property_tree::ptree& root,
+MapMatcherFactory::MapMatcherFactory(const property_tree& root,
                                      const std::shared_ptr<baldr::GraphReader>& graph_reader)
     : config_(root.get_child("meili")), graphreader_(graph_reader) {
   if (!graphreader_)

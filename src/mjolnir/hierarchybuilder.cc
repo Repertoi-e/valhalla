@@ -572,7 +572,7 @@ namespace mjolnir {
 // Build successive levels of the hierarchy, starting at the local
 // base level. Each successive level of the hierarchy is based on
 // and connected to the next.
-void HierarchyBuilder::Build(const boost::property_tree::ptree& pt,
+void HierarchyBuilder::Build(const property_tree& pt,
                              const std::string& new_to_old_file,
                              const std::string& old_to_new_file) {
 

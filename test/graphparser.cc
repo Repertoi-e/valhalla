@@ -105,7 +105,7 @@ void CleanUp() {
 }
 
 void BollardsGatesAndAccess(const std::string& config_file) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(config_file, conf);
 
   auto osmdata =
@@ -258,7 +258,7 @@ void BollardsGatesAndAccess(const std::string& config_file) {
 }
 
 void RemovableBollards(const std::string& config_file) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(config_file, conf);
 
   auto osmdata = PBFGraphParser::ParseWays(conf.get_child("mjolnir"),
@@ -288,7 +288,7 @@ void RemovableBollards(const std::string& config_file) {
 }
 
 void Exits(const std::string& config_file) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(config_file, conf);
 
   auto osmdata = PBFGraphParser::ParseWays(conf.get_child("mjolnir"),
@@ -326,7 +326,7 @@ void Exits(const std::string& config_file) {
 }
 
 void Baltimore(const std::string& config_file) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(config_file, conf);
 
   auto osmdata = PBFGraphParser::ParseWays(conf.get_child("mjolnir"),
@@ -440,7 +440,7 @@ void Baltimore(const std::string& config_file) {
 }
 
 void Bike(const std::string& config_file) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(config_file, conf);
 
   auto osmdata = PBFGraphParser::ParseWays(conf.get_child("mjolnir"),
@@ -524,7 +524,7 @@ void Bike(const std::string& config_file) {
 }
 
 void Bus(const std::string& config_file) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(config_file, conf);
 
   auto osmdata = PBFGraphParser::ParseWays(conf.get_child("mjolnir"),
@@ -593,7 +593,7 @@ void Bus(const std::string& config_file) {
 }
 
 void BicycleTrafficSignals(const std::string& config_file) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(config_file, conf);
 
   auto osmdata = PBFGraphParser::ParseWays(conf.get_child("mjolnir"),
@@ -666,7 +666,7 @@ TEST(GraphParser, TestBus) {
 
 TEST(GraphParser, TestImportBssNode) {
 
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(config_file, conf);
 
   conf.put("mjolnir.import_bike_share_stations", true);

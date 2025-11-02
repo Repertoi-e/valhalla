@@ -21,7 +21,7 @@ public:
 };
 
 TEST(SimpleCache, QueryByPointOutOfRangeLL) {
-  boost::property_tree::ptree pt;
+  valhalla::property_tree pt;
   pt.put("tile_dir", "test/gphrdr_test");
   GraphReader reader(pt);
 
@@ -76,7 +76,7 @@ void touch_tile(const uint32_t tile_id, const std::string& tile_dir, uint8_t lev
 
 TEST(ConnectivityMap, Basic) {
   // get the property tree to create some tiles
-  boost::property_tree::ptree pt;
+  valhalla::property_tree pt;
   pt.put("tile_dir", "test/gphrdr_test");
   std::string tile_dir = pt.get<std::string>("tile_dir");
   for (const auto& level : {TileHierarchy::levels()[2], TileHierarchy::GetTransitLevel()}) {

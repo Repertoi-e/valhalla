@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
   std::vector<std::string> input_files;
   BuildStage start_stage = BuildStage::kInitialize;
   BuildStage end_stage = BuildStage::kCleanup;
-  boost::property_tree::ptree config;
+  valhalla::property_tree config;
 
   try {
 

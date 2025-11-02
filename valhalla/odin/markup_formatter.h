@@ -17,7 +17,7 @@ public:
    * Constructor.
    * @param  config  the valhalla odin config values.
    */
-  explicit MarkupFormatter(const boost::property_tree::ptree& config = {});
+  explicit MarkupFormatter(const property_tree& config = {});
 
   /**
    * Returns true if markup is enabled.

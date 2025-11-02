@@ -1215,7 +1215,7 @@ void ParseApi(const std::string& request, Options::Action action, valhalla::Api&
 }
 
 hierarchy_limits_config_t
-parse_hierarchy_limits_from_config(const boost::property_tree::ptree& config,
+parse_hierarchy_limits_from_config(const property_tree& config,
                                    const std::string& algorithm,
                                    const bool uses_dist) {
   std::vector<HierarchyLimits> max_hierarchy_limits;
@@ -1469,7 +1469,7 @@ to_response(const std::string& data, http_request_info_t& request_info, const Ap
 // since metrics are important both for on- and offline processing we keep the impl here
 // running services can use it and also data ETL that lives in mjolnir can use it
 struct statsd_client_t : public Statsd::StatsdClient {
-  statsd_client_t(const boost::property_tree::ptree& conf)
+  statsd_client_t(const property_tree& conf)
       : Statsd::StatsdClient(conf.get<std::string>("statsd.host", ""),
                              conf.get<int>("statsd.port", 8125),
                              conf.get<std::string>("statsd.prefix", ""),
@@ -1489,7 +1489,7 @@ struct statsd_client_t : public Statsd::StatsdClient {
   std::vector<std::string> tags;
 };
 
-service_worker_t::service_worker_t(const boost::property_tree::ptree& conf) : interrupt(nullptr) {
+service_worker_t::service_worker_t(const property_tree& conf) : interrupt(nullptr) {
   if (conf.count("statsd")) {
     statsd_client = std::make_unique<statsd_client_t>(conf);
   }

@@ -28,7 +28,7 @@ public:
   /**
    * Constructor
    */
-  MatrixAlgorithm(const boost::property_tree::ptree& config)
+  MatrixAlgorithm(const property_tree& config)
       : interrupt_(nullptr), has_time_(false), not_thru_pruning_(true), expansion_callback_(),
         clear_reserved_memory_(config.get<bool>("clear_reserved_memory", false)) {
   }

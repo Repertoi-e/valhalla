@@ -10,14 +10,13 @@
 
 namespace vm = valhalla::midgard;
 namespace vj = valhalla::mjolnir;
-namespace bpt = boost::property_tree;
 
 int main(int argc, char** argv) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
   std::filesystem::path traffic_tile_dir;
   bool summary = false;
-  boost::property_tree::ptree config;
+  valhalla::property_tree config;
   try {
     // clang-format off
     cxxopts::Options options(

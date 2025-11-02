@@ -28,7 +28,7 @@ public:
    * @brief Constructor
    * @param[in] config  Configuration settings
    */
-  sample(const boost::property_tree::ptree& config);
+  sample(const property_tree& config);
 
   /// TODO(neyromancer): combine both constructors in one with config as an input parameter
   /// when valhalla_benchmark_skadi start using config instead of folder

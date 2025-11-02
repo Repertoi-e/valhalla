@@ -26,7 +26,7 @@ std::string get_tile_url() {
   return oss.str();
 }
 
-boost::property_tree::ptree
+property_tree
 make_conf(const std::string& tile_dir, bool tile_url_gz, size_t curler_count) {
   auto conf = test::make_config(tile_dir, {{"mjolnir.user_agent", "MapboxNavigationNative"}});
 

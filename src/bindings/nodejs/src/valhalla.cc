@@ -19,7 +19,7 @@ namespace {
 // These bindings may be used from NodeJS's thread pool, so we need to guarantee that each actor is
 // used exclusively in its own thread. Since user is free to create as many actors as they want, we
 // use pointer to config object to distinguish between concrete actors
-vt::actor_t* GetThreadLocalActor(const boost::property_tree::ptree* config) {
+vt::actor_t* GetThreadLocalActor(const property_tree* config) {
   using ActorMap = std::unordered_map<const void*, std::shared_ptr<vt::actor_t>>;
   static thread_local ActorMap actors;
 
@@ -32,15 +32,15 @@ vt::actor_t* GetThreadLocalActor(const boost::property_tree::ptree* config) {
   return it->second.get();
 }
 
-const boost::property_tree::ptree configure(const std::string& config) {
-  boost::property_tree::ptree pt;
+const property_tree configure(const std::string& config) {
+  property_tree pt;
   try {
     std::stringstream stream(config);
     rapidjson::read_json(stream, pt);
 
     auto logging_subtree = pt.get_child_optional("mjolnir.logging");
     if (logging_subtree) {
-      auto logging_config = valhalla::midgard::ToMap<const boost::property_tree::ptree&,
+      auto logging_config = valhalla::midgard::ToMap<const property_tree&,
                                                      std::unordered_map<std::string, std::string>>(
           logging_subtree.get());
       valhalla::midgard::logging::Configure(logging_config);
@@ -57,7 +57,7 @@ public:
   using ActorMethodFunction = std::function<std::string(vt::actor_t*, const std::string&)>;
 
   ValhallaAsyncWorker(const Napi::Env& env,
-                      const boost::property_tree::ptree* config,
+                      const property_tree* config,
                       ActorMethodFunction method,
                       const std::string& request,
                       const std::string& method_name)
@@ -89,7 +89,7 @@ protected:
 
 private:
   Napi::Promise::Deferred deferred_;
-  const boost::property_tree::ptree* config_;
+  const property_tree* config_;
   ActorMethodFunction method_;
   std::string request_;
   std::string method_name_;
@@ -143,7 +143,7 @@ public:
   }
 
 private:
-  boost::property_tree::ptree config_;
+  property_tree config_;
 
   Napi::Value CreateAsyncRequest(const Napi::CallbackInfo& info,
                                  ValhallaAsyncWorker::ActorMethodFunction method,

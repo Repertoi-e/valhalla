@@ -20,7 +20,7 @@ public:
    * @param  new_to_old_bin  Filename of the new to old node association file
    * @param  old_to_new_bin  Filename for the old to new node association file.
    */
-  static void Build(const boost::property_tree::ptree& pt,
+  static void Build(const property_tree& pt,
                     const std::string& new_to_old_bin,
                     const std::string& old_to_new_bin);
 };

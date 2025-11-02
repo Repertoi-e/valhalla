@@ -32,7 +32,7 @@ void mock(Statsd::StatsdServer& server, std::vector<std::string>& messages) {
 
 class test_worker_t : public service_worker_t {
 public:
-  test_worker_t(const boost::property_tree::ptree& config) : service_worker_t(config) {
+  test_worker_t(const property_tree& config) : service_worker_t(config) {
   }
   valhalla_exception_t fail(unsigned code) {
     valhalla_exception_t e(code);
@@ -71,7 +71,7 @@ TEST(statsd, errors_and_warnings) {
   std::thread server(mock, std::ref(mock_server), std::ref(messages));
 
   // make a testable worker that is configured to hit the mock server
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("statsd.host", "localhost");
   test_worker_t worker(config);
 

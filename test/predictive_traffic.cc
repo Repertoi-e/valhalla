@@ -22,7 +22,7 @@ const auto config = test::json_to_pt(R"({
 
 // TODO - add this back in when updated data is available!
 TEST(PredictiveTraffic, DISABLED_test_predictive_traffic) {
-  boost::property_tree::ptree hierarchy_properties = config.get_child("mjolnir");
+  valhalla::property_tree hierarchy_properties = config.get_child("mjolnir");
   GraphReader reader(hierarchy_properties);
 
   uint32_t count = 0;

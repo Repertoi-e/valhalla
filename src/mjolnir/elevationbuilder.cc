@@ -263,7 +263,7 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
 /**
  * Adds elevation to a set of tiles. Each thread pulls a tile of the queue
  */
-void add_elevations_to_multiple_tiles(const boost::property_tree::ptree& pt,
+void add_elevations_to_multiple_tiles(const valhalla::property_tree& pt,
                                       std::deque<GraphId>& tilequeue,
                                       std::mutex& lock,
                                       const std::unique_ptr<valhalla::skadi::sample>& sample) {
@@ -291,7 +291,7 @@ void add_elevations_to_multiple_tiles(const boost::property_tree::ptree& pt,
   }
 }
 
-std::deque<GraphId> get_tile_ids(const boost::property_tree::ptree& pt) {
+std::deque<GraphId> get_tile_ids(const valhalla::property_tree& pt) {
   std::deque<GraphId> tilequeue;
   GraphReader reader(pt.get_child("mjolnir"));
   // Create a randomized queue of tiles (at all levels) to work from
@@ -310,7 +310,7 @@ std::deque<GraphId> get_tile_ids(const boost::property_tree::ptree& pt) {
 namespace valhalla {
 namespace mjolnir {
 
-void ElevationBuilder::Build(const boost::property_tree::ptree& pt,
+void ElevationBuilder::Build(const property_tree& pt,
                              std::deque<baldr::GraphId> tile_ids) {
 
   auto elevation = pt.get_optional<std::string>("additional_data.elevation");

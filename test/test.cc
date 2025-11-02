@@ -82,7 +82,7 @@ bool json_deep_equality(const rapidjson::Value& j1, const rapidjson::Value& j2) 
 // TODO: this should support boost::property_tree::path
 // like get_child does to make it obvious that it supports
 // the path separator notation for specifying sub children
-bool remove_child(boost::property_tree::ptree& pt, const std::string& path) {
+bool remove_child(valhalla::property_tree& pt, const std::string& path) {
   // split up the path into each sub part
   std::vector<std::string> path_parts;
   boost::split(path_parts, path, boost::is_any_of("."));
@@ -160,15 +160,15 @@ std::string load_binary_file(const std::string& filename) {
   return bytes;
 }
 
-boost::property_tree::ptree json_to_pt(const std::string& json) {
+valhalla::property_tree json_to_pt(const std::string& json) {
   std::stringstream ss;
   ss << json;
-  boost::property_tree::ptree pt;
+  valhalla::property_tree pt;
   rapidjson::read_json(ss, pt);
   return pt;
 }
 
-boost::property_tree::ptree make_config(const std::string& path_prefix,
+valhalla::property_tree make_config(const std::string& path_prefix,
                                         const std::unordered_map<std::string, std::string>& overrides,
                                         const std::unordered_set<std::string>& removes) {
 
@@ -507,12 +507,12 @@ boost::property_tree::ptree make_config(const std::string& path_prefix,
 }
 
 std::shared_ptr<valhalla::baldr::GraphReader>
-make_clean_graphreader(const boost::property_tree::ptree& mjolnir_conf) {
+make_clean_graphreader(const valhalla::property_tree& mjolnir_conf) {
 
   // Wrapper sub-class to allow replacing the statically initialized
   // tile_extract member variable
   struct ResettingGraphReader : valhalla::baldr::GraphReader {
-    ResettingGraphReader(const boost::property_tree::ptree& pt) : GraphReader(pt) {
+    ResettingGraphReader(const valhalla::property_tree& pt) : GraphReader(pt) {
       // Reset the statically initialized tile_extract_ member variable
       tile_extract_ = std::make_shared<valhalla::baldr::GraphReader::tile_extract_t>(pt);
     }
@@ -540,7 +540,7 @@ typedef struct {
 // To actually customize the traffic data, use `customize_live_traffic_data`
 //
 /*************************************************************/
-void build_live_traffic_data(const boost::property_tree::ptree& config,
+void build_live_traffic_data(const valhalla::property_tree& config,
                              uint32_t traffic_tile_version) {
 
   std::string tile_dir = config.get<std::string>("mjolnir.tile_dir");
@@ -616,7 +616,7 @@ void build_live_traffic_data(const boost::property_tree::ptree& config,
 // `setter_cb` is a callback that can modify traffic for each edge
 // when building traffic data
 /*************************************************************/
-void customize_live_traffic_data(const boost::property_tree::ptree& config,
+void customize_live_traffic_data(const valhalla::property_tree& config,
                                  const LiveTrafficCustomize& setter_cb) {
   // Now we have the tar-file and can go ahead with per edge customizations
   {
@@ -669,7 +669,7 @@ void json_equality(const rapidjson::Value& j1, const rapidjson::Value& j2) {
 }
 
 #ifdef DATA_TOOLS
-void customize_historical_traffic(const boost::property_tree::ptree& config,
+void customize_historical_traffic(const valhalla::property_tree& config,
                                   const HistoricalTrafficCustomize& cb) {
   // loop over all tiles in the tileset
   valhalla::baldr::GraphReader reader(config.get_child("mjolnir"));
@@ -691,7 +691,7 @@ void customize_historical_traffic(const boost::property_tree::ptree& config,
   }
 }
 
-void customize_edges(const boost::property_tree::ptree& config, const EdgesCustomize& setter_cb) {
+void customize_edges(const valhalla::property_tree& config, const EdgesCustomize& setter_cb) {
   // loop over all tiles in the tileset
   valhalla::baldr::GraphReader reader(config.get_child("mjolnir"));
   auto tile_dir = config.get<std::string>("mjolnir.tile_dir");

@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 
   // config file
   std::string config_file(argv[1]);
-  boost::property_tree::ptree config;
+  property_tree config;
   rapidjson::read_json(config_file, config);
 
   // run the service worker

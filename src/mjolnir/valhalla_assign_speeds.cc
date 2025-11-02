@@ -17,11 +17,10 @@
 #include <utility>
 #include <vector>
 
-namespace bpt = boost::property_tree;
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
 
-void assign(const boost::property_tree::ptree& config,
+void assign(const property_tree& config,
             std::deque<GraphId>& tilequeue,
             std::mutex& lock,
             std::promise<std::pair<size_t, size_t>>& result) {
@@ -80,7 +79,7 @@ void assign(const boost::property_tree::ptree& config,
 int main(int argc, char** argv) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
-  bpt::ptree config;
+  valhalla::property_tree config;
 
   try {
     // clang-format off

@@ -165,7 +165,7 @@ void make_tile() {
 
   {
     // Verify tiles
-    boost::property_tree::ptree conf;
+    valhalla::property_tree conf;
     conf.put("tile_dir", tile_dir);
     valhalla::baldr::GraphReader reader(conf);
     auto tile = reader.GetGraphTile(tile_id);
@@ -183,7 +183,7 @@ void search(valhalla::baldr::Location location,
             const std::vector<PathLocation::PathEdge>& expected_edges,
             bool exact = false) {
   // make the config file
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   conf.put("tile_dir", tile_dir);
   valhalla::baldr::GraphReader reader(conf);
 
@@ -221,7 +221,7 @@ void search(valhalla::baldr::Location location,
 
 void search(valhalla::baldr::Location location, size_t result_count, int reachability) {
   // make the config file
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   conf.put("tile_dir", tile_dir);
   valhalla::baldr::GraphReader reader(conf);
 

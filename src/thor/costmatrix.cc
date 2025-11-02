@@ -74,7 +74,7 @@ class CostMatrix::ReachedMap : public ankerl::unordered_dense::map<uint64_t, std
 };
 
 // Constructor with cost threshold.
-CostMatrix::CostMatrix(const boost::property_tree::ptree& config)
+CostMatrix::CostMatrix(const property_tree& config)
     : MatrixAlgorithm(config),
       max_reserved_labels_count_(config.get<uint32_t>("max_reserved_labels_count_bidir_dijkstras",
                                                       kInitialEdgeLabelCountBidirDijkstra)),

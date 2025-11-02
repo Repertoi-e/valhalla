@@ -91,7 +91,7 @@ TEST_F(ExcludeUnpavedTest, UnpavedRoadsUnsupported) {
         gurka::do_action(valhalla::Options::route, map, {start, end}, costing,
                          {{"/costing_options/" + costing + "/exclude_unpaved", "0"}});
     EXPECT_EQ(result_1.trip().routes_size(), 1);
-    EXPECT_EQ(gurka::detail::get_paths(result_0), gurka::detail::get_paths(result_1));
+    EXPECT_EQ(gurka::detail::get_paths(result_0), detail::get_paths(result_1));
   }
 
   // motor_scooter, motorcycle are unsupported costing models too, but the engine does not get routes
@@ -165,7 +165,7 @@ TEST(Standalone, SmoothnessAccess) {
   auto map = gurka::buildtiles(layout, ways, nodes, {}, "test/data/smoothness_access");
 
   const std::string sqlite = {VALHALLA_SOURCE_DIR "test/data/netherlands_admin.sqlite"};
-  boost::property_tree::ptree& pt = map.config;
+  property_tree& pt = map.config;
   pt.put("mjolnir.admin", sqlite);
 
   auto graph_reader = test::make_clean_graphreader(pt.get_child("mjolnir"));

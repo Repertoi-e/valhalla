@@ -12,14 +12,14 @@
 namespace {
 template <typename T>
 inline void
-ReadParamOptional(T& value, const boost::property_tree::ptree& ptree, const std::string& name) {
+ReadParamOptional(T& value, const valhalla::property_tree& ptree, const std::string& name) {
   if (auto item = ptree.get_optional<T>(name))
     value = *item;
 }
 
-inline bool FindValue(const boost::property_tree::ptree& node, const std::string& value) {
+inline bool FindValue(const valhalla::property_tree& node, const std::string& value) {
   return std::find_if(node.begin(), node.end(),
-                      [&value](const boost::property_tree::ptree::value_type& item) {
+                      [&value](const valhalla::property_tree::value_type& item) {
                         return item.second.get_value<std::string>() == value;
                       }) != node.end();
 }
@@ -28,18 +28,18 @@ inline bool FindValue(const boost::property_tree::ptree& node, const std::string
 namespace valhalla {
 namespace meili {
 
-Config::Config(const boost::property_tree::ptree& params) {
+Config::Config(const property_tree& params) {
   Read(params);
 }
 
-void Config::Read(const boost::property_tree::ptree& params) {
+void Config::Read(const property_tree& params) {
   candidate_search.Read(params);
   transition_cost.Read(params);
   emission_cost.Read(params);
   routing.Read(params);
 }
 
-void Config::CandidateSearch::Read(const boost::property_tree::ptree& params) {
+void Config::CandidateSearch::Read(const property_tree& params) {
   ReadParamOptional(search_radius_meters, params, "default.search_radius");
   CHECK_THROWS(search_radius_meters >= 0.f,
                NONNEGATIVE_VALUE_MSG(search_radius_meters, "search_radius"));
@@ -56,7 +56,7 @@ void Config::CandidateSearch::Read(const boost::property_tree::ptree& params) {
   ReadParamOptional(grid_size, params, "grid.size");
 }
 
-void Config::TransitionCost::Read(const boost::property_tree::ptree& params) {
+void Config::TransitionCost::Read(const property_tree& params) {
   ReadParamOptional(beta, params, "default.beta");
   CHECK_THROWS(beta > 0.f, POSITIVE_VALUE_MSG(beta, "beta"));
 
@@ -85,7 +85,7 @@ void Config::TransitionCost::Read(const boost::property_tree::ptree& params) {
   }
 }
 
-void Config::EmissionCost::Read(const boost::property_tree::ptree& params) {
+void Config::EmissionCost::Read(const property_tree& params) {
   ReadParamOptional(sigma_z, params, "default.sigma_z");
   CHECK_THROWS(sigma_z > 0.f, POSITIVE_VALUE_MSG(sigma_z, "sigma_z"));
 
@@ -98,7 +98,7 @@ void Config::EmissionCost::Read(const boost::property_tree::ptree& params) {
   }
 }
 
-void Config::Routing::Read(const boost::property_tree::ptree& params) {
+void Config::Routing::Read(const property_tree& params) {
   ReadParamOptional(interpolation_distance_meters, params, "default.interpolation_distance");
   CHECK_THROWS(interpolation_distance_meters > 0.f,
                POSITIVE_VALUE_MSG(interpolation_distance_meters, "interpolation_distance"));

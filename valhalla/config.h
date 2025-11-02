@@ -43,6 +43,6 @@
 
 namespace valhalla {
 
-const boost::property_tree::ptree& config(const std::string& config_inline = "");
+const property_tree& config(const std::string& config_inline = "");
 
 } // namespace valhalla

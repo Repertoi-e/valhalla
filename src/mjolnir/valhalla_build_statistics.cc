@@ -353,7 +353,7 @@ void AddStatistics(statistics& stats,
   }
 }
 
-void build(const boost::property_tree::ptree& pt,
+void build(const property_tree& pt,
            std::deque<GraphId>& tilequeue,
            std::mutex& lock,
            std::promise<statistics>& result) {
@@ -492,7 +492,7 @@ void build(const boost::property_tree::ptree& pt,
 }
 } // namespace
 
-void BuildStatistics(const boost::property_tree::ptree& pt) {
+void BuildStatistics(const property_tree& pt) {
 
   // Graph tile properties
   auto tile_properties = pt.get_child("mjolnir");
@@ -567,7 +567,7 @@ void BuildStatistics(const boost::property_tree::ptree& pt) {
 int main(int argc, char** argv) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
-  boost::property_tree::ptree config;
+  property_tree config;
 
   try {
     // clang-format off

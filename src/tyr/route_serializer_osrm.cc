@@ -20,8 +20,6 @@
 #include "tyr/serializer_constants.h"
 #include "tyr/serializers.h"
 
-#include <boost/variant/get.hpp>
-
 #ifdef INLINE_TEST
 #include <gtest/gtest.h>
 #endif
@@ -709,7 +707,7 @@ void serializeIncidents(const std::vector<TripLeg::Incident>& incidents,
     // Bring up any already existing array
     auto existing = doc.find("incidents");
     if (existing != doc.end()) {
-      if (auto* ptr = boost::get<std::shared_ptr<valhalla::baldr::json::Jarray>>(&existing->second)) {
+      if (auto* ptr = std::get_if<std::shared_ptr<valhalla::baldr::json::Jarray>>(&existing->second)) {
         serialized_incidents = *ptr;
       } else {
         throw std::logic_error("Invalid state: stored ptr should not be null");
@@ -2470,13 +2468,13 @@ TEST(RouteSerializerOsrm, testlaneIndications) {
       lane_indications(true, kTurnLaneThrough | kTurnLaneRight | kTurnLaneSharpRight);
 
   ASSERT_EQ(indications_1->size(), 2);
-  ASSERT_STREQ(boost::get<std::string>(indications_1->at(0)).c_str(), "uturn");
-  ASSERT_STREQ(boost::get<std::string>(indications_1->at(1)).c_str(), "sharp left");
+  ASSERT_STREQ(std::get<std::string>(indications_1->at(0)).c_str(), "uturn");
+  ASSERT_STREQ(std::get<std::string>(indications_1->at(1)).c_str(), "sharp left");
 
   ASSERT_EQ(indications_2->size(), 3);
-  ASSERT_STREQ(boost::get<std::string>(indications_2->at(0)).c_str(), "straight");
-  ASSERT_STREQ(boost::get<std::string>(indications_2->at(1)).c_str(), "right");
-  ASSERT_STREQ(boost::get<std::string>(indications_2->at(2)).c_str(), "sharp right");
+  ASSERT_STREQ(std::get<std::string>(indications_2->at(0)).c_str(), "straight");
+  ASSERT_STREQ(std::get<std::string>(indications_2->at(1)).c_str(), "right");
+  ASSERT_STREQ(std::get<std::string>(indications_2->at(2)).c_str(), "sharp right");
 }
 
 } // namespace

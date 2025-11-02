@@ -23,7 +23,7 @@ travel_mode_t get_other_travel_mode(const travel_mode_t current_mode) {
 constexpr uint32_t kMaxIterationsWithoutConvergence = 200000;
 
 // Default constructor
-AStarBSSAlgorithm::AStarBSSAlgorithm(const boost::property_tree::ptree& config)
+AStarBSSAlgorithm::AStarBSSAlgorithm(const property_tree& config)
     : PathAlgorithm(config.get<uint32_t>("max_reserved_labels_count_astar",
                                          kInitialEdgeLabelCountAstar),
                     config.get<bool>("clear_reserved_memory", false)) {

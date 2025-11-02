@@ -36,8 +36,6 @@
 #define VALHALLA_SOURCE_DIR
 #endif
 
-namespace bpt = boost::property_tree;
-
 using namespace valhalla;
 using namespace valhalla::baldr;
 namespace vm = valhalla::midgard;
@@ -228,7 +226,7 @@ enum class TrivialPathTest {
 
 std::unique_ptr<vb::GraphReader> get_graph_reader(const std::string& tile_dir) {
   // make the config file
-  bpt::ptree config = test::make_config("");
+  valhalla::property_tree config = test::make_config("");
   config.put<std::string>("mjolnir.tile_dir", tile_dir);
 
   std::unique_ptr<vb::GraphReader> reader(new vb::GraphReader(config.get_child("mjolnir")));
@@ -418,7 +416,7 @@ TEST(Astar, TestPartialDurationReverse) {
 }
 
 TEST(Astar, TestTrivialPathNoUturns) {
-  boost::property_tree::ptree conf = test::make_config(VALHALLA_BUILD_DIR "test/data/utrecht_tiles");
+  property_tree conf = test::make_config(VALHALLA_BUILD_DIR "test/data/utrecht_tiles");
   vr::actor_t actor(conf);
   valhalla::Api api;
   actor.route(
@@ -428,7 +426,7 @@ TEST(Astar, TestTrivialPathNoUturns) {
 }
 
 struct route_tester {
-  route_tester(const boost::property_tree::ptree& _conf)
+  route_tester(const property_tree& _conf)
       : conf(_conf), reader(new GraphReader(_conf.get_child("mjolnir"))), loki_worker(_conf, reader),
         thor_worker(_conf, reader), odin_worker(_conf) {
   }
@@ -444,7 +442,7 @@ struct route_tester {
     odin_worker.cleanup();
     return request;
   }
-  boost::property_tree::ptree conf;
+  property_tree conf;
   std::shared_ptr<GraphReader> reader;
   vk::loki_worker_t loki_worker;
   vt::thor_worker_t thor_worker;
@@ -1279,7 +1277,7 @@ TEST(Astar, test_complex_restriction_short_path_fake) {
   }
 
   // Test Bidirectional both for forward and reverse expansion
-  boost::property_tree::ptree conf = test::make_config("");
+  property_tree conf = test::make_config("");
   vt::BidirectionalAStar astar;
 
   // Two tests where start and end lives on a partial complex restriction
@@ -1516,7 +1514,7 @@ TEST(Astar, BiDirTrivial) {
   // whole edge based on what percentage of the edge is left between the origin and destination.
 
   // Get access to tiles
-  boost::property_tree::ptree config = test::make_config("");
+  property_tree config = test::make_config("");
   config.put("mjolnir.tile_dir", VALHALLA_BUILD_DIR "test/data/utrecht_tiles");
   config.put<unsigned long>("mjolnir.id_table_size", 1000);
   vb::GraphReader graph_reader(config.get_child("mjolnir"));
@@ -1760,7 +1758,7 @@ TEST(BiDiAstar, DISABLED_test_recost_path_failing) {
 
 class BiAstarTest : public thor::BidirectionalAStar {
 public:
-  explicit BiAstarTest(const boost::property_tree::ptree& config = {}) : BidirectionalAStar(config) {
+  explicit BiAstarTest(const property_tree& config = {}) : BidirectionalAStar(config) {
   }
 
   void Clear() {
@@ -1776,7 +1774,7 @@ public:
 };
 
 TEST(BiDiAstar, test_clear_reserved_memory) {
-  boost::property_tree::ptree config = test::make_config("");
+  property_tree config = test::make_config("");
   config.put("thor.clear_reserved_memory", true);
 
   BiAstarTest astar;
@@ -1784,7 +1782,7 @@ TEST(BiDiAstar, test_clear_reserved_memory) {
 }
 
 TEST(BiDiAstar, test_max_reserved_labels_count) {
-  boost::property_tree::ptree config = test::make_config("");
+  property_tree config = test::make_config("");
   config.put("thor.max_reserved_labels_count_bidir_astar", 10);
 
   BiAstarTest astar;

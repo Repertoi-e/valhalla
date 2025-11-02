@@ -106,7 +106,7 @@ int Benchmark(const uint32_t n, const float maxcost, const float bucketsize) {
 int main(int argc, char* argv[]) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
-  boost::property_tree::ptree config;
+  property_tree config;
 
   try {
     // clang-format off

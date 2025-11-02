@@ -23,7 +23,7 @@ namespace mjolnir {
 void ProcessTrafficTiles(const std::string& tile_dir,
                          const std::filesystem::path& traffic_tile_dir,
                          const bool summary,
-                         const boost::property_tree::ptree& config);
+                         const property_tree& config);
 
 } // namespace mjolnir
 } // namespace valhalla

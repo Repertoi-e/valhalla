@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
   uint32_t iterations;
   bool log_details;
   bool optimize;
-  boost::property_tree::ptree config;
+  property_tree config;
 
   try {
     // clang-format off

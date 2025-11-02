@@ -24,7 +24,7 @@ using namespace prime_server;
 int main(int argc, char** argv) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   std::vector<std::string> pos_args;
-  boost::property_tree::ptree config;
+  property_tree config;
 
   cxxopts::Options options(
       program,
@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
   auto logging_subtree = config.get_child_optional("loki.logging");
   if (logging_subtree) {
     auto logging_config =
-        valhalla::midgard::ToMap<const boost::property_tree::ptree&,
+        valhalla::midgard::ToMap<const property_tree&,
                                  std::unordered_map<std::string, std::string>>(logging_subtree.get());
     valhalla::midgard::logging::Configure(logging_config);
   }

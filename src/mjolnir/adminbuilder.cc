@@ -365,7 +365,7 @@ namespace mjolnir {
 /**
  * Build admins from protocol buffer input.
  */
-bool BuildAdminFromPBF(const boost::property_tree::ptree& pt,
+bool BuildAdminFromPBF(const property_tree& pt,
                        const std::vector<std::string>& input_files) {
 
   // Bail if bad path

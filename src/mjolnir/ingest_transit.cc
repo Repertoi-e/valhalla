@@ -858,7 +858,7 @@ namespace valhalla {
 namespace mjolnir {
 
 // thread and call ingest_tiles
-std::list<GraphId> ingest_transit(const boost::property_tree::ptree& pt) {
+std::list<GraphId> ingest_transit(const property_tree& pt) {
   // remove transit directory if it exists
   std::filesystem::path transit_dir{pt.get<std::string>("mjolnir.transit_dir")};
   if (std::filesystem::exists(transit_dir) && !std::filesystem::is_empty(transit_dir)) {
@@ -913,7 +913,7 @@ std::list<GraphId> ingest_transit(const boost::property_tree::ptree& pt) {
 }
 
 // thread and call stitch_tiles
-void stitch_transit(const boost::property_tree::ptree& pt, std::list<GraphId>& dangling_tiles) {
+void stitch_transit(const property_tree& pt, std::list<GraphId>& dangling_tiles) {
 
   auto thread_count =
       pt.get<unsigned int>("mjolnir.concurrency", std::max(static_cast<unsigned int>(1),

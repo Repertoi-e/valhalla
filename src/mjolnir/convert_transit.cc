@@ -7,6 +7,7 @@
 #include "baldr/tilehierarchy.h"
 #include "midgard/encoded.h"
 #include "midgard/logging.h"
+#include "midgard/string_utils.h"
 #include "midgard/vector2.h"
 #include "mjolnir/admin.h"
 #include "mjolnir/graphtilebuilder.h"
@@ -14,7 +15,6 @@
 #include "mjolnir/servicedays.h"
 #include "proto/transit.pb.h"
 
-#include <boost/algorithm/string.hpp>
 #include <valhalla/property_tree/ptree.hpp>
 
 #include <cmath>
@@ -27,10 +27,10 @@
 #include <thread>
 #include <unordered_set>
 
-using namespace boost::property_tree;
 using namespace valhalla::midgard;
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
+using valhalla::midgard::string_utils::trim_chars_in_place;
 
 namespace {
 
@@ -889,7 +889,7 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
         // Get transit pbf tile
         std::string file_name = GraphTile::FileSuffix(
             GraphId(end_platform_graphid.tileid(), end_platform_graphid.level(), 0));
-        boost::algorithm::trim_if(file_name, boost::is_any_of(".gph"));
+  trim_chars_in_place(file_name, ".gph");
         file_name += ".pbf";
         std::filesystem::path file_path{transit_dir};
         file_path.append(file_name);
@@ -980,7 +980,7 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
 
 // We make sure to lock on reading and writing since tiles are now being
 // written. Also lock on queue access since shared by different threads.
-void build_tiles(const boost::property_tree::ptree& pt,
+void build_tiles(const valhalla::property_tree& pt,
                  std::mutex& lock,
                  std::unordered_set<GraphId>::const_iterator tile_start,
                  std::unordered_set<GraphId>::const_iterator tile_end,
@@ -1007,7 +1007,7 @@ void build_tiles(const boost::property_tree::ptree& pt,
     // Get transit pbf tile
     const std::string transit_dir = pt.get<std::string>("transit_dir");
     std::string file_name = GraphTile::FileSuffix(GraphId(tile_id.tileid(), tile_id.level(), 0));
-    boost::algorithm::trim_if(file_name, boost::is_any_of(".gph"));
+  trim_chars_in_place(file_name, ".gph");
     file_name += ".pbf";
     std::filesystem::path pbf_fp{transit_dir};
     pbf_fp.append(file_name);
@@ -1191,7 +1191,7 @@ void build_tiles(const boost::property_tree::ptree& pt,
 namespace valhalla {
 namespace mjolnir {
 
-std::unordered_set<GraphId> convert_transit(const ptree& pt) {
+std::unordered_set<GraphId> convert_transit(const valhalla::property_tree& pt) {
 
   // figure out which transit tiles even exist
   std::filesystem::path transit_dir{pt.get<std::string>("mjolnir.transit_dir")};

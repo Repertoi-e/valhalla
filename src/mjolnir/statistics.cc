@@ -455,7 +455,7 @@ void statistics::RouletteData::Add(const RouletteData& rd) {
   unroutable_nodes = merge(unroutable_nodes, rd.unroutable_nodes);
 }
 
-void statistics::RouletteData::GenerateTasks(const boost::property_tree::ptree& /*pt*/) const {
+void statistics::RouletteData::GenerateTasks(const property_tree& /*pt*/) const {
   // build a task list for each collected wayid
   json::ArrayPtr tasks = json::array({});
   for (auto& id : way_IDs) {

@@ -7,8 +7,8 @@ namespace {
 
 // Read array and return as a vector
 template <typename T>
-std::vector<T> as_vector(boost::property_tree::ptree const& pt,
-                         boost::property_tree::ptree::key_type const& key) {
+std::vector<T> as_vector(valhalla::property_tree const& pt,
+                         valhalla::property_tree::key_type const& key) {
   std::vector<T> items;
   for (const auto& item : pt.get_child(key)) {
     items.push_back(item.second.get_value<T>());
@@ -18,8 +18,8 @@ std::vector<T> as_vector(boost::property_tree::ptree const& pt,
 
 // Read key/values and return as an unordered_map
 template <typename K, typename V>
-std::unordered_map<K, V> as_unordered_map(boost::property_tree::ptree const& pt,
-                                          boost::property_tree::ptree::key_type const& key) {
+std::unordered_map<K, V> as_unordered_map(valhalla::property_tree const& pt,
+                                          valhalla::property_tree::key_type const& key) {
   std::unordered_map<K, V> items;
   for (const auto& item : pt.get_child(key)) {
     items.emplace(item.first, item.second.get_value<V>());
@@ -33,12 +33,12 @@ namespace valhalla {
 namespace odin {
 
 NarrativeDictionary::NarrativeDictionary(const std::string& language_tag,
-                                         const boost::property_tree::ptree& narrative_pt) {
+                                         const property_tree& narrative_pt) {
   this->language_tag = language_tag;
   Load(narrative_pt);
 }
 
-void NarrativeDictionary::Load(const boost::property_tree::ptree& narrative_pt) {
+void NarrativeDictionary::Load(const valhalla::property_tree& narrative_pt) {
 
   /////////////////////////////////////////////////////////////////////////////
   LOG_TRACE("Populate posix_locale...");
@@ -343,13 +343,13 @@ void NarrativeDictionary::Load(const boost::property_tree::ptree& narrative_pt) 
 }
 
 void NarrativeDictionary::Load(PhraseSet& phrase_handle,
-                               const boost::property_tree::ptree& phrase_pt) {
+                               const property_tree& phrase_pt) {
 
   phrase_handle.phrases = as_unordered_map<std::string, std::string>(phrase_pt, kPhrasesKey);
 }
 
 void NarrativeDictionary::Load(StartSubset& start_handle,
-                               const boost::property_tree::ptree& start_subset_pt) {
+                               const property_tree& start_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(start_handle), start_subset_pt);
@@ -363,7 +363,7 @@ void NarrativeDictionary::Load(StartSubset& start_handle,
 }
 
 void NarrativeDictionary::Load(StartVerbalSubset& start_verbal_handle,
-                               const boost::property_tree::ptree& start_verbal_subset_pt) {
+                               const property_tree& start_verbal_subset_pt) {
 
   // Populate start_subset items
   Load(static_cast<StartSubset&>(start_verbal_handle), start_verbal_subset_pt);
@@ -378,7 +378,7 @@ void NarrativeDictionary::Load(StartVerbalSubset& start_verbal_handle,
 }
 
 void NarrativeDictionary::Load(DestinationSubset& destination_handle,
-                               const boost::property_tree::ptree& destination_subset_pt) {
+                               const property_tree& destination_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(destination_handle), destination_subset_pt);
@@ -389,7 +389,7 @@ void NarrativeDictionary::Load(DestinationSubset& destination_handle,
 }
 
 void NarrativeDictionary::Load(ContinueSubset& continue_handle,
-                               const boost::property_tree::ptree& continue_subset_pt) {
+                               const property_tree& continue_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(continue_handle), continue_subset_pt);
@@ -400,7 +400,7 @@ void NarrativeDictionary::Load(ContinueSubset& continue_handle,
 }
 
 void NarrativeDictionary::Load(ContinueVerbalSubset& continue_verbal_handle,
-                               const boost::property_tree::ptree& continue_verbal_subset_pt) {
+                               const property_tree& continue_verbal_subset_pt) {
 
   // Populate continue_subset items
   Load(static_cast<ContinueSubset&>(continue_verbal_handle), continue_verbal_subset_pt);
@@ -415,7 +415,7 @@ void NarrativeDictionary::Load(ContinueVerbalSubset& continue_verbal_handle,
 }
 
 void NarrativeDictionary::Load(TurnSubset& turn_handle,
-                               const boost::property_tree::ptree& turn_subset_pt) {
+                               const property_tree& turn_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(turn_handle), turn_subset_pt);
@@ -429,7 +429,7 @@ void NarrativeDictionary::Load(TurnSubset& turn_handle,
 }
 
 void NarrativeDictionary::Load(RampSubset& ramp_handle,
-                               const boost::property_tree::ptree& ramp_subset_pt) {
+                               const property_tree& ramp_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(ramp_handle), ramp_subset_pt);
@@ -439,7 +439,7 @@ void NarrativeDictionary::Load(RampSubset& ramp_handle,
 }
 
 void NarrativeDictionary::Load(KeepSubset& keep_handle,
-                               const boost::property_tree::ptree& keep_subset_pt) {
+                               const property_tree& keep_subset_pt) {
 
   // Populate ramp_subset items
   Load(static_cast<RampSubset&>(keep_handle), keep_subset_pt);
@@ -450,7 +450,7 @@ void NarrativeDictionary::Load(KeepSubset& keep_handle,
 }
 
 void NarrativeDictionary::Load(EnterRoundaboutSubset& enter_roundabout_handle,
-                               const boost::property_tree::ptree& enter_roundabout_subset_pt) {
+                               const property_tree& enter_roundabout_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(enter_roundabout_handle), enter_roundabout_subset_pt);
@@ -465,7 +465,7 @@ void NarrativeDictionary::Load(EnterRoundaboutSubset& enter_roundabout_handle,
 }
 
 void NarrativeDictionary::Load(EnterFerrySubset& enter_ferry_handle,
-                               const boost::property_tree::ptree& enter_ferry_subset_pt) {
+                               const property_tree& enter_ferry_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(enter_ferry_handle), enter_ferry_subset_pt);
@@ -479,7 +479,7 @@ void NarrativeDictionary::Load(EnterFerrySubset& enter_ferry_handle,
 }
 
 void NarrativeDictionary::Load(TransitConnectionSubset& transit_connection_handle,
-                               const boost::property_tree::ptree& transit_connection_subset_pt) {
+                               const property_tree& transit_connection_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(transit_connection_handle), transit_connection_subset_pt);
@@ -490,7 +490,7 @@ void NarrativeDictionary::Load(TransitConnectionSubset& transit_connection_handl
 }
 
 void NarrativeDictionary::Load(TransitSubset& transit_handle,
-                               const boost::property_tree::ptree& transit_subset_pt) {
+                               const property_tree& transit_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(transit_handle), transit_subset_pt);
@@ -501,7 +501,7 @@ void NarrativeDictionary::Load(TransitSubset& transit_handle,
 }
 
 void NarrativeDictionary::Load(TransitStopSubset& transit_stop_handle,
-                               const boost::property_tree::ptree& transit_stop_subset_pt) {
+                               const property_tree& transit_stop_subset_pt) {
 
   // Populate phrases
   Load(static_cast<TransitSubset&>(transit_stop_handle), transit_stop_subset_pt);
@@ -512,7 +512,7 @@ void NarrativeDictionary::Load(TransitStopSubset& transit_stop_handle,
 }
 
 void NarrativeDictionary::Load(PostTransitionVerbalSubset& post_transition_verbal_handle,
-                               const boost::property_tree::ptree& post_transition_verbal_subset_pt) {
+                               const property_tree& post_transition_verbal_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(post_transition_verbal_handle), post_transition_verbal_subset_pt);
@@ -532,7 +532,7 @@ void NarrativeDictionary::Load(PostTransitionVerbalSubset& post_transition_verba
 
 void NarrativeDictionary::Load(
     PostTransitionTransitVerbalSubset& post_transition_transit_verbal_handle,
-    const boost::property_tree::ptree& post_transition_transit_verbal_subset_pt) {
+    const property_tree& post_transition_transit_verbal_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(post_transition_transit_verbal_handle),
@@ -545,7 +545,7 @@ void NarrativeDictionary::Load(
 }
 
 void NarrativeDictionary::Load(VerbalMultiCueSubset& verbal_multi_cue_handle,
-                               const boost::property_tree::ptree& verbal_multi_cue_subset_pt) {
+                               const property_tree& verbal_multi_cue_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(verbal_multi_cue_handle), verbal_multi_cue_subset_pt);
@@ -560,7 +560,7 @@ void NarrativeDictionary::Load(VerbalMultiCueSubset& verbal_multi_cue_handle,
 }
 
 void NarrativeDictionary::Load(ApproachVerbalAlertSubset& approach_verbal_alert_handle,
-                               const boost::property_tree::ptree& approach_verbal_alert_subset_pt) {
+                               const property_tree& approach_verbal_alert_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(approach_verbal_alert_handle), approach_verbal_alert_subset_pt);
@@ -575,7 +575,7 @@ void NarrativeDictionary::Load(ApproachVerbalAlertSubset& approach_verbal_alert_
 }
 
 void NarrativeDictionary::Load(PassSubset& pass_handle,
-                               const boost::property_tree::ptree& pass_subset_pt) {
+                               const property_tree& pass_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(pass_handle), pass_subset_pt);
@@ -585,7 +585,7 @@ void NarrativeDictionary::Load(PassSubset& pass_handle,
 }
 
 void NarrativeDictionary::Load(EnterBuildingSubset& enter_building_handle,
-                               const boost::property_tree::ptree& enter_building_subset_pt) {
+                               const property_tree& enter_building_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(enter_building_handle), enter_building_subset_pt);
@@ -596,7 +596,7 @@ void NarrativeDictionary::Load(EnterBuildingSubset& enter_building_handle,
 }
 
 void NarrativeDictionary::Load(ExitBuildingSubset& exit_building_handle,
-                               const boost::property_tree::ptree& exit_building_subset_pt) {
+                               const property_tree& exit_building_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(exit_building_handle), exit_building_subset_pt);

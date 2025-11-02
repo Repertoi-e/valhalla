@@ -19,7 +19,7 @@ public:
    * @param osmdata     OSM data used to enhance the turn lanes.
    * @param access_file where to store the access tags so they are not in memory
    */
-  static void Enhance(const boost::property_tree::ptree& pt,
+  static void Enhance(const property_tree& pt,
                       const OSMData& osmdata,
                       const std::string& access_file);
 };

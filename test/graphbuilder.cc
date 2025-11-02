@@ -12,7 +12,6 @@
 
 #include <string>
 
-using boost::property_tree::ptree;
 using namespace valhalla;
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;
@@ -45,7 +44,7 @@ const std::string linguistic_node_file = "test_linguistic_node_harrisburg.bin";
 // Test output from construct edges and that the expected number of tiles are produced from the
 // build tiles step that follows.
 TEST(GraphBuilder, TestConstructEdges) {
-  ptree config;
+  valhalla::property_tree config;
   config.put("mjolnir.tile_dir", tile_dir);
   config.put("mjolnir.concurrency", 1);
   OSMData osm_data{0,  /* pbf_checksum_ */
@@ -92,7 +91,7 @@ TEST(GraphBuilder, TestConstructEdges) {
 
 // Test that only a subset of tiles are built when explicitly asked for.
 TEST(Graphbuilder, TestConstructEdgesSubset) {
-  ptree config;
+  valhalla::property_tree config;
   config.put<std::string>("mjolnir.tile_dir", tile_dir);
   config.put("mjolnir.concurrency", 1);
   OSMData osm_data{0,  /* pbf_checksum_ */
@@ -244,7 +243,7 @@ TEST(Graphbuilder, AdminBbox) {
 class HarrisburgTestSuiteEnv : public ::testing::Environment {
 public:
   void SetUp() override {
-    ptree config;
+    valhalla::property_tree config;
     config.put<std::string>("mjolnir.tile_dir", tile_dir);
     config.put<size_t>("mjolnir.id_table_size", id_table_size);
     const auto& mjolnir_config = config.get_child("mjolnir");

@@ -8,8 +8,7 @@
 #include "odin/narrative_dictionary.h"
 #include "odin/util.h"
 
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/algorithm/string/replace.hpp>
+#include "midgard/string_utils.h"
 
 #include <cmath>
 #include <iomanip>
@@ -17,6 +16,8 @@
 #include <string>
 
 using namespace valhalla::baldr;
+using valhalla::midgard::string_utils::iends_with;
+using valhalla::midgard::string_utils::replace_all;
 
 namespace {
 // Text instruction initial capacity
@@ -560,10 +561,10 @@ std::string NarrativeBuilder::FormVerbalAlertApproachInstruction(float distance,
   instruction = dictionary_.approach_verbal_alert_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kLengthTag,
+  replace_all(instruction, kLengthTag,
                      FormLength(distance, dictionary_.approach_verbal_alert_subset.metric_lengths,
                                 dictionary_.approach_verbal_alert_subset.us_customary_lengths));
-  boost::replace_all(instruction, kCurrentVerbalCueTag, verbal_cue);
+  replace_all(instruction, kCurrentVerbalCueTag, verbal_cue);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -625,9 +626,9 @@ std::string NarrativeBuilder::FormStartInstruction(Maneuver& maneuver) {
   instruction = dictionary_.start_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kCardinalDirectionTag, cardinal_direction);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
+  replace_all(instruction, kCardinalDirectionTag, cardinal_direction);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -712,10 +713,10 @@ std::string NarrativeBuilder::FormVerbalStartInstruction(Maneuver& maneuver,
   instruction = dictionary_.start_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kCardinalDirectionTag, cardinal_direction);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
-  boost::replace_all(instruction, kLengthTag,
+  replace_all(instruction, kCardinalDirectionTag, cardinal_direction);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
+  replace_all(instruction, kLengthTag,
                      FormLength(maneuver, dictionary_.start_verbal_subset.metric_lengths,
                                 dictionary_.start_verbal_subset.us_customary_lengths));
 
@@ -766,8 +767,8 @@ std::string NarrativeBuilder::FormDestinationInstruction(Maneuver& maneuver) {
 
   if (phrase_id > 0) {
     // Replace phrase tags with values
-    boost::replace_all(instruction, kRelativeDirectionTag, relative_direction);
-    boost::replace_all(instruction, kDestinationTag, destination);
+  replace_all(instruction, kRelativeDirectionTag, relative_direction);
+  replace_all(instruction, kDestinationTag, destination);
   }
 
   // If enabled, form articulated prepositions
@@ -822,8 +823,8 @@ std::string NarrativeBuilder::FormVerbalAlertDestinationInstruction(Maneuver& ma
 
   if (phrase_id > 0) {
     // Replace phrase tags with values
-    boost::replace_all(instruction, kRelativeDirectionTag, relative_direction);
-    boost::replace_all(instruction, kDestinationTag, destination);
+  replace_all(instruction, kRelativeDirectionTag, relative_direction);
+  replace_all(instruction, kDestinationTag, destination);
   }
 
   // If enabled, form articulated prepositions
@@ -878,8 +879,8 @@ std::string NarrativeBuilder::FormVerbalDestinationInstruction(Maneuver& maneuve
 
   if (phrase_id > 0) {
     // Replace phrase tags with values
-    boost::replace_all(instruction, kRelativeDirectionTag, relative_direction);
-    boost::replace_all(instruction, kDestinationTag, destination);
+  replace_all(instruction, kRelativeDirectionTag, relative_direction);
+  replace_all(instruction, kDestinationTag, destination);
   }
 
   // If enabled, form articulated prepositions
@@ -907,8 +908,8 @@ std::string NarrativeBuilder::FormBecomesInstruction(Maneuver& maneuver, Maneuve
   instruction = dictionary_.becomes_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kPreviousStreetNamesTag, prev_street_names);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kPreviousStreetNamesTag, prev_street_names);
+  replace_all(instruction, kStreetNamesTag, street_names);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -942,8 +943,8 @@ std::string NarrativeBuilder::FormVerbalBecomesInstruction(Maneuver& maneuver,
   instruction = dictionary_.becomes_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kPreviousStreetNamesTag, prev_street_names);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kPreviousStreetNamesTag, prev_street_names);
+  replace_all(instruction, kStreetNamesTag, street_names);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -993,9 +994,9 @@ std::string NarrativeBuilder::FormContinueInstruction(Maneuver& maneuver,
   instruction = dictionary_.continue_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kJunctionNameTag, junction_name);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kJunctionNameTag, junction_name);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1049,9 +1050,9 @@ std::string NarrativeBuilder::FormVerbalAlertContinueInstruction(Maneuver& maneu
   instruction = dictionary_.continue_verbal_alert_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kJunctionNameTag, junction_name);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kJunctionNameTag, junction_name);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1114,12 +1115,12 @@ std::string NarrativeBuilder::FormVerbalContinueInstruction(Maneuver& maneuver,
   instruction = dictionary_.continue_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kLengthTag,
+  replace_all(instruction, kLengthTag,
                      FormLength(maneuver, dictionary_.continue_verbal_subset.metric_lengths,
                                 dictionary_.continue_verbal_subset.us_customary_lengths));
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kJunctionNameTag, junction_name);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kJunctionNameTag, junction_name);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1199,12 +1200,12 @@ std::string NarrativeBuilder::FormTurnInstruction(Maneuver& maneuver,
   instruction = subset->phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag,
+  replace_all(instruction, kRelativeDirectionTag,
                      FormRelativeTwoDirection(maneuver.type(), subset->relative_directions));
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
-  boost::replace_all(instruction, kJunctionNameTag, junction_name);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
+  replace_all(instruction, kJunctionNameTag, junction_name);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1307,12 +1308,12 @@ std::string NarrativeBuilder::FormVerbalTurnInstruction(Maneuver& maneuver,
   instruction = subset->phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag,
+  replace_all(instruction, kRelativeDirectionTag,
                      FormRelativeTwoDirection(maneuver.type(), subset->relative_directions));
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
-  boost::replace_all(instruction, kJunctionNameTag, junction_name);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
+  replace_all(instruction, kJunctionNameTag, junction_name);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1377,13 +1378,13 @@ std::string NarrativeBuilder::FormUturnInstruction(Maneuver& maneuver,
   instruction = dictionary_.uturn_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag,
+  replace_all(instruction, kRelativeDirectionTag,
                      FormRelativeTwoDirection(maneuver.type(),
                                               dictionary_.uturn_subset.relative_directions));
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kCrossStreetNamesTag, cross_street_names);
-  boost::replace_all(instruction, kJunctionNameTag, junction_name);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kCrossStreetNamesTag, cross_street_names);
+  replace_all(instruction, kJunctionNameTag, junction_name);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1532,11 +1533,11 @@ std::string NarrativeBuilder::FormVerbalUturnInstruction(uint8_t phrase_id,
   instruction = dictionary_.uturn_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag, relative_dir);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kCrossStreetNamesTag, cross_street_names);
-  boost::replace_all(instruction, kJunctionNameTag, junction_name);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kRelativeDirectionTag, relative_dir);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kCrossStreetNamesTag, cross_street_names);
+  replace_all(instruction, kJunctionNameTag, junction_name);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1586,9 +1587,9 @@ std::string NarrativeBuilder::FormRampStraightInstruction(Maneuver& maneuver,
   instruction = dictionary_.ramp_straight_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kBranchSignTag, exit_branch_sign);
-  boost::replace_all(instruction, kTowardSignTag, exit_toward_sign);
-  boost::replace_all(instruction, kNameSignTag, exit_name_sign);
+  replace_all(instruction, kBranchSignTag, exit_branch_sign);
+  replace_all(instruction, kTowardSignTag, exit_toward_sign);
+  replace_all(instruction, kNameSignTag, exit_name_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1691,9 +1692,9 @@ std::string NarrativeBuilder::FormVerbalRampStraightInstruction(uint8_t phrase_i
   instruction = dictionary_.ramp_straight_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kBranchSignTag, exit_branch_sign);
-  boost::replace_all(instruction, kTowardSignTag, exit_toward_sign);
-  boost::replace_all(instruction, kNameSignTag, exit_name_sign);
+  replace_all(instruction, kBranchSignTag, exit_branch_sign);
+  replace_all(instruction, kTowardSignTag, exit_toward_sign);
+  replace_all(instruction, kNameSignTag, exit_name_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1765,12 +1766,12 @@ std::string NarrativeBuilder::FormRampInstruction(Maneuver& maneuver,
   instruction = dictionary_.ramp_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag,
+  replace_all(instruction, kRelativeDirectionTag,
                      FormRelativeTwoDirection(maneuver.type(),
                                               dictionary_.ramp_subset.relative_directions));
-  boost::replace_all(instruction, kBranchSignTag, exit_branch_sign);
-  boost::replace_all(instruction, kTowardSignTag, exit_toward_sign);
-  boost::replace_all(instruction, kNameSignTag, exit_name_sign);
+  replace_all(instruction, kBranchSignTag, exit_branch_sign);
+  replace_all(instruction, kTowardSignTag, exit_toward_sign);
+  replace_all(instruction, kNameSignTag, exit_name_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -1925,10 +1926,10 @@ std::string NarrativeBuilder::FormVerbalRampInstruction(uint8_t phrase_id,
   instruction = dictionary_.ramp_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag, relative_dir);
-  boost::replace_all(instruction, kBranchSignTag, exit_branch_sign);
-  boost::replace_all(instruction, kTowardSignTag, exit_toward_sign);
-  boost::replace_all(instruction, kNameSignTag, exit_name_sign);
+  replace_all(instruction, kRelativeDirectionTag, relative_dir);
+  replace_all(instruction, kBranchSignTag, exit_branch_sign);
+  replace_all(instruction, kTowardSignTag, exit_toward_sign);
+  replace_all(instruction, kNameSignTag, exit_name_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -2010,13 +2011,13 @@ std::string NarrativeBuilder::FormExitInstruction(Maneuver& maneuver,
   instruction = dictionary_.exit_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag,
+  replace_all(instruction, kRelativeDirectionTag,
                      FormRelativeTwoDirection(maneuver.type(),
                                               dictionary_.exit_subset.relative_directions));
-  boost::replace_all(instruction, kNumberSignTag, exit_number_sign);
-  boost::replace_all(instruction, kBranchSignTag, exit_branch_sign);
-  boost::replace_all(instruction, kTowardSignTag, exit_toward_sign);
-  boost::replace_all(instruction, kNameSignTag, exit_name_sign);
+  replace_all(instruction, kNumberSignTag, exit_number_sign);
+  replace_all(instruction, kBranchSignTag, exit_branch_sign);
+  replace_all(instruction, kTowardSignTag, exit_toward_sign);
+  replace_all(instruction, kNameSignTag, exit_name_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -2181,11 +2182,11 @@ std::string NarrativeBuilder::FormVerbalExitInstruction(uint8_t phrase_id,
   instruction = dictionary_.exit_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag, relative_dir);
-  boost::replace_all(instruction, kNumberSignTag, exit_number_sign);
-  boost::replace_all(instruction, kBranchSignTag, exit_branch_sign);
-  boost::replace_all(instruction, kTowardSignTag, exit_toward_sign);
-  boost::replace_all(instruction, kNameSignTag, exit_name_sign);
+  replace_all(instruction, kRelativeDirectionTag, relative_dir);
+  replace_all(instruction, kNumberSignTag, exit_number_sign);
+  replace_all(instruction, kBranchSignTag, exit_branch_sign);
+  replace_all(instruction, kTowardSignTag, exit_toward_sign);
+  replace_all(instruction, kNameSignTag, exit_name_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -2270,12 +2271,12 @@ std::string NarrativeBuilder::FormKeepInstruction(Maneuver& maneuver,
   instruction = dictionary_.keep_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag,
+  replace_all(instruction, kRelativeDirectionTag,
                      FormRelativeThreeDirection(maneuver.type(),
                                                 dictionary_.keep_subset.relative_directions));
-  boost::replace_all(instruction, kNumberSignTag, exit_number_sign);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kTowardSignTag, toward_sign);
+  replace_all(instruction, kNumberSignTag, exit_number_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kTowardSignTag, toward_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -2461,10 +2462,10 @@ std::string NarrativeBuilder::FormVerbalKeepInstruction(uint8_t phrase_id,
   instruction = dictionary_.keep_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag, relative_dir);
-  boost::replace_all(instruction, kNumberSignTag, exit_number_sign);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kTowardSignTag, toward_sign);
+  replace_all(instruction, kRelativeDirectionTag, relative_dir);
+  replace_all(instruction, kNumberSignTag, exit_number_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kTowardSignTag, toward_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -2520,12 +2521,12 @@ std::string NarrativeBuilder::FormKeepToStayOnInstruction(Maneuver& maneuver,
   instruction = dictionary_.keep_to_stay_on_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag,
+  replace_all(instruction, kRelativeDirectionTag,
                      FormRelativeThreeDirection(maneuver.type(), dictionary_.keep_to_stay_on_subset
                                                                      .relative_directions));
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kNumberSignTag, exit_number_sign);
-  boost::replace_all(instruction, kTowardSignTag, toward_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kNumberSignTag, exit_number_sign);
+  replace_all(instruction, kTowardSignTag, toward_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -2619,10 +2620,10 @@ std::string NarrativeBuilder::FormVerbalKeepToStayOnInstruction(uint8_t phrase_i
   instruction = dictionary_.keep_to_stay_on_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag, relative_dir);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kNumberSignTag, exit_number_sign);
-  boost::replace_all(instruction, kTowardSignTag, toward_sign);
+  replace_all(instruction, kRelativeDirectionTag, relative_dir);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kNumberSignTag, exit_number_sign);
+  replace_all(instruction, kTowardSignTag, toward_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -2677,9 +2678,9 @@ std::string NarrativeBuilder::FormMergeInstruction(Maneuver& maneuver,
   instruction = dictionary_.merge_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag, relative_direction);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kRelativeDirectionTag, relative_direction);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -2752,9 +2753,9 @@ std::string NarrativeBuilder::FormVerbalMergeInstruction(Maneuver& maneuver,
   instruction = dictionary_.merge_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag, relative_direction);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kRelativeDirectionTag, relative_direction);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -2875,11 +2876,11 @@ std::string NarrativeBuilder::FormEnterRoundaboutInstruction(Maneuver& maneuver,
   instruction = dictionary_.enter_roundabout_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kOrdinalValueTag, ordinal_value);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
-  boost::replace_all(instruction, kRoundaboutExitStreetNamesTag, roundabout_exit_street_names);
-  boost::replace_all(instruction, kRoundaboutExitBeginStreetNamesTag,
+  replace_all(instruction, kOrdinalValueTag, ordinal_value);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kRoundaboutExitStreetNamesTag, roundabout_exit_street_names);
+  replace_all(instruction, kRoundaboutExitBeginStreetNamesTag,
                      roundabout_exit_begin_street_names);
 
   // If enabled, form articulated prepositions
@@ -3027,11 +3028,11 @@ std::string NarrativeBuilder::FormVerbalEnterRoundaboutInstruction(Maneuver& man
   instruction = dictionary_.enter_roundabout_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kOrdinalValueTag, ordinal_value);
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
-  boost::replace_all(instruction, kRoundaboutExitStreetNamesTag, roundabout_exit_street_names);
-  boost::replace_all(instruction, kRoundaboutExitBeginStreetNamesTag,
+  replace_all(instruction, kOrdinalValueTag, ordinal_value);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kRoundaboutExitStreetNamesTag, roundabout_exit_street_names);
+  replace_all(instruction, kRoundaboutExitBeginStreetNamesTag,
                      roundabout_exit_begin_street_names);
 
   // If enabled, form articulated prepositions
@@ -3090,9 +3091,9 @@ std::string NarrativeBuilder::FormExitRoundaboutInstruction(Maneuver& maneuver,
   instruction = dictionary_.exit_roundabout_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3154,9 +3155,9 @@ std::string NarrativeBuilder::FormVerbalExitRoundaboutInstruction(Maneuver& mane
   instruction = dictionary_.exit_roundabout_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3204,9 +3205,9 @@ std::string NarrativeBuilder::FormEnterFerryInstruction(Maneuver& maneuver,
   instruction = dictionary_.enter_ferry_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kFerryLabelTag, ferry_label);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kFerryLabelTag, ferry_label);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3271,9 +3272,9 @@ std::string NarrativeBuilder::FormVerbalEnterFerryInstruction(Maneuver& maneuver
   instruction = dictionary_.enter_ferry_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
-  boost::replace_all(instruction, kFerryLabelTag, ferry_label);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kFerryLabelTag, ferry_label);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3310,8 +3311,8 @@ std::string NarrativeBuilder::FormTransitConnectionStartInstruction(Maneuver& ma
   instruction = dictionary_.transit_connection_start_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop);
-  boost::replace_all(instruction, kStationLabelTag, station_label);
+  replace_all(instruction, kTransitPlatformTag, transit_stop);
+  replace_all(instruction, kStationLabelTag, station_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3349,8 +3350,8 @@ std::string NarrativeBuilder::FormVerbalTransitConnectionStartInstruction(Maneuv
       dictionary_.transit_connection_start_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop);
-  boost::replace_all(instruction, kStationLabelTag, station_label);
+  replace_all(instruction, kTransitPlatformTag, transit_stop);
+  replace_all(instruction, kStationLabelTag, station_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3387,8 +3388,8 @@ std::string NarrativeBuilder::FormTransitConnectionTransferInstruction(Maneuver&
   instruction = dictionary_.transit_connection_transfer_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop);
-  boost::replace_all(instruction, kStationLabelTag, station_label);
+  replace_all(instruction, kTransitPlatformTag, transit_stop);
+  replace_all(instruction, kStationLabelTag, station_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3426,8 +3427,8 @@ std::string NarrativeBuilder::FormVerbalTransitConnectionTransferInstruction(Man
       dictionary_.transit_connection_transfer_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop);
-  boost::replace_all(instruction, kStationLabelTag, station_label);
+  replace_all(instruction, kTransitPlatformTag, transit_stop);
+  replace_all(instruction, kStationLabelTag, station_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3465,8 +3466,8 @@ std::string NarrativeBuilder::FormTransitConnectionDestinationInstruction(Maneuv
       dictionary_.transit_connection_destination_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop);
-  boost::replace_all(instruction, kStationLabelTag, station_label);
+  replace_all(instruction, kTransitPlatformTag, transit_stop);
+  replace_all(instruction, kStationLabelTag, station_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3504,8 +3505,8 @@ std::string NarrativeBuilder::FormVerbalTransitConnectionDestinationInstruction(
       dictionary_.transit_connection_destination_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop);
-  boost::replace_all(instruction, kStationLabelTag, station_label);
+  replace_all(instruction, kTransitPlatformTag, transit_stop);
+  replace_all(instruction, kStationLabelTag, station_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3532,8 +3533,8 @@ std::string NarrativeBuilder::FormDepartInstruction(Maneuver& maneuver) {
   instruction = dictionary_.depart_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop_name);
-  boost::replace_all(instruction, kTimeTag,
+  replace_all(instruction, kTransitPlatformTag, transit_stop_name);
+  replace_all(instruction, kTimeTag,
                      get_localized_time(maneuver.GetTransitDepartureTime(), dictionary_.GetLocale()));
 
   // If enabled, form articulated prepositions
@@ -3561,8 +3562,8 @@ std::string NarrativeBuilder::FormVerbalDepartInstruction(Maneuver& maneuver) {
   instruction = dictionary_.depart_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop_name);
-  boost::replace_all(instruction, kTimeTag,
+  replace_all(instruction, kTransitPlatformTag, transit_stop_name);
+  replace_all(instruction, kTimeTag,
                      get_localized_time(maneuver.GetTransitDepartureTime(), dictionary_.GetLocale()));
 
   // If enabled, form articulated prepositions
@@ -3590,8 +3591,8 @@ std::string NarrativeBuilder::FormArriveInstruction(Maneuver& maneuver) {
   instruction = dictionary_.arrive_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop_name);
-  boost::replace_all(instruction, kTimeTag,
+  replace_all(instruction, kTransitPlatformTag, transit_stop_name);
+  replace_all(instruction, kTimeTag,
                      get_localized_time(maneuver.GetTransitArrivalTime(), dictionary_.GetLocale()));
 
   // If enabled, form articulated prepositions
@@ -3619,8 +3620,8 @@ std::string NarrativeBuilder::FormVerbalArriveInstruction(Maneuver& maneuver) {
   instruction = dictionary_.arrive_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformTag, transit_stop_name);
-  boost::replace_all(instruction, kTimeTag,
+  replace_all(instruction, kTransitPlatformTag, transit_stop_name);
+  replace_all(instruction, kTimeTag,
                      get_localized_time(maneuver.GetTransitArrivalTime(), dictionary_.GetLocale()));
 
   // If enabled, form articulated prepositions
@@ -3652,12 +3653,12 @@ std::string NarrativeBuilder::FormTransitInstruction(Maneuver& maneuver) {
   instruction = dictionary_.transit_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitNameTag,
+  replace_all(instruction, kTransitNameTag,
                      FormTransitName(maneuver, dictionary_.transit_subset.empty_transit_name_labels));
-  boost::replace_all(instruction, kTransitHeadSignTag, transit_headsign);
-  boost::replace_all(instruction, kTransitPlatformCountTag,
+  replace_all(instruction, kTransitHeadSignTag, transit_headsign);
+  replace_all(instruction, kTransitPlatformCountTag,
                      std::to_string(stop_count)); // TODO: locale specific numerals
-  boost::replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
+  replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3684,10 +3685,10 @@ std::string NarrativeBuilder::FormVerbalTransitInstruction(Maneuver& maneuver) {
   instruction = dictionary_.transit_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitNameTag,
+  replace_all(instruction, kTransitNameTag,
                      FormTransitName(maneuver,
                                      dictionary_.transit_verbal_subset.empty_transit_name_labels));
-  boost::replace_all(instruction, kTransitHeadSignTag, transit_headsign);
+  replace_all(instruction, kTransitHeadSignTag, transit_headsign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3719,13 +3720,13 @@ std::string NarrativeBuilder::FormTransitRemainOnInstruction(Maneuver& maneuver)
   instruction = dictionary_.transit_remain_on_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitNameTag,
+  replace_all(instruction, kTransitNameTag,
                      FormTransitName(maneuver,
                                      dictionary_.transit_remain_on_subset.empty_transit_name_labels));
-  boost::replace_all(instruction, kTransitHeadSignTag, transit_headsign);
-  boost::replace_all(instruction, kTransitPlatformCountTag,
+  replace_all(instruction, kTransitHeadSignTag, transit_headsign);
+  replace_all(instruction, kTransitPlatformCountTag,
                      std::to_string(stop_count)); // TODO: locale specific numerals
-  boost::replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
+  replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3752,10 +3753,10 @@ std::string NarrativeBuilder::FormVerbalTransitRemainOnInstruction(Maneuver& man
   instruction = dictionary_.transit_remain_on_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitNameTag,
+  replace_all(instruction, kTransitNameTag,
                      FormTransitName(maneuver, dictionary_.transit_remain_on_verbal_subset
                                                    .empty_transit_name_labels));
-  boost::replace_all(instruction, kTransitHeadSignTag, transit_headsign);
+  replace_all(instruction, kTransitHeadSignTag, transit_headsign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3787,13 +3788,13 @@ std::string NarrativeBuilder::FormTransitTransferInstruction(Maneuver& maneuver)
   instruction = dictionary_.transit_transfer_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitNameTag,
+  replace_all(instruction, kTransitNameTag,
                      FormTransitName(maneuver,
                                      dictionary_.transit_transfer_subset.empty_transit_name_labels));
-  boost::replace_all(instruction, kTransitHeadSignTag, transit_headsign);
-  boost::replace_all(instruction, kTransitPlatformCountTag,
+  replace_all(instruction, kTransitHeadSignTag, transit_headsign);
+  replace_all(instruction, kTransitPlatformCountTag,
                      std::to_string(stop_count)); // TODO: locale specific numerals
-  boost::replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
+  replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3820,10 +3821,10 @@ std::string NarrativeBuilder::FormVerbalTransitTransferInstruction(Maneuver& man
   instruction = dictionary_.transit_transfer_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitNameTag,
+  replace_all(instruction, kTransitNameTag,
                      FormTransitName(maneuver, dictionary_.transit_transfer_verbal_subset
                                                    .empty_transit_name_labels));
-  boost::replace_all(instruction, kTransitHeadSignTag, transit_headsign);
+  replace_all(instruction, kTransitHeadSignTag, transit_headsign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3868,10 +3869,10 @@ std::string NarrativeBuilder::FormVerbalPostTransitionInstruction(Maneuver& mane
   instruction = dictionary_.post_transition_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kLengthTag,
+  replace_all(instruction, kLengthTag,
                      FormLength(maneuver, dictionary_.post_transition_verbal_subset.metric_lengths,
                                 dictionary_.post_transition_verbal_subset.us_customary_lengths));
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kStreetNamesTag, street_names);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3897,9 +3898,9 @@ std::string NarrativeBuilder::FormVerbalPostTransitionTransitInstruction(Maneuve
       dictionary_.post_transition_transit_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kTransitPlatformCountTag,
+  replace_all(instruction, kTransitPlatformCountTag,
                      std::to_string(stop_count)); // TODO: locale specific numerals
-  boost::replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
+  replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3947,8 +3948,8 @@ std::string NarrativeBuilder::FormVerbalSuccinctStartTransitionInstruction(Maneu
   instruction = dictionary_.start_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kCardinalDirectionTag, cardinal_direction);
-  boost::replace_all(instruction, kLengthTag,
+  replace_all(instruction, kCardinalDirectionTag, cardinal_direction);
+  replace_all(instruction, kLengthTag,
                      FormLength(maneuver, dictionary_.start_verbal_subset.metric_lengths,
                                 dictionary_.start_verbal_subset.us_customary_lengths));
 
@@ -4013,10 +4014,10 @@ NarrativeBuilder::FormVerbalSuccinctTurnTransitionInstruction(Maneuver& maneuver
   instruction = subset->phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag,
+  replace_all(instruction, kRelativeDirectionTag,
                      FormRelativeTwoDirection(maneuver.type(), subset->relative_directions));
-  boost::replace_all(instruction, kJunctionNameTag, junction_name);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kJunctionNameTag, junction_name);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -4059,11 +4060,11 @@ NarrativeBuilder::FormVerbalSuccinctUturnTransitionInstruction(Maneuver& maneuve
   instruction = dictionary_.uturn_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag,
+  replace_all(instruction, kRelativeDirectionTag,
                      FormRelativeTwoDirection(maneuver.type(),
                                               dictionary_.uturn_verbal_subset.relative_directions));
-  boost::replace_all(instruction, kJunctionNameTag, junction_name);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kJunctionNameTag, junction_name);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -4111,8 +4112,8 @@ NarrativeBuilder::FormVerbalSuccinctMergeTransitionInstruction(Maneuver& maneuve
   instruction = dictionary_.merge_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kRelativeDirectionTag, relative_direction);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kRelativeDirectionTag, relative_direction);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -4159,8 +4160,8 @@ std::string NarrativeBuilder::FormVerbalSuccinctEnterRoundaboutTransitionInstruc
   instruction = dictionary_.enter_roundabout_verbal_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kOrdinalValueTag, ordinal_value);
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kOrdinalValueTag, ordinal_value);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -4194,7 +4195,7 @@ std::string NarrativeBuilder::FormVerbalSuccinctExitRoundaboutTransitionInstruct
   // Set instruction to the determined tagged phrase
   instruction = dictionary_.exit_roundabout_verbal_subset.phrases.at(std::to_string(phrase_id));
 
-  boost::replace_all(instruction, kTowardSignTag, guide_sign);
+  replace_all(instruction, kTowardSignTag, guide_sign);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -4224,7 +4225,7 @@ std::string NarrativeBuilder::FormElevatorInstruction(Maneuver& maneuver) {
   instruction = dictionary_.elevator_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kLevelTag, end_level);
+  replace_all(instruction, kLevelTag, end_level);
 
   return instruction;
 }
@@ -4249,7 +4250,7 @@ std::string NarrativeBuilder::FormStepsInstruction(Maneuver& maneuver) {
   instruction = dictionary_.steps_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kLevelTag, end_level);
+  replace_all(instruction, kLevelTag, end_level);
 
   return instruction;
 }
@@ -4272,7 +4273,7 @@ std::string NarrativeBuilder::FormGenericLevelChangeInstruction(Maneuver& maneuv
   instruction = dictionary_.level_change_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kLevelTag, end_level);
+  replace_all(instruction, kLevelTag, end_level);
 
   return instruction;
 }
@@ -4297,7 +4298,7 @@ std::string NarrativeBuilder::FormEscalatorInstruction(Maneuver& maneuver) {
   instruction = dictionary_.escalator_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kLevelTag, end_level);
+  replace_all(instruction, kLevelTag, end_level);
 
   return instruction;
 }
@@ -4324,7 +4325,7 @@ std::string NarrativeBuilder::FormEnterBuildingInstruction(Maneuver& maneuver) {
   instruction = dictionary_.enter_building_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kStreetNamesTag, street_names);
 
   return instruction;
 }
@@ -4351,7 +4352,7 @@ std::string NarrativeBuilder::FormExitBuildingInstruction(Maneuver& maneuver) {
   instruction = dictionary_.exit_building_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kStreetNamesTag, street_names);
+  replace_all(instruction, kStreetNamesTag, street_names);
 
   return instruction;
 }
@@ -4404,7 +4405,7 @@ std::string NarrativeBuilder::FormPassInstruction(Maneuver& maneuver) {
   instruction = dictionary_.pass_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kObjectLabelTag, object_label);
+  replace_all(instruction, kObjectLabelTag, object_label);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -4509,8 +4510,8 @@ std::string NarrativeBuilder::FormMetricLength(float kilometers,
 
   // TODO: why do we need separate tags for kilometers and meters?
   // Replace tags with length values
-  boost::replace_all(length_string, kKilometersTag, distance.str());
-  boost::replace_all(length_string, kMetersTag, distance.str());
+  replace_all(length_string, kKilometersTag, distance.str());
+  replace_all(length_string, kMetersTag, distance.str());
 
   return length_string;
 }
@@ -4576,9 +4577,9 @@ NarrativeBuilder::FormUsCustomaryLength(float miles,
 
   // TODO: why do we need separate tags for miles, tenths and feet?
   // Replace tags with length values
-  boost::replace_all(length_string, kMilesTag, distance.str());
-  boost::replace_all(length_string, kTenthsOfMilesTag, distance.str());
-  boost::replace_all(length_string, kFeetTag, distance.str());
+  replace_all(length_string, kMilesTag, distance.str());
+  replace_all(length_string, kTenthsOfMilesTag, distance.str());
+  replace_all(length_string, kFeetTag, distance.str());
 
   return length_string;
 }
@@ -4647,7 +4648,7 @@ NarrativeBuilder::FormTransitName(const Maneuver& maneuver,
 //       however, the results were not good when name had the label in the middle.
 //       Should implement per language.
 bool NarrativeBuilder::HasLabel(const std::string& name, const std::string& label) {
-  return boost::algorithm::iends_with(name, label);
+  return iends_with(name, label);
 }
 
 std::string
@@ -4835,9 +4836,9 @@ std::string NarrativeBuilder::FormVerbalMultiCue(Maneuver& maneuver,
   instruction = dictionary_.verbal_multi_cue_subset.phrases.at(std::to_string(phrase_id));
 
   // Replace phrase tags with values
-  boost::replace_all(instruction, kCurrentVerbalCueTag, first_verbal_cue);
-  boost::replace_all(instruction, kNextVerbalCueTag, second_verbal_cue);
-  boost::replace_all(instruction, kLengthTag,
+  replace_all(instruction, kCurrentVerbalCueTag, first_verbal_cue);
+  replace_all(instruction, kNextVerbalCueTag, second_verbal_cue);
+  replace_all(instruction, kLengthTag,
                      FormLength(maneuver, dictionary_.post_transition_verbal_subset.metric_lengths,
                                 dictionary_.post_transition_verbal_subset.us_customary_lengths));
 
@@ -4909,7 +4910,7 @@ const std::unordered_map<std::string, std::string> NarrativeBuilder_itIT::articu
 
 void NarrativeBuilder_itIT::FormArticulatedPrepositions(std::string& instruction) {
   for (const auto& item : NarrativeBuilder_itIT::articulated_prepositions_) {
-    boost::replace_all(instruction, item.first, item.second);
+    replace_all(instruction, item.first, item.second);
   }
 }
 

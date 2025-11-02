@@ -1,9 +1,7 @@
 #pragma once
 
-namespace boost {
-namespace property_tree {
+namespace valhalla {
 
-class ptree;
+class property_tree;
 
-} // namespace property_tree
-} // namespace boost
+} // namespace valhalla

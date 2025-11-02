@@ -35,7 +35,7 @@ public:
    * Constructor.
    * @param config A config object of key, value pairs
    */
-  explicit UnidirectionalAStar(const boost::property_tree::ptree& config = {});
+  explicit UnidirectionalAStar(const property_tree& config = {});
 
   /**
    * Form path between and origin and destination location using the supplied
@@ -198,7 +198,7 @@ template <const ExpansionType expansion_direction,
           const bool FORWARD = expansion_direction == ExpansionType::forward>
 class TimeDepReverse : public UnidirectionalAStar<expansion_direction> {
 public:
-  explicit TimeDepReverse(const boost::property_tree::ptree& config = {});
+  explicit TimeDepReverse(const property_tree& config = {});
 
   virtual std::vector<std::vector<PathInfo>>
   GetBestPath(valhalla::Location& origin,

@@ -20,7 +20,7 @@ using namespace valhalla::midgard;
 using namespace valhalla::mjolnir;
 
 namespace {
-std::deque<GraphId> get_tile_ids(const boost::property_tree::ptree& pt,
+std::deque<GraphId> get_tile_ids(const property_tree& pt,
                                  const std::unordered_set<std::string>& tiles) {
   if (tiles.empty())
     return {};
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
   std::vector<std::string> tiles;
-  boost::property_tree::ptree config;
+  property_tree config;
 
   try {
     // clang-format off

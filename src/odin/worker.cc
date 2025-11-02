@@ -16,7 +16,7 @@ using namespace valhalla::baldr;
 namespace valhalla {
 namespace odin {
 
-odin_worker_t::odin_worker_t(const boost::property_tree::ptree& config)
+odin_worker_t::odin_worker_t(const property_tree& config)
     : service_worker_t(config), markup_formatter_(config) {
   // signal that the worker started successfully
   started();
@@ -96,7 +96,7 @@ odin_worker_t::work(const std::list<zmq::message_t>& job,
   return result;
 }
 
-void run_service(const boost::property_tree::ptree& config) {
+void run_service(const property_tree& config) {
   // gracefully shutdown when asked via SIGTERM
   prime_server::quiesce(config.get<unsigned int>("httpd.service.drain_seconds", 28),
                         config.get<unsigned int>("httpd.service.shutting_seconds", 1));

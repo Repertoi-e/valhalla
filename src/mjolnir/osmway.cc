@@ -1,13 +1,14 @@
 #include "mjolnir/osmway.h"
 #include "baldr/edgeinfo.h"
 #include "midgard/logging.h"
+#include "midgard/string_utils.h"
 #include "mjolnir/util.h"
-
-#include <boost/algorithm/string.hpp>
 
 #include <regex>
 
 using namespace valhalla::baldr;
+using valhalla::midgard::string_utils::split;
+using valhalla::midgard::string_utils::SplitMode;
 
 namespace {
 
@@ -1116,10 +1117,11 @@ void OSMWay::GetTaggedValues(const UniqueNames& name_offset_map,
       std::pair<float, float> range;
       if (dash_pos != std::string::npos && dash_pos != 0) {
         // we're dealing with a range
-        std::vector<std::string> nums;
-        boost::algorithm::split(
-            nums, token, [&](const char c) { return c == dash; },
-            boost::algorithm::token_compress_on);
+        std::vector<std::string> nums = split(token, dash, SplitMode::SkipEmpty);
+        if (nums.size() < 2) {
+          LOG_WARN("Invalid level range: " + token + "; way_id " + std::to_string(osmwayid_));
+          continue;
+        }
 
         try {
           std::smatch match;

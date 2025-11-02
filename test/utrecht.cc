@@ -36,7 +36,7 @@ OSMWay GetWay(uint32_t way_id, sequence<OSMWay>& ways) {
 }
 
 TEST(Utrecth, TestBike) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   conf.put<std::string>("mjolnir.tile_dir", "test/data/parser_tiles");
   conf.put<unsigned long>("mjolnir.id_table_size", 1000);
 
@@ -175,7 +175,7 @@ TEST(Utrecth, TestBike) {
 }
 
 TEST(Utrecht, TestBus) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   conf.put<std::string>("mjolnir.tile_dir", "test/data/parser_tiles");
   conf.put<unsigned long>("mjolnir.id_table_size", 1000);
 
@@ -199,7 +199,7 @@ TEST(Utrecht, TestBus) {
 class UtrecthTestSuiteEnv : public ::testing::Environment {
 public:
   void SetUp() override {
-    boost::property_tree::ptree conf;
+    valhalla::property_tree conf;
     conf.put<std::string>("mjolnir.tile_dir", "test/data/parser_tiles");
     conf.put<unsigned long>("mjolnir.id_table_size", 1000);
 

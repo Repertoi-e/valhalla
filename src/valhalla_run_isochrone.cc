@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
   // args
   std::string json_str;
   std::string filename = "";
-  boost::property_tree::ptree config;
+  property_tree config;
 
   try {
     // clang-format off

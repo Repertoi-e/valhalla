@@ -199,7 +199,7 @@ uint32_t compute_curvature(const std::list<midgard::PointLL>& shape);
  * unusable afterwards.  Set to false if you need to perform protobuf operations after building tiles.
  * @return Returns true if no errors occur, false if an error occurs.
  */
-bool build_tile_set(const boost::property_tree::ptree& config,
+bool build_tile_set(const property_tree& config,
                     const std::vector<std::string>& input_files,
                     const BuildStage start_stage = BuildStage::kInitialize,
                     const BuildStage end_stage = BuildStage::kValidate);

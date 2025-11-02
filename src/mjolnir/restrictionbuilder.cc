@@ -279,7 +279,7 @@ struct Result {
 };
 
 void HandleOnlyRestrictionProperties(const std::vector<Result>& results,
-                                     const boost::property_tree::ptree& config) {
+                                     const valhalla::property_tree& config) {
   SCOPED_TIMER();
   std::unordered_map<GraphId, std::vector<const ComplexRestrictionBuilder*>> restrictions;
   std::unordered_map<GraphId, std::vector<GraphId>> part_of_restriction;
@@ -325,7 +325,7 @@ void HandleOnlyRestrictionProperties(const std::vector<Result>& results,
 
 void build(const std::string& complex_restriction_from_file,
            const std::string& complex_restriction_to_file,
-           const boost::property_tree::ptree& hierarchy_properties,
+           const valhalla::property_tree& hierarchy_properties,
            std::queue<GraphId>& tilequeue,
            std::mutex& lock,
            std::promise<Result>& result) {
@@ -727,12 +727,12 @@ namespace valhalla {
 namespace mjolnir {
 
 // Enhance the local level of the graph
-void RestrictionBuilder::Build(const boost::property_tree::ptree& pt,
+void RestrictionBuilder::Build(const property_tree& pt,
                                const std::string& complex_from_restrictions_file,
                                const std::string& complex_to_restrictions_file) {
 
   SCOPED_TIMER();
-  boost::property_tree::ptree hierarchy_properties = pt.get_child("mjolnir");
+  property_tree hierarchy_properties = pt.get_child("mjolnir");
   GraphReader reader(hierarchy_properties);
   for (auto tl = TileHierarchy::levels().rbegin(); tl != TileHierarchy::levels().rend(); ++tl) {
     // Create a randomized queue of tiles to work from

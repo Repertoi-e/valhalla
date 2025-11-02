@@ -49,7 +49,7 @@ public:
    *
    * @return  did everything pass?
    */
-  static bool Validate(const boost::property_tree::ptree& pt,
+  static bool Validate(const property_tree& pt,
                        const std::unordered_set<baldr::GraphId>& all_tiles,
                        const std::vector<OneStopTest>& onestoptests);
 };

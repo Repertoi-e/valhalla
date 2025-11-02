@@ -248,7 +248,7 @@ uint32_t GetOpposingEdgeIndex(const GraphId& startnode,
 
 using tweeners_t = GraphTileBuilder::tweeners_t;
 void validate(
-    const boost::property_tree::ptree& pt,
+    const valhalla::property_tree& pt,
     std::deque<GraphId>& tilequeue,
     std::mutex& lock,
     std::promise<std::tuple<std::vector<uint32_t>, std::vector<std::vector<float>>, tweeners_t>>&
@@ -554,7 +554,7 @@ void bin_tweeners(const std::string& tile_dir,
 namespace valhalla {
 namespace mjolnir {
 
-void GraphValidator::Validate(const boost::property_tree::ptree& pt) {
+void GraphValidator::Validate(const property_tree& pt) {
   SCOPED_TIMER();
   LOG_INFO("Validating, finishing and binning tiles...");
   auto hierarchy_properties = pt.get_child("mjolnir");

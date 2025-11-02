@@ -773,7 +773,7 @@ namespace mjolnir {
 // Build shortcuts. Shortcut edges are possible through nodes that
 // only connect to 2 edges on the hierarchy level, and have compatible
 // attributes. Shortcut edges are inserted before regular edges.
-void ShortcutBuilder::Build(const boost::property_tree::ptree& pt) {
+void ShortcutBuilder::Build(const property_tree& pt) {
 
   // TODO: thread this. would need to make sure we dont make shortcuts
   // across tile boundaries so that we are only messing with one tile

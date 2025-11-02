@@ -84,14 +84,14 @@ struct graph_tile_builder {
   std::unordered_map<vb::GraphId, graph_tile_ptr> tiles;
 };
 
-boost::property_tree::ptree read_json(const std::string& json) {
-  boost::property_tree::ptree p;
+valhalla::property_tree read_json(const std::string& json) {
+  valhalla::property_tree p;
   std::istringstream istr(json);
   rapidjson::read_json(istr, p);
   return p;
 }
 
-const boost::property_tree::ptree fake_config = read_json("{\"tile_dir\": \"/file/does/not/exist\"}");
+const valhalla::property_tree fake_config = read_json("{\"tile_dir\": \"/file/does/not/exist\"}");
 
 struct test_graph_reader : public vb::GraphReader {
   test_graph_reader(const std::unordered_map<vb::GraphId, graph_tile_ptr>& tiles)

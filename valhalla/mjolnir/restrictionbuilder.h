@@ -19,7 +19,7 @@ public:
    * @param complex_from_restriction_file  where to grab the complex from restrictions
    * @param complex_to_restriction_file    where to grab the complex to restrictions
    */
-  static void Build(const boost::property_tree::ptree& pt,
+  static void Build(const property_tree& pt,
                     const std::string& complex_from_restriction_file,
                     const std::string& complex_to_restriction_file);
 };

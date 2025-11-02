@@ -18,12 +18,12 @@ namespace valhalla {
 namespace loki {
 
 #ifdef ENABLE_SERVICES
-void run_service(const boost::property_tree::ptree& config);
+void run_service(const property_tree& config);
 #endif
 
 class loki_worker_t : public service_worker_t {
 public:
-  loki_worker_t(const boost::property_tree::ptree& config,
+  loki_worker_t(const property_tree& config,
                 const std::shared_ptr<baldr::GraphReader>& graph_reader = {});
 #ifdef ENABLE_SERVICES
   virtual prime_server::worker_t::result_t work(const std::list<zmq::message_t>& job,
@@ -61,7 +61,7 @@ protected:
   std::vector<midgard::PointLL> init_height(Api& request);
   void init_transit_available(Api& request);
 
-  boost::property_tree::ptree config;
+  property_tree config;
   sif::CostFactory factory;
   sif::cost_ptr_t costing;
   std::shared_ptr<baldr::GraphReader> reader;

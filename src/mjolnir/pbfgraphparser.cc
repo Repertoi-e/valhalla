@@ -15,9 +15,7 @@
 #include "proto/common.pb.h"
 #include "scoped_timer.h"
 
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/trim.hpp>
+#include "midgard/string_utils.h"
 #include <valhalla/property_tree/ptree.hpp>
 #include <osmium/io/pbf_input.hpp>
 
@@ -27,6 +25,9 @@
 using namespace valhalla::midgard;
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
+using valhalla::midgard::string_utils::join;
+using valhalla::midgard::string_utils::to_lower_in_place;
+using valhalla::midgard::string_utils::trim_in_place;
 
 namespace {
 
@@ -161,7 +162,7 @@ private:
 
 // Construct PBFGraphParser based on properties file and input PBF extract
 struct graph_parser {
-  graph_parser(const boost::property_tree::ptree& pt, OSMData& osmdata)
+  graph_parser(const valhalla::property_tree& pt, OSMData& osmdata)
       : lua_(get_lua(pt)), osmdata_(osmdata) {
     current_way_node_index_ = last_node_ = last_way_ = last_relation_ = 0;
 
@@ -1441,7 +1442,7 @@ struct graph_parser {
     };
     tag_handlers_["sac_scale"] = [this]() {
       std::string value = tag_.second;
-      boost::algorithm::to_lower(value);
+  to_lower_in_place(value);
 
       if (value.find("difficult_alpine_hiking") != std::string::npos) {
         way_.set_sac_scale(SacScale::kDifficultAlpineHiking);
@@ -1467,7 +1468,7 @@ struct graph_parser {
     };
     tag_handlers_["surface"] = [this]() {
       std::string value = tag_.second;
-      boost::algorithm::to_lower(value);
+  to_lower_in_place(value);
 
       // Find unpaved before paved since they have common string
       if (value.find("unpaved") != std::string::npos) {
@@ -1969,7 +1970,7 @@ struct graph_parser {
     tag_handlers_["lit"] = [this]() { way_.set_lit(tag_.second == "true" ? true : false); };
   }
 
-  static std::string get_lua(const boost::property_tree::ptree& pt) {
+  static std::string get_lua(const valhalla::property_tree& pt) {
     auto graph_lua_name = pt.get_optional<std::string>("graph_lua_name");
     if (graph_lua_name) {
       LOG_INFO("Using LUA script: " + *graph_lua_name);
@@ -2604,7 +2605,7 @@ struct graph_parser {
 
         std::vector<std::string> tokens = GetTagTokens(tag_.second, '@');
         std::string tmp = tokens.at(0);
-        boost::algorithm::trim(tmp);
+  trim_in_place(tmp);
 
         AccessType type = AccessType::kTimedDenied;
         if (tmp == "no") {
@@ -2654,7 +2655,7 @@ struct graph_parser {
             mode = kEmergencyAccess;
           }
           std::string tmp = tokens.at(1);
-          boost::algorithm::trim(tmp);
+          trim_in_place(tmp);
           std::vector<std::string> conditions = GetTagTokens(tmp, ';');
 
           for (const auto& condition : conditions) {
@@ -3994,7 +3995,7 @@ struct graph_parser {
     bool special_network = false;
     if (net.size() == 3) {
       std::string value = net.at(2);
-      boost::algorithm::to_lower(value);
+  to_lower_in_place(value);
 
       if (value == "turnpike" || value == "tp" || value == "fm" || value == "rm" || value == "loop" ||
           value == "spur" || value == "truck" || value == "business" || value == "bypass" ||
@@ -5110,7 +5111,7 @@ struct graph_parser {
 namespace valhalla {
 namespace mjolnir {
 
-OSMData PBFGraphParser::ParseWays(const boost::property_tree::ptree& pt,
+OSMData PBFGraphParser::ParseWays(const property_tree& pt,
                                   const std::vector<std::string>& input_files,
                                   const std::string& ways_file,
                                   const std::string& way_nodes_file,
@@ -5134,7 +5135,7 @@ OSMData PBFGraphParser::ParseWays(const boost::property_tree::ptree& pt,
   const size_t lua_concurrency =
       std::clamp(concurrency - 1, static_cast<size_t>(1), kMaxLuaConcurrency);
 
-  LOG_INFO("Parsing files for ways: " + boost::algorithm::join(input_files, ", "));
+  LOG_INFO("Parsing files for ways: " + join(input_files, ", "));
 
   parser.reset(new sequence<OSMWay>(ways_file, true), new sequence<OSMWayNode>(way_nodes_file, true),
                new sequence<OSMAccess>(access_file, true), nullptr, nullptr, nullptr, nullptr);
@@ -5236,7 +5237,7 @@ OSMData PBFGraphParser::ParseWays(const boost::property_tree::ptree& pt,
   return osmdata;
 }
 
-void PBFGraphParser::ParseRelations(const boost::property_tree::ptree& pt,
+void PBFGraphParser::ParseRelations(const property_tree& pt,
                                     const std::vector<std::string>& input_files,
                                     const std::string& complex_restriction_from_file,
                                     const std::string& complex_restriction_to_file,
@@ -5256,7 +5257,7 @@ void PBFGraphParser::ParseRelations(const boost::property_tree::ptree& pt,
   if (!osmdata.initialized)
     parser.osmdata_.read_from_temp_files(pt.get<std::string>("tile_dir"));
 
-  LOG_INFO("Parsing files for relations: " + boost::algorithm::join(input_files, ", "));
+  LOG_INFO("Parsing files for relations: " + join(input_files, ", "));
 
   parser.reset(nullptr, nullptr, nullptr,
                new sequence<OSMRestriction>(complex_restriction_from_file, true),
@@ -5300,7 +5301,7 @@ void PBFGraphParser::ParseRelations(const boost::property_tree::ptree& pt,
   LOG_INFO("Finished");
 }
 
-void PBFGraphParser::ParseNodes(const boost::property_tree::ptree& pt,
+void PBFGraphParser::ParseNodes(const property_tree& pt,
                                 const std::vector<std::string>& input_files,
                                 const std::string& way_nodes_file,
                                 const std::string& bss_nodes_file,
@@ -5321,7 +5322,7 @@ void PBFGraphParser::ParseNodes(const boost::property_tree::ptree& pt,
   if (!osmdata.initialized)
     parser.osmdata_.read_from_temp_files(pt.get<std::string>("tile_dir"));
 
-  LOG_INFO("Parsing files for nodes: " + boost::algorithm::join(input_files, ", "));
+  LOG_INFO("Parsing files for nodes: " + join(input_files, ", "));
 
   if (pt.get<bool>("import_bike_share_stations", false)) {
     LOG_INFO("Parsing bss nodes...");

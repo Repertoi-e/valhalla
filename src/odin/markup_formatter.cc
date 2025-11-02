@@ -1,8 +1,7 @@
 #include "odin/markup_formatter.h"
 #include "proto/common.pb.h"
 
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/algorithm/string/replace.hpp>
+#include "midgard/string_utils.h"
 #include <valhalla/property_tree/ptree.hpp>
 
 #include <optional>
@@ -34,8 +33,10 @@ const std::string& PronunciationAlphabetToString(valhalla::Pronunciation_Alphabe
 namespace valhalla {
 namespace odin {
 
+using valhalla::midgard::string_utils::replace_all;
+
 // Constructor
-MarkupFormatter::MarkupFormatter(const boost::property_tree::ptree& config)
+MarkupFormatter::MarkupFormatter(const property_tree& config)
     : markup_enabled_(config.get<bool>("odin.markup_formatter.markup_enabled", false)),
       phoneme_format_(config.get<std::string>("odin.markup_formatter.phoneme_format", "")) {
 }
@@ -99,8 +100,8 @@ bool MarkupFormatter::UseSingleQuotes(valhalla::Pronunciation_Alphabet alphabet)
 void MarkupFormatter::FormatQuotes(std::string& markup_string,
                                    valhalla::Pronunciation_Alphabet alphabet) const {
   // Use the proper quotes depending on the pronunciation alphabet
-  UseSingleQuotes(alphabet) ? boost::replace_all(markup_string, kQuotesTag, KSingleQuotes)
-                            : boost::replace_all(markup_string, kQuotesTag, KDoubleQuotes);
+  UseSingleQuotes(alphabet) ? replace_all(markup_string, kQuotesTag, KSingleQuotes)
+                            : replace_all(markup_string, kQuotesTag, KDoubleQuotes);
 }
 
 std::string MarkupFormatter::FormatPhonemeElement(
@@ -112,10 +113,10 @@ std::string MarkupFormatter::FormatPhonemeElement(
   FormatQuotes(phoneme_markup_string, pronunciation->alphabet);
 
   // Replace phrase tags with values
-  boost::replace_all(phoneme_markup_string, kPhoneticAlphabetTag,
-                     PronunciationAlphabetToString(pronunciation->alphabet));
-  boost::replace_all(phoneme_markup_string, kTextualStringTag, textual_string);
-  boost::replace_all(phoneme_markup_string, kVerbalStringTag, pronunciation->value);
+  replace_all(phoneme_markup_string, kPhoneticAlphabetTag,
+              PronunciationAlphabetToString(pronunciation->alphabet));
+  replace_all(phoneme_markup_string, kTextualStringTag, textual_string);
+  replace_all(phoneme_markup_string, kVerbalStringTag, pronunciation->value);
 
   return phoneme_markup_string;
 }

@@ -16,7 +16,7 @@ public:
   /**
    * Validate the graph tiles.
    */
-  static void Validate(const boost::property_tree::ptree& pt);
+  static void Validate(const property_tree& pt);
 };
 
 } // namespace mjolnir

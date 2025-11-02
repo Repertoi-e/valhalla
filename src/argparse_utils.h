@@ -29,7 +29,7 @@
 bool parse_common_args(const std::string& program,
                        const cxxopts::Options& opts,
                        const cxxopts::ParseResult& result,
-                       boost::property_tree::ptree* conf,
+                       valhalla::property_tree* conf,
                        const std::string& log,
                        const bool use_threads = false,
                        std::function<void()> extra_help = nullptr) {
@@ -61,7 +61,7 @@ bool parse_common_args(const std::string& program,
     // configure logging
     auto logging_subtree = conf->get_child_optional(log);
     if (!log.empty() && logging_subtree) {
-      auto logging_config = valhalla::midgard::ToMap<const boost::property_tree::ptree&,
+      auto logging_config = valhalla::midgard::ToMap<const valhalla::property_tree&,
                                                      std::unordered_map<std::string, std::string>>(
           logging_subtree.get());
       valhalla::midgard::logging::Configure(logging_config);

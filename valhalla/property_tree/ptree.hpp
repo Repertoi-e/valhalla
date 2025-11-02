@@ -14,22 +14,12 @@
 #include <utility>
 #include <vector>
 
-namespace boost {
-namespace property_tree {
+#include <midgard/string_utils.h>
 
-namespace detail {
-inline std::string to_lower_copy(const std::string& input) {
-  std::string lower;
-  lower.reserve(input.size());
-  for (char c : input) {
-    lower.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
-  }
-  return lower;
-}
-} // namespace detail
+namespace valhalla {
 
 /**
- * A lightweight drop-in replacement for Boost.PropertyTree's ptree that stores
+ * A lightweight drop-in replacement for Boost.PropertyTree's property_tree that stores
  * configuration data in a simple ordered tree backed by standard containers.
  *
  * The implementation focuses on the subset of the original interface that
@@ -37,11 +27,11 @@ inline std::string to_lower_copy(const std::string& input) {
  * the namespace and class name identical so existing code continues to compile
  * without modification, while internally reusing RapidJSON for parsing.
  */
-class ptree {
+class property_tree {
 public:
   using key_type = std::string;
   using data_type = std::string;
-  using mapped_type = ptree;
+  using mapped_type = property_tree;
   using sequence_type = std::vector<std::pair<key_type, mapped_type>>;
   using value_type = sequence_type::value_type;
   using iterator = sequence_type::iterator;
@@ -91,15 +81,15 @@ public:
     T* ptr_ = nullptr;
   };
 
-  using optional_child = optional_ref<ptree>;
-  using optional_const_child = optional_ref<const ptree>;
+  using optional_child = optional_ref<property_tree>;
+  using optional_const_child = optional_ref<const property_tree>;
 
-  ptree() = default;
-  ~ptree() = default;
-  ptree(const ptree&) = default;
-  ptree(ptree&&) noexcept = default;
-  ptree& operator=(const ptree&) = default;
-  ptree& operator=(ptree&&) noexcept = default;
+  property_tree() = default;
+  ~property_tree() = default;
+  property_tree(const property_tree&) = default;
+  property_tree(property_tree&&) noexcept = default;
+  property_tree& operator=(const property_tree&) = default;
+  property_tree& operator=(property_tree&&) noexcept = default;
 
   bool empty() const noexcept {
     return children_.empty();
@@ -177,7 +167,7 @@ public:
 
   template <typename T>
   T get(const key_type& path, const T& default_value) const {
-    const ptree* node = find_node(path);
+    const property_tree* node = find_node(path);
     if (!node) {
       return default_value;
     }
@@ -185,7 +175,7 @@ public:
   }
 
   template <typename T> T get(const key_type& path) const {
-    const ptree* node = find_node(path);
+    const property_tree* node = find_node(path);
     if (!node) {
       throw std::runtime_error("Path not found: " + path);
     }
@@ -194,7 +184,7 @@ public:
 
   template <typename T>
   std::optional<T> get_optional(const key_type& path) const {
-    const ptree* node = find_node(path);
+    const property_tree* node = find_node(path);
     if (!node) {
       return std::nullopt;
     }
@@ -215,16 +205,16 @@ public:
     return cnt;
   }
 
-  ptree& get_child(const key_type& path) {
-    ptree* node = find_node(path);
+  property_tree& get_child(const key_type& path) {
+    property_tree* node = find_node(path);
     if (!node) {
       throw std::runtime_error("Path not found: " + path);
     }
     return *node;
   }
 
-  const ptree& get_child(const key_type& path) const {
-    const ptree* node = find_node(path);
+  const property_tree& get_child(const key_type& path) const {
+    const property_tree* node = find_node(path);
     if (!node) {
       throw std::runtime_error("Path not found: " + path);
     }
@@ -239,17 +229,17 @@ public:
     return optional_const_child(find_node(path));
   }
 
-  template <typename T> ptree& add(const key_type& path, T&& value) {
-    ptree& child = add_child(path, ptree{});
+  template <typename T> property_tree& add(const key_type& path, T&& value) {
+    property_tree& child = add_child(path, property_tree{});
     child.put_value(std::forward<T>(value));
     return child;
   }
 
-  ptree& add_child(const key_type& path, const ptree& child) {
+  property_tree& add_child(const key_type& path, const property_tree& child) {
     return add_child_impl(path, child);
   }
 
-  ptree& add_child(const key_type& path, ptree&& child) {
+  property_tree& add_child(const key_type& path, property_tree&& child) {
     return add_child_impl(path, std::move(child));
   }
 
@@ -265,14 +255,14 @@ public:
 
   value_type& front() {
     if (children_.empty()) {
-      throw std::out_of_range("ptree::front on empty tree");
+      throw std::out_of_range("property_tree::front on empty tree");
     }
     return children_.front();
   }
 
   const value_type& front() const {
     if (children_.empty()) {
-      throw std::out_of_range("ptree::front on empty tree");
+      throw std::out_of_range("property_tree::front on empty tree");
     }
     return children_.front();
   }
@@ -299,7 +289,7 @@ public:
     if constexpr (std::is_same_v<T, std::string>) {
       return data_;
     } else if constexpr (std::is_same_v<T, bool>) {
-      auto lower = detail::to_lower_copy(data_);
+      auto lower = midgard::string_utils::to_lower_copy(data_);
       if (lower == "true" || lower == "1") {
         return true;
       }
@@ -319,7 +309,7 @@ public:
       }
       return result;
     } else {
-      static_assert(!sizeof(T), "Unsupported type for ptree::get_value");
+      static_assert(!sizeof(T), "Unsupported type for property_tree::get_value");
     }
   }
 
@@ -381,16 +371,16 @@ private:
     }
   }
 
-  ptree& ensure_node(const key_type& path) {
+  property_tree& ensure_node(const key_type& path) {
     if (path.empty()) {
       return *this;
     }
     auto segments = split(path);
-    ptree* current = this;
+    property_tree* current = this;
     for (const auto& segment : segments) {
       auto it = current->find_child_iter(segment);
       if (it == current->children_.end()) {
-        current->children_.emplace_back(segment, ptree{});
+        current->children_.emplace_back(segment, property_tree{});
         it = std::prev(current->children_.end());
       }
       current = &it->second;
@@ -398,12 +388,12 @@ private:
     return *current;
   }
 
-  const ptree* find_node(const key_type& path) const {
+  const property_tree* find_node(const key_type& path) const {
     if (path.empty()) {
       return this;
     }
     auto segments = split(path);
-    const ptree* current = this;
+    const property_tree* current = this;
     for (const auto& segment : segments) {
       auto it = current->find_child_iter(segment);
       if (it == current->children_.cend()) {
@@ -414,8 +404,8 @@ private:
     return current;
   }
 
-  ptree* find_node(const key_type& path) {
-    return const_cast<ptree*>(static_cast<const ptree*>(this)->find_node(path));
+  property_tree* find_node(const key_type& path) {
+    return const_cast<property_tree*>(static_cast<const property_tree*>(this)->find_node(path));
   }
 
   const_iterator find_child_iter(const key_type& key) const {
@@ -431,7 +421,7 @@ private:
   }
 
   template <typename Child>
-  ptree& add_child_impl(const key_type& path, Child&& child) {
+  property_tree& add_child_impl(const key_type& path, Child&& child) {
     if (path.empty()) {
       children_.emplace_back("", std::forward<Child>(child));
       return children_.back().second;
@@ -441,12 +431,12 @@ private:
       children_.emplace_back("", std::forward<Child>(child));
       return children_.back().second;
     }
-    ptree* parent = this;
+    property_tree* parent = this;
     if (segments.size() > 1) {
       for (size_t i = 0; i < segments.size() - 1; ++i) {
         auto it = parent->find_child_iter(segments[i]);
         if (it == parent->children_.end()) {
-          parent->children_.emplace_back(segments[i], ptree{});
+          parent->children_.emplace_back(segments[i], property_tree{});
           it = std::prev(parent->children_.end());
         }
         parent = &it->second;
@@ -461,5 +451,4 @@ private:
   sequence_type children_;
 };
 
-} // namespace property_tree
-} // namespace boost
+} // namespace valhalla

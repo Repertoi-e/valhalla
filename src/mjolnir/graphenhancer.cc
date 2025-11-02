@@ -984,10 +984,10 @@ bool ConsistentNames(const std::string& country_code,
 
 // We make sure to lock on reading and writing because we dont want to race
 // since difference threads, use for the tilequeue as well
-void enhance(const boost::property_tree::ptree& pt,
+void enhance(const valhalla::property_tree& pt,
              const OSMData& osmdata,
              const std::string& access_file,
-             const boost::property_tree::ptree& hierarchy_properties,
+             const valhalla::property_tree& hierarchy_properties,
              std::queue<GraphId>& tilequeue,
              std::mutex& lock,
              std::promise<enhancer_stats>& result) {
@@ -1426,7 +1426,7 @@ namespace valhalla {
 namespace mjolnir {
 
 // Enhance the local level of the graph
-void GraphEnhancer::Enhance(const boost::property_tree::ptree& pt,
+void GraphEnhancer::Enhance(const property_tree& pt,
                             const OSMData& osmdata,
                             const std::string& access_file) {
   SCOPED_TIMER();
@@ -1442,7 +1442,7 @@ void GraphEnhancer::Enhance(const boost::property_tree::ptree& pt,
 
   // Create a randomized queue of tiles to work from
   std::deque<GraphId> tempqueue;
-  boost::property_tree::ptree hierarchy_properties = pt.get_child("mjolnir");
+  property_tree hierarchy_properties = pt.get_child("mjolnir");
   auto local_level = TileHierarchy::levels().back().level;
   GraphReader reader(hierarchy_properties);
   auto local_tiles = reader.GetTileSet(local_level);

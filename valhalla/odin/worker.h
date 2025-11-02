@@ -10,12 +10,12 @@ namespace valhalla {
 namespace odin {
 
 #ifdef ENABLE_SERVICES
-void run_service(const boost::property_tree::ptree& config);
+void run_service(const property_tree& config);
 #endif
 
 class odin_worker_t : public service_worker_t {
 public:
-  odin_worker_t(const boost::property_tree::ptree& config);
+  odin_worker_t(const property_tree& config);
   virtual ~odin_worker_t();
 #ifdef ENABLE_SERVICES
   virtual prime_server::worker_t::result_t work(const std::list<zmq::message_t>& job,

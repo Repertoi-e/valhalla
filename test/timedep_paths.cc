@@ -89,7 +89,7 @@ TEST(TimeDepPaths, test_arrive_by_paths) {
 
 class TimeDepForwardTest : public thor::TimeDepForward {
 public:
-  explicit TimeDepForwardTest(const boost::property_tree::ptree& config = {})
+  explicit TimeDepForwardTest(const property_tree& config = {})
       : TimeDepForward(config) {
   }
 
@@ -104,7 +104,7 @@ public:
 };
 
 TEST(TimeDepPaths, test_forward_clear_reserved_memory) {
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("clear_reserved_memory", true);
 
   TimeDepForwardTest time_dep(config);
@@ -112,7 +112,7 @@ TEST(TimeDepPaths, test_forward_clear_reserved_memory) {
 }
 
 TEST(TimeDepPaths, test_forward_max_reserved_labels_count) {
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("max_reserved_labels_count_astar", 10);
 
   TimeDepForwardTest time_dep(config);
@@ -121,7 +121,7 @@ TEST(TimeDepPaths, test_forward_max_reserved_labels_count) {
 
 class TimeDepReverseTest : public thor::TimeDepReverse {
 public:
-  explicit TimeDepReverseTest(const boost::property_tree::ptree& config = {})
+  explicit TimeDepReverseTest(const property_tree& config = {})
       : TimeDepReverse(config) {
   }
 
@@ -136,7 +136,7 @@ public:
 };
 
 TEST(TimeDepPaths, test_reverse_clear_reserved_memory) {
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("clear_reserved_memory", true);
 
   TimeDepReverseTest time_dep(config);
@@ -144,7 +144,7 @@ TEST(TimeDepPaths, test_reverse_clear_reserved_memory) {
 }
 
 TEST(TimeDepPaths, test_reverse_max_reserved_labels_count) {
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("max_reserved_labels_count_dijkstras", 10);
 
   TimeDepReverseTest time_dep(config);

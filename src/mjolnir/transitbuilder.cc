@@ -7,7 +7,6 @@
 #include "mjolnir/graphtilebuilder.h"
 #include "scoped_timer.h"
 
-#include <boost/algorithm/string.hpp>
 #include <valhalla/property_tree/ptree.hpp>
 
 #include <filesystem>
@@ -450,7 +449,7 @@ std::vector<OSMConnectionEdge> MakeConnections(const graph_tile_ptr& local_tile,
 
 // We make sure to lock on reading and writing since tiles are now being
 // written. Also lock on queue access since shared by different threads.
-void build(const boost::property_tree::ptree& pt,
+void build(const valhalla::property_tree& pt,
            std::mutex& lock,
            std::unordered_set<GraphId>::const_iterator tile_start,
            std::unordered_set<GraphId>::const_iterator tile_end,
@@ -526,7 +525,7 @@ namespace valhalla {
 namespace mjolnir {
 
 // Add transit to the graph
-void TransitBuilder::Build(const boost::property_tree::ptree& pt) {
+void TransitBuilder::Build(const property_tree& pt) {
   std::unordered_set<GraphId> tiles;
 
   // Bail if nothing

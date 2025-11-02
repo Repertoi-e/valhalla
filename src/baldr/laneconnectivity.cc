@@ -1,8 +1,6 @@
 #include "baldr/laneconnectivity.h"
 
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
-
+#include <sstream>
 #include <vector>
 
 namespace valhalla {
@@ -52,7 +50,11 @@ bool LaneConnectivity::operator<(const LaneConnectivity& other) const {
 // Constructor with arguments.
 LaneConnectivityLanes::LaneConnectivityLanes(const std::string& lanes) : value_(0) {
   std::vector<std::string> tokens;
-  boost::split(tokens, lanes, boost::is_any_of("|"));
+  std::stringstream stream(lanes);
+  std::string token;
+  while (std::getline(stream, token, '|')) {
+    tokens.push_back(token);
+  }
   uint8_t n = 1;
   for (const auto& t : tokens) {
     set_lane(n++, std::stoi(t));

@@ -16,8 +16,6 @@ namespace {
 
 using namespace valhalla;
 
-using ptree = boost::property_tree::ptree;
-
 void create_costing_options(Costing::Type costing, Options& options) {
   const rapidjson::Document doc;
   options.set_costing_type(costing);

@@ -15,7 +15,7 @@ public:
    * Update the tiles based on filtering logic in place.
    * @param pt Configuration file
    */
-  static void Filter(const boost::property_tree::ptree& pt);
+  static void Filter(const property_tree& pt);
 };
 
 } // namespace mjolnir

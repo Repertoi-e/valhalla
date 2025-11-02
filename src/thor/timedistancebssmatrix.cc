@@ -14,7 +14,7 @@ namespace thor {
 travel_mode_t get_other_travel_mode(const travel_mode_t current_mode);
 
 // Constructor with cost threshold.
-TimeDistanceBSSMatrix::TimeDistanceBSSMatrix(const boost::property_tree::ptree& config)
+TimeDistanceBSSMatrix::TimeDistanceBSSMatrix(const property_tree& config)
     : MatrixAlgorithm(config), settled_count_(0), current_cost_threshold_(0),
       max_reserved_labels_count_(config.get<uint32_t>("max_reserved_labels_count_dijkstras",
                                                       kInitialEdgeLabelCountDijkstras)),

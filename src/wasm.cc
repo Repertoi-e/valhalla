@@ -34,7 +34,7 @@ std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_locals_for(c
     auto json_val = module.call<emscripten::val>("fetchLocale", locale_string).await();
     std::string json = json_val.as<std::string>();
 
-    boost::property_tree::ptree narrative_pt;
+    property_tree narrative_pt;
     std::stringstream ss;
     ss << json;
     rapidjson::read_json(ss, narrative_pt);

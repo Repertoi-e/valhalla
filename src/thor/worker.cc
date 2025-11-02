@@ -57,7 +57,7 @@ std::string serialize_to_pbf(Api& request) {
 namespace valhalla {
 namespace thor {
 
-thor_worker_t::thor_worker_t(const boost::property_tree::ptree& config,
+thor_worker_t::thor_worker_t(const property_tree& config,
                              const std::shared_ptr<baldr::GraphReader>& graph_reader)
     : service_worker_t(config), mode(valhalla::sif::TravelMode::kPedestrian),
       bidir_astar(config.get_child("thor")), bss_astar(config.get_child("thor")),
@@ -197,7 +197,7 @@ thor_worker_t::work(const std::list<zmq::message_t>& job,
   return result;
 }
 
-void run_service(const boost::property_tree::ptree& config) {
+void run_service(const property_tree& config) {
   // gracefully shutdown when asked via SIGTERM
   prime_server::quiesce(config.get<unsigned int>("httpd.service.drain_seconds", 28),
                         config.get<unsigned int>("httpd.service.shutting_seconds", 1));

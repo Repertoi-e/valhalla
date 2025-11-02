@@ -12,9 +12,8 @@
 #define VALHALLA_SOURCE_DIR
 #endif
 
-namespace bpt = boost::property_tree;
-
 using namespace valhalla;
+
 namespace vb = valhalla::baldr;
 namespace vt = valhalla::thor;
 namespace vk = valhalla::loki;
@@ -54,7 +53,7 @@ struct route_tester {
 using BssManeuverType = valhalla::DirectionsLeg_Maneuver_BssManeuverType;
 
 void test_request(const std::string& request,
-                  const std::vector<TravelMode>& expected_travel_modes,
+                  const std::vector<valhalla::TravelMode>& expected_travel_modes,
                   const std::vector<std::string>& expected_route,
                   // We mark only the maneuvers that are RentBike and ReturnBike
                   const std::map<size_t, BssManeuverType>& expected_bss_maneuver,
@@ -341,7 +340,7 @@ TEST(AstarBss, test_BSSConnections_on_Pedestrian_and_Bicycle) {
 
 class AstarBSSTest : public thor::AStarBSSAlgorithm {
 public:
-  explicit AstarBSSTest(const boost::property_tree::ptree& config = {}) : AStarBSSAlgorithm(config) {
+  explicit AstarBSSTest(const property_tree& config = {}) : AStarBSSAlgorithm(config) {
   }
 
   void Clear() {
@@ -355,7 +354,7 @@ public:
 };
 
 TEST(AstarBss, test_clear_reserved_memory) {
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("clear_reserved_memory", true);
 
   AstarBSSTest astar(config);
@@ -363,7 +362,7 @@ TEST(AstarBss, test_clear_reserved_memory) {
 }
 
 TEST(AstarBss, test_max_reserved_labels_count) {
-  boost::property_tree::ptree config;
+  property_tree config;
   config.put("max_reserved_labels_count_astar", 10);
 
   AstarBSSTest astar(config);

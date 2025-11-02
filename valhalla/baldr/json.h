@@ -1,9 +1,6 @@
 #ifndef VALHALLA_BALDR_JSON_H_
 #define VALHALLA_BALDR_JSON_H_
 
-#include <boost/variant/static_visitor.hpp>
-#include <boost/variant/variant.hpp>
-
 #include <cctype>
 #include <cmath>
 #include <cstddef>
@@ -14,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <variant>
 
 namespace valhalla {
 namespace baldr {
@@ -44,16 +42,16 @@ struct RawJSON {
 };
 
 // a variant of all the possible values to go with keys in json
-using Value = boost::variant<std::string,
-                             uint64_t,
-                             int64_t,
-                             fixed_t,
-                             float_t,
-                             bool,
-                             std::nullptr_t,
-                             MapPtr,
-                             ArrayPtr,
-                             RawJSON>;
+using Value = std::variant<std::string,
+                           uint64_t,
+                           int64_t,
+                           fixed_t,
+                           float_t,
+                           bool,
+                           std::nullptr_t,
+                           MapPtr,
+                           ArrayPtr,
+                           RawJSON>;
 
 // the map value type in json
 class Jmap : public std::unordered_map<std::string, Value> {
@@ -76,7 +74,7 @@ protected:
 };
 
 // how we serialize the different primitives to string
-class OstreamVisitor : public boost::static_visitor<std::ostream&> {
+class OstreamVisitor {
 public:
   OstreamVisitor(std::ostream& o) : ostream_(o), fill(o.fill()) {
   }
@@ -185,13 +183,9 @@ inline std::ostream& operator<<(std::ostream& stream, const float_t& fp) {
   return stream;
 }
 
-template <typename Visitable>
-inline void applyOutputVisitor(std::ostream& stream, Visitable& visitable) {
-  // Cannot use boost::apply_visitor with C++14 due to
-  // ambiguity introduced in boost_1_58 and fixed in the latest
-  // https://lists.boost.org/boost-bugs/2015/05/41067.php
+inline void applyOutputVisitor(std::ostream& stream, const Value& visitable) {
   OstreamVisitor visitor(stream);
-  visitable.apply_visitor(visitor);
+  std::visit(visitor, visitable);
 }
 
 inline std::ostream& operator<<(std::ostream& stream, const Jmap& json) {

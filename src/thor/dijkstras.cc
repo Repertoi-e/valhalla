@@ -39,7 +39,7 @@ namespace valhalla {
 namespace thor {
 
 // Default constructor
-Dijkstras::Dijkstras(const boost::property_tree::ptree& config)
+Dijkstras::Dijkstras(const property_tree& config)
     : mode_(travel_mode_t::kDrive), access_mode_(kAutoAccess),
       max_reserved_labels_count_(config.get<uint32_t>("max_reserved_labels_count_dijkstras",
                                                       kInitialEdgeLabelCountDijkstras)),

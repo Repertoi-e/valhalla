@@ -275,7 +275,7 @@ struct ExitBuildingSubset : PhraseSet {
 class NarrativeDictionary {
 public:
   NarrativeDictionary(const std::string& language_tag,
-                      const boost::property_tree::ptree& narrative_pt);
+                      const property_tree& narrative_pt);
 
   // Start
   StartSubset start_subset;
@@ -437,7 +437,7 @@ protected:
    * @param  narrative_pt  The narrative property tree with the localized
    *                       narrative instructions.
    */
-  void Load(const boost::property_tree::ptree& narrative_pt);
+  void Load(const property_tree& narrative_pt);
 
   /**
    * Loads the phrases with the localized narrative instructions
@@ -446,7 +446,7 @@ protected:
    * @param  phrase_handle  The 'phrase' structure to populate.
    * @param  phrase_pt  The 'phrase' property tree.
    */
-  void Load(PhraseSet& phrase_handle, const boost::property_tree::ptree& phrase_pt);
+  void Load(PhraseSet& phrase_handle, const property_tree& phrase_pt);
 
   /**
    * Loads the specified 'start' instruction subset with the localized narrative
@@ -455,7 +455,7 @@ protected:
    * @param  start_handle  The 'start' structure to populate.
    * @param  start_subset_pt  The 'start' property tree.
    */
-  void Load(StartSubset& start_handle, const boost::property_tree::ptree& start_subset_pt);
+  void Load(StartSubset& start_handle, const property_tree& start_subset_pt);
   /**
    * Loads the specified 'start verbal' instruction subset with the localized
    * narrative instructions contained in the specified property tree.
@@ -464,7 +464,7 @@ protected:
    * @param  start_verbal_subset_pt  The 'start verbal' property tree.
    */
   void Load(StartVerbalSubset& start_verbal_handle,
-            const boost::property_tree::ptree& start_verbal_subset_pt);
+            const property_tree& start_verbal_subset_pt);
 
   /**
    * Loads the specified 'destination' instruction subset with the localized
@@ -474,7 +474,7 @@ protected:
    * @param  destination_subset_pt  The 'destination' property tree.
    */
   void Load(DestinationSubset& destination_handle,
-            const boost::property_tree::ptree& destination_subset_pt);
+            const property_tree& destination_subset_pt);
 
   /**
    * Loads the specified 'continue' instruction subset with the localized
@@ -483,7 +483,7 @@ protected:
    * @param  continue_handle  The 'continue' structure to populate.
    * @param  continue_subset_pt  The 'continue' property tree.
    */
-  void Load(ContinueSubset& continue_handle, const boost::property_tree::ptree& continue_subset_pt);
+  void Load(ContinueSubset& continue_handle, const property_tree& continue_subset_pt);
 
   /**
    * Loads the specified 'continue verbal' instruction subset with the localized
@@ -493,7 +493,7 @@ protected:
    * @param  continue_verbal_subset_pt  The 'continue verbal' property tree.
    */
   void Load(ContinueVerbalSubset& continue_verbal_handle,
-            const boost::property_tree::ptree& continue_verbal_subset_pt);
+            const property_tree& continue_verbal_subset_pt);
 
   /**
    * Loads the specified 'turn' instruction subset with the localized
@@ -502,7 +502,7 @@ protected:
    * @param  turn_handle  The 'turn' structure to populate.
    * @param  turn_subset_pt  The 'turn' property tree.
    */
-  void Load(TurnSubset& turn_handle, const boost::property_tree::ptree& turn_subset_pt);
+  void Load(TurnSubset& turn_handle, const property_tree& turn_subset_pt);
 
   /**
    * Loads the specified 'ramp' instruction subset with the localized
@@ -511,7 +511,7 @@ protected:
    * @param  ramp_handle  The 'ramp' structure to populate.
    * @param  ramp_subset_pt  The 'ramp' property tree.
    */
-  void Load(RampSubset& ramp_handle, const boost::property_tree::ptree& ramp_subset_pt);
+  void Load(RampSubset& ramp_handle, const property_tree& ramp_subset_pt);
 
   /**
    * Loads the specified 'keep' instruction subset with the localized
@@ -520,7 +520,7 @@ protected:
    * @param  keep_handle  The 'keep' structure to populate.
    * @param  keep_subset_pt  The 'keep' property tree.
    */
-  void Load(KeepSubset& keep_handle, const boost::property_tree::ptree& keep_subset_pt);
+  void Load(KeepSubset& keep_handle, const property_tree& keep_subset_pt);
 
   /**
    * Loads the specified 'enter_roundabout' instruction subset with the localized
@@ -530,7 +530,7 @@ protected:
    * @param  enter_roundabout_subset_pt  The 'enter_roundabout' property tree.
    */
   void Load(EnterRoundaboutSubset& enter_roundabout_handle,
-            const boost::property_tree::ptree& enter_roundabout_subset_pt);
+            const property_tree& enter_roundabout_subset_pt);
 
   /**
    * Loads the specified 'enter_ferry' instruction subset with the localized
@@ -540,7 +540,7 @@ protected:
    * @param  enter_ferry_subset_pt  The 'enter_ferry' property tree.
    */
   void Load(EnterFerrySubset& enter_ferry_handle,
-            const boost::property_tree::ptree& enter_ferry_subset_pt);
+            const property_tree& enter_ferry_subset_pt);
 
   /**
    * Loads the specified 'transit_connection' instruction subset with the localized
@@ -550,7 +550,7 @@ protected:
    * @param  transit_connection_subset_pt  The 'transit_connection' property tree.
    */
   void Load(TransitConnectionSubset& transit_connection_handle,
-            const boost::property_tree::ptree& transit_connection_subset_pt);
+            const property_tree& transit_connection_subset_pt);
 
   /**
    * Loads the specified 'transit' instruction subset with the localized
@@ -559,7 +559,7 @@ protected:
    * @param  transit_handle  The 'transit' structure to populate.
    * @param  transit_subset_pt  The 'transit' property tree.
    */
-  void Load(TransitSubset& transit_handle, const boost::property_tree::ptree& transit_subset_pt);
+  void Load(TransitSubset& transit_handle, const property_tree& transit_subset_pt);
 
   /**
    * Loads the specified 'transit_stop' instruction subset with the localized
@@ -569,7 +569,7 @@ protected:
    * @param  transit_stop_subset_pt  The 'transit_stop' property tree.
    */
   void Load(TransitStopSubset& transit_stop_handle,
-            const boost::property_tree::ptree& transit_stop_subset_pt);
+            const property_tree& transit_stop_subset_pt);
 
   /**
    * Loads the specified 'post transition verbal' instruction subset with the
@@ -581,7 +581,7 @@ protected:
    *                                           property tree.
    */
   void Load(PostTransitionVerbalSubset& post_transition_verbal_handle,
-            const boost::property_tree::ptree& post_transition_verbal_subset_pt);
+            const property_tree& post_transition_verbal_subset_pt);
 
   /**
    * Loads the specified 'post transition_transit verbal' instruction subset with the
@@ -593,7 +593,7 @@ protected:
    *                                                   property tree.
    */
   void Load(PostTransitionTransitVerbalSubset& post_transition_transit_verbal_handle,
-            const boost::property_tree::ptree& post_transition_transit_verbal_subset_pt);
+            const property_tree& post_transition_transit_verbal_subset_pt);
 
   /**
    * Loads the specified 'verbal multi cue' instruction subset with the
@@ -603,7 +603,7 @@ protected:
    * @param  verbal_multi_cue_subset_pt  The 'verbal multi cue' property tree.
    */
   void Load(VerbalMultiCueSubset& verbal_multi_cue_handle,
-            const boost::property_tree::ptree& verbal_multi_cue_subset_pt);
+            const property_tree& verbal_multi_cue_subset_pt);
 
   /**
    * Loads the specified 'approach verbal alert' instruction subset with the
@@ -613,7 +613,7 @@ protected:
    * @param  approach_verbal_alert_subset_pt  The 'approach verbal alert' property tree.
    */
   void Load(ApproachVerbalAlertSubset& approach_verbal_alert_handle,
-            const boost::property_tree::ptree& approach_verbal_alert_subset_pt);
+            const property_tree& approach_verbal_alert_subset_pt);
 
   /**
    * Loads the specified 'pass' instruction subset with the localized
@@ -622,7 +622,7 @@ protected:
    * @param  pass_handle  The 'pass' structure to populate.
    * @param  pass_subset_pt  The 'pass' property tree.
    */
-  void Load(PassSubset& pass_handle, const boost::property_tree::ptree& pass_subset_pt);
+  void Load(PassSubset& pass_handle, const property_tree& pass_subset_pt);
 
   /**
    * Loads the specified 'enter_building' instruction subset with the localized
@@ -632,7 +632,7 @@ protected:
    * @param  enter_building_subset_pt  The 'enter_building' property tree.
    */
   void Load(EnterBuildingSubset& enter_building_handle,
-            const boost::property_tree::ptree& enter_building_subset_pt);
+            const property_tree& enter_building_subset_pt);
 
   /**
    * Loads the specified 'exit_building' instruction subset with the localized
@@ -642,7 +642,7 @@ protected:
    * @param  exit_building_subset_pt  The 'exit_building' property tree.
    */
   void Load(ExitBuildingSubset& exit_building_handle,
-            const boost::property_tree::ptree& exit_building_subset_pt);
+            const property_tree& exit_building_subset_pt);
 
   // Locale
   std::locale locale;

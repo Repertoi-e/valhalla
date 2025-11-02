@@ -20,7 +20,7 @@ namespace mjolnir {
  *             and other configuration needed to build transit.
  * @return std::list<baldr::GraphId> dangling tiles that contain stop_pairs that go inter-tiles
  */
-std::list<baldr::GraphId> ingest_transit(const boost::property_tree::ptree& pt);
+std::list<baldr::GraphId> ingest_transit(const property_tree& pt);
 
 /**
  * @brief Processes transit routes that go through multiple tiles and stitches the graphs that are
@@ -30,7 +30,7 @@ std::list<baldr::GraphId> ingest_transit(const boost::property_tree::ptree& pt);
  *             and other configuration needed to build transit.
  * @param dangling_tiles tiles where routes go past its boundaries
  */
-void stitch_transit(const boost::property_tree::ptree& pt, std::list<baldr::GraphId>& dangling_tiles);
+void stitch_transit(const property_tree& pt, std::list<baldr::GraphId>& dangling_tiles);
 
 /**
  * @brief Get a protobuf file and create a Valhalla Transit tile according to its data

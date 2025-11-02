@@ -177,7 +177,7 @@ void check_incident_country_code(const valhalla::TripLeg& leg,
 // provides us an easy way to mock having incident tiles, each test can override the tile in question
 // a bit more work is needed if we want to do it for more than one tile at a time
 struct test_reader : public baldr::GraphReader {
-  test_reader(const boost::property_tree::ptree& pt) : baldr::GraphReader(pt) {
+  test_reader(const property_tree& pt) : baldr::GraphReader(pt) {
     tile_extract_.reset(new baldr::GraphReader::tile_extract_t(pt));
     enable_incidents_ = true;
   }

@@ -425,7 +425,7 @@ public:
    * Constructs tile cache.
    * @param pt  Property tree listing the configuration for the cache configuration
    */
-  static TileCache* createTileCache(const boost::property_tree::ptree& pt);
+  static TileCache* createTileCache(const property_tree& pt);
 };
 
 /**
@@ -442,7 +442,7 @@ public:
    * @param traffic_readonly Flag to indicate if memory-mapped traffic extract should be writeable or
    * read-only (default).
    */
-  explicit GraphReader(const boost::property_tree::ptree& pt,
+  explicit GraphReader(const property_tree& pt,
                        std::unique_ptr<tile_getter_t>&& tile_getter = nullptr,
                        bool traffic_readonly = true);
 
@@ -968,7 +968,7 @@ public:
 protected:
   // (Tar) extract of tiles - the contents are empty if not being used
   struct tile_extract_t {
-    tile_extract_t(const boost::property_tree::ptree& pt, bool traffic_readonly = true);
+    tile_extract_t(const property_tree& pt, bool traffic_readonly = true);
     // TODO: dont remove constness, and actually make graphtile read only?
     std::unordered_map<uint64_t, std::pair<char*, size_t>> tiles;
     std::unordered_map<uint64_t, std::pair<char*, size_t>> traffic_tiles;
@@ -978,7 +978,7 @@ protected:
   };
   std::shared_ptr<const tile_extract_t> tile_extract_;
   static std::shared_ptr<const GraphReader::tile_extract_t>
-  get_extract_instance(const boost::property_tree::ptree& pt);
+  get_extract_instance(const property_tree& pt);
 
   // Information about where the tiles are kept
   const std::string tile_dir_;

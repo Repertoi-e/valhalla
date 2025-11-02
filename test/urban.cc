@@ -37,7 +37,7 @@ struct route_tester {
     odin_worker.cleanup();
     return request;
   }
-  boost::property_tree::ptree conf;
+  property_tree conf;
   std::shared_ptr<GraphReader> reader;
   loki_worker_t loki_worker;
   thor_worker_t thor_worker;

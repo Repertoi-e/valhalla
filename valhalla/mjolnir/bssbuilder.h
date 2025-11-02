@@ -18,7 +18,7 @@ public:
    * @param pt   Property tree containing the hierarchy configuration
    *             and other configuration needed to build bss.
    */
-  static void Build(const boost::property_tree::ptree& pt,
+  static void Build(const property_tree& pt,
                     const OSMData& osmdata,
                     const std::string& bss_nodes_bin);
 };

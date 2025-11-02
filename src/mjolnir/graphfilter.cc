@@ -1020,7 +1020,7 @@ namespace valhalla {
 namespace mjolnir {
 
 // Optionally filter edges and nodes based on access.
-void GraphFilter::Filter(const boost::property_tree::ptree& pt) {
+void GraphFilter::Filter(const property_tree& pt) {
 
   // TODO: thread this. Could be difficult due to sequence creates to associate nodes
 

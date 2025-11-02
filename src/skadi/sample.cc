@@ -407,7 +407,7 @@ tile_data& tile_data::operator=(const tile_data& other) {
   return *this;
 }
 
-sample::sample(const boost::property_tree::ptree& pt)
+sample::sample(const property_tree& pt)
     : sample(pt.get<std::string>("additional_data.elevation", "")) {
   url_ = pt.get<std::string>("additional_data.elevation_url", "");
 

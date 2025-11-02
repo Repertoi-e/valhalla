@@ -162,7 +162,7 @@ TEST(UtilOdin, test_supported_locales) {
   const auto& jsons = get_locales_json();
   const auto en_us_json = jsons.find("en-US");
   ASSERT_NE(en_us_json, jsons.cend()) << "No en-US found!";
-  boost::property_tree::ptree en_us;
+  valhalla::property_tree en_us;
   std::stringstream ss;
   ss << en_us_json->second;
   rapidjson::read_json(ss, en_us);
@@ -171,7 +171,7 @@ TEST(UtilOdin, test_supported_locales) {
   for (const auto& locale : jsons) {
     if (locale.first == "en-US")
       continue;
-    boost::property_tree::ptree other;
+    valhalla::property_tree other;
     std::stringstream other_ss;
     other_ss << locale.second;
     rapidjson::read_json(other_ss, other);

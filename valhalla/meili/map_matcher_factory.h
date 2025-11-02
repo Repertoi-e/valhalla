@@ -15,7 +15,7 @@ namespace meili {
 
 class MapMatcherFactory final {
 public:
-  MapMatcherFactory(const boost::property_tree::ptree& root,
+  MapMatcherFactory(const property_tree& root,
                     const std::shared_ptr<baldr::GraphReader>& graph_reader = {});
 
   ~MapMatcherFactory();
@@ -43,7 +43,7 @@ public:
   void ClearCache();
 
 private:
-  typedef sif::cost_ptr_t (*factory_function_t)(const boost::property_tree::ptree&);
+  typedef sif::cost_ptr_t (*factory_function_t)(const property_tree&);
 
   Config config_;
 

@@ -81,7 +81,7 @@ protected:
  * @param input_files A vector of file paths to the PBF input files.
  * @return True if landmarks were successfully built and inserted into the database, false otherwise.
  */
-bool BuildLandmarkFromPBF(const boost::property_tree::ptree& pt,
+bool BuildLandmarkFromPBF(const property_tree& pt,
                           const std::vector<std::string>& input_files);
 
 /**
@@ -93,7 +93,7 @@ bool BuildLandmarkFromPBF(const boost::property_tree::ptree& pt,
  * @param pt The configuration settings
  * @return
  */
-bool AddLandmarks(const boost::property_tree::ptree& pt);
+bool AddLandmarks(const property_tree& pt);
 
 } // namespace mjolnir
 

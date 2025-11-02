@@ -18,7 +18,7 @@ public:
    * @param config         used to configure loki/thor/odin workers and their graphreaders
    * @param auto_cleanup   whether or not to auto clean workers after each action call
    */
-  actor_t(const boost::property_tree::ptree& config, bool auto_cleanup = false);
+  actor_t(const property_tree& config, bool auto_cleanup = false);
 
   /**
    * Constructor
@@ -26,7 +26,7 @@ public:
    * @param reader         preconstructed graphreader to share with the workers
    * @param auto_cleanup   whether or not to auto clean workers after each action call
    */
-  actor_t(const boost::property_tree::ptree& config,
+  actor_t(const property_tree& config,
           baldr::GraphReader& reader,
           bool auto_cleanup = false);
 

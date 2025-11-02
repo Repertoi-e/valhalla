@@ -2,7 +2,7 @@
 #include "midgard/logging.h"
 #include "scoped_timer.h"
 
-#include <boost/algorithm/string/case_conv.hpp>
+#include "midgard/string_utils.h"
 
 #include <cctype>
 #include <cstdint>
@@ -12,6 +12,7 @@
 
 using namespace valhalla::mjolnir;
 using valhalla::baldr::ConditionalSpeedLimit;
+using valhalla::midgard::string_utils::to_lower_in_place;
 
 namespace {
 
@@ -683,7 +684,7 @@ void OSMData::add_to_name_map(const uint64_t member_id,
                               const bool forward) {
 
   std::string dir = direction;
-  boost::algorithm::to_lower(dir);
+  to_lower_in_place(dir);
   dir[0] = std::toupper(dir[0]);
 
   // TODO:  network=e-road with int_ref=E #

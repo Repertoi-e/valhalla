@@ -362,7 +362,7 @@ std::list<std::pair<std::string, std::string>>
          */
     };
 
-boost::property_tree::ptree make_config(const std::vector<std::string>& whitelist = {
+property_tree make_config(const std::vector<std::string>& whitelist = {
                                             "locate",
                                             "route",
                                             "height",
@@ -386,9 +386,9 @@ boost::property_tree::ptree make_config(const std::vector<std::string>& whitelis
                                    {"service_limits.max_exclude_locations", "0"}},
                                   {"loki.actions", "mjolnir.tile_extract", "mjolnir.tile_dir"});
 
-  boost::property_tree::ptree actions;
+  property_tree actions;
   for (const auto& action_name : whitelist) {
-    boost::property_tree::ptree action;
+    property_tree action;
     action.put("", action_name);
     actions.push_back(std::make_pair("", action));
   }
@@ -457,7 +457,7 @@ void run_requests(const std::vector<http_request_t>& requests,
         EXPECT_EQ(response.code, responses[request - requests.cbegin() - 1].first);
 
         // Parse as rapidjson::Document which correctly doesn't care about order-dependence
-        // of the json-data compared to the boost::property_tree::ptree
+        // of the json-data compared to the property_tree
         rapidjson::Document response_json, expected_json;
         response_json.Parse(response.body);
         expected_json.Parse(responses[request - requests.cbegin() - 1].second);

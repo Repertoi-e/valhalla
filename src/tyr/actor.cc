@@ -21,18 +21,18 @@ namespace tyr {
 
 struct actor_t::pimpl_t {
 #ifdef __EMSCRIPTEN__
-  pimpl_t(const boost::property_tree::ptree& config)
+  pimpl_t(const property_tree& config)
       : reader(new baldr::GraphReader(config.get_child("mjolnir"),
                                       std::make_unique<baldr::wasm_tile_getter_t>())),
         loki_worker(config, reader), thor_worker(config, reader), odin_worker(config) {
   }
 #else
-  pimpl_t(const boost::property_tree::ptree& config)
+  pimpl_t(const property_tree& config)
       : reader(new baldr::GraphReader(config.get_child("mjolnir"))), loki_worker(config, reader),
         thor_worker(config, reader), odin_worker(config) {
   }
 #endif
-  pimpl_t(const boost::property_tree::ptree& config, baldr::GraphReader& graph_reader)
+  pimpl_t(const property_tree& config, baldr::GraphReader& graph_reader)
       : reader(&graph_reader, [](baldr::GraphReader*) {}), loki_worker(config, reader),
         thor_worker(config, reader), odin_worker(config) {
   }
@@ -52,10 +52,10 @@ struct actor_t::pimpl_t {
   odin_worker_t odin_worker;
 };
 
-actor_t::actor_t(const boost::property_tree::ptree& config, bool auto_cleanup)
+actor_t::actor_t(const property_tree& config, bool auto_cleanup)
     : pimpl(new pimpl_t(config)), auto_cleanup(auto_cleanup) {
 }
-actor_t::actor_t(const boost::property_tree::ptree& config,
+actor_t::actor_t(const property_tree& config,
                  baldr::GraphReader& reader,
                  bool auto_cleanup)
     : pimpl(new pimpl_t(config, reader)), auto_cleanup(auto_cleanup) {

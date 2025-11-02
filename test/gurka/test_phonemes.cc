@@ -248,7 +248,7 @@ TEST(Standalone, PhonemesWithAltandDirection) {
   valhalla::gurka::map map = BuildPBF(workdir);
 
   const std::string sqlite = {VALHALLA_SOURCE_DIR "test/data/netherlands_admin.sqlite"};
-  boost::property_tree::ptree& pt = map.config;
+  property_tree& pt = map.config;
   pt.put("mjolnir.data_processing.allow_alt_name", "true");
   pt.put("mjolnir.data_processing.use_direction_on_ways", "true");
   pt.put("mjolnir.tile_dir", workdir + "/tiles");
@@ -1491,7 +1491,7 @@ TEST(Standalone, PhonemesWithNoAltandDirection) {
 
   valhalla::gurka::map map = BuildPBF(workdir);
 
-  boost::property_tree::ptree& pt = map.config;
+  property_tree& pt = map.config;
   pt.put("mjolnir.data_processing.allow_alt_name", "false");
   pt.put("mjolnir.data_processing.use_direction_on_ways", "false");
   pt.put("mjolnir.tile_dir", workdir + "/tiles");

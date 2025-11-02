@@ -28,7 +28,7 @@ public:
    * Default constructor. Most internal values are set when a query is made so
    * the constructor mainly just sets some internals to a default empty value.
    */
-  TimeDistanceBSSMatrix(const boost::property_tree::ptree& config = {});
+  TimeDistanceBSSMatrix(const property_tree& config = {});
 
   /**
    * Forms a time distance matrix from the set of source locations

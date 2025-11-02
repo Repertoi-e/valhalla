@@ -52,7 +52,7 @@ void write_config(const std::string& filename) {
 }
 
 void CountryAccess(const std::string& config_file) {
-  boost::property_tree::ptree conf;
+  valhalla::property_tree conf;
   rapidjson::read_json(config_file, conf);
 
   // setup and purge

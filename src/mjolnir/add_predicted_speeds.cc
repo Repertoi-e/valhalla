@@ -4,8 +4,9 @@
 #include "baldr/predictedspeeds.h"
 #include "mjolnir/graphtilebuilder.h"
 
+#include "midgard/string_utils.h"
+
 #include <valhalla/property_tree/ptree.hpp>
-#include <boost/tokenizer.hpp>
 
 #include <filesystem>
 #include <fstream>
@@ -19,6 +20,8 @@
 
 namespace vj = valhalla::mjolnir;
 using namespace valhalla::baldr;
+using valhalla::midgard::string_utils::split;
+using valhalla::midgard::string_utils::SplitMode;
 
 namespace valhalla {
 namespace mjolnir {
@@ -60,8 +63,6 @@ inline bool is_possible_outlier(float speed) {
  */
 std::unordered_map<uint32_t, TrafficSpeeds>
 ParseTrafficFile(const std::vector<std::string>& filenames, TrafficStats& stat) {
-  typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
-  boost::char_separator<char> sep{","};
   std::unordered_map<uint32_t, TrafficSpeeds> ts;
 
   // for each traffic tile
@@ -74,11 +75,11 @@ ParseTrafficFile(const std::vector<std::string>& filenames, TrafficStats& stat) 
       // for each row in the file
       while (getline(file, line) && ++line_num) {
         decltype(ts)::iterator traffic = ts.end();
-        tokenizer tok{line, sep};
-        uint32_t field_num = 0;
+  auto tokens = split(line, ',', SplitMode::KeepEmpty);
+  uint32_t field_num = 0;
         bool has_error = false;
         // for each column in the row
-        for (const auto& t : tok) {
+  for (const auto& t : tokens) {
           if (has_error)
             break;
           // parse each column
@@ -267,7 +268,7 @@ PrepareTrafficTiles(const std::filesystem::path& traffic_tile_dir) {
   return traffic_tiles;
 }
 
-void GenerateSummary(const boost::property_tree::ptree& config) {
+void GenerateSummary(const property_tree& config) {
   auto mutable_config = config;
   mutable_config.get_child("mjolnir").erase("tile_extract");
 
@@ -364,7 +365,7 @@ void GenerateSummary(const boost::property_tree::ptree& config) {
 void ProcessTrafficTiles(const std::string& tile_dir,
                          const std::filesystem::path& traffic_tile_dir,
                          const bool summary,
-                         const boost::property_tree::ptree& config) {
+                         const property_tree& config) {
 
   std::vector<std::shared_ptr<std::thread>> threads(config.get<uint32_t>("mjolnir.concurrency"));
   std::list<std::promise<TrafficStats>> results;

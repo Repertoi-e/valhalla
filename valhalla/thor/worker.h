@@ -29,13 +29,13 @@ namespace valhalla {
 namespace thor {
 
 #ifdef ENABLE_SERVICES
-void run_service(const boost::property_tree::ptree& config);
+void run_service(const property_tree& config);
 #endif
 
 class thor_worker_t : public service_worker_t {
 public:
   enum SOURCE_TO_TARGET_ALGORITHM { SELECT_OPTIMAL = 0, COST_MATRIX = 1, TIME_DISTANCE_MATRIX = 2 };
-  thor_worker_t(const boost::property_tree::ptree& config,
+  thor_worker_t(const property_tree& config,
                 const std::shared_ptr<baldr::GraphReader>& graph_reader = {});
   virtual ~thor_worker_t();
 #ifdef ENABLE_SERVICES

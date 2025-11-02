@@ -151,7 +151,7 @@ const gurka::ways ways = {{"AB", {{"highway", "primary"}}}, {"BC", {{"highway", 
                           {"CD", {{"highway", "primary"}}}, {"DE", {{"highway", "primary"}}},
                           {"EF", {{"highway", "primary"}}}, {"FG", {{"highway", "primary"}}}};
 
-boost::property_tree::ptree get_config() {
+property_tree get_config() {
 
   return test::make_config(VALHALLA_BUILD_DIR "test/data/transit_tests",
                            {{"mjolnir.transit_feeds_dir",
@@ -808,7 +808,7 @@ TEST(GtfsExample, MakeProto) {
 }
 
 TEST(GtfsExample, MakeTile) {
-  boost::property_tree::ptree pt = get_config();
+  property_tree pt = get_config();
 
   auto layout = create_layout();
   auto station_one_ll = layout.find("1");

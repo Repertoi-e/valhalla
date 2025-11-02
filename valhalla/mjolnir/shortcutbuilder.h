@@ -14,7 +14,7 @@ public:
   /**
    * Build the shortcut edges.
    */
-  static void Build(const boost::property_tree::ptree& pt);
+  static void Build(const property_tree& pt);
 };
 
 } // namespace mjolnir
