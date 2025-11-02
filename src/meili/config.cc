@@ -1,7 +1,7 @@
 #include "meili/config.h"
 #include "macro.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #define NONNEGATIVE_VALUE_MSG(value, name)                                                           \
   std::string("Expect '") + name + "' to be nonnegative (got: " + std::to_string(value) + ")"

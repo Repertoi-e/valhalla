@@ -1,7 +1,6 @@
 #include "baldr/rapidjson_utils.h"
 #include "gurka.h"
 
-#include <boost/format.hpp>
 #include <gtest/gtest.h>
 
 using namespace valhalla;
@@ -561,11 +560,13 @@ protected:
                                    const std::string& to,
                                    const std::string& language = "en-US") {
     const std::string& request =
-        (boost::format(
-             R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","voice_instructions":true,"language":"%s"})") %
-         std::to_string(map.nodes.at(from).lat()) % std::to_string(map.nodes.at(from).lng()) %
-         std::to_string(map.nodes.at(to).lat()) % std::to_string(map.nodes.at(to).lng()) % language)
-            .str();
+         midgard::logging::sprintf(
+             R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","voice_instructions":true,"language":"%s"})",
+             std::to_string(map.nodes.at(from).lat()).c_str(),
+             std::to_string(map.nodes.at(from).lng()).c_str(),
+             std::to_string(map.nodes.at(to).lat()).c_str(),
+             std::to_string(map.nodes.at(to).lng()).c_str(),
+             language.c_str());
     auto result = gurka::do_action(valhalla::Options::route, map, request);
     return gurka::convert_to_json(result, Options_Format_osrm);
   }
@@ -758,11 +759,12 @@ TEST(Standalone, BannerInstructions) {
   auto from = "A";
   auto to = "D";
   const std::string& request =
-      (boost::format(
-           R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","banner_instructions":true})") %
-       std::to_string(map.nodes.at(from).lat()) % std::to_string(map.nodes.at(from).lng()) %
-       std::to_string(map.nodes.at(to).lat()) % std::to_string(map.nodes.at(to).lng()))
-          .str();
+       midgard::logging::sprintf(
+           R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","banner_instructions":true})",
+           std::to_string(map.nodes.at(from).lat()).c_str(),
+           std::to_string(map.nodes.at(from).lng()).c_str(),
+           std::to_string(map.nodes.at(to).lat()).c_str(),
+           std::to_string(map.nodes.at(to).lng()).c_str());
   auto result = gurka::do_action(valhalla::Options::route, map, request);
 
   auto json = gurka::convert_to_json(result, Options_Format_osrm);
@@ -972,11 +974,12 @@ TEST(Standalone, BannerInstructionsRoundabout) {
   auto from = "A";
   auto to = "B";
   const std::string& request =
-      (boost::format(
-           R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","banner_instructions":true})") %
-       std::to_string(map.nodes.at(from).lat()) % std::to_string(map.nodes.at(from).lng()) %
-       std::to_string(map.nodes.at(to).lat()) % std::to_string(map.nodes.at(to).lng()))
-          .str();
+       midgard::logging::sprintf(
+           R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","banner_instructions":true})",
+           std::to_string(map.nodes.at(from).lat()).c_str(),
+           std::to_string(map.nodes.at(from).lng()).c_str(),
+           std::to_string(map.nodes.at(to).lat()).c_str(),
+           std::to_string(map.nodes.at(to).lng()).c_str());
   auto result = gurka::do_action(valhalla::Options::route, map, request);
 
   auto json = gurka::convert_to_json(result, Options_Format_osrm);
@@ -1073,11 +1076,12 @@ protected:
 
   rapidjson::Document json_request(const std::string& from, const std::string& to) {
     const std::string& request =
-        (boost::format(
-             R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","banner_instructions":true})") %
-         std::to_string(map.nodes.at(from).lat()) % std::to_string(map.nodes.at(from).lng()) %
-         std::to_string(map.nodes.at(to).lat()) % std::to_string(map.nodes.at(to).lng()))
-            .str();
+        midgard::logging::sprintf(
+             R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","banner_instructions":true})",
+             std::to_string(map.nodes.at(from).lat()).c_str(),
+             std::to_string(map.nodes.at(from).lng()).c_str(),
+             std::to_string(map.nodes.at(to).lat()).c_str(),
+             std::to_string(map.nodes.at(to).lng()).c_str());
     auto result = gurka::do_action(valhalla::Options::route, map, request);
     return gurka::convert_to_json(result, Options_Format_osrm);
   }

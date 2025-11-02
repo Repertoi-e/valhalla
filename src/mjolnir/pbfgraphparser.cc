@@ -18,7 +18,7 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <osmium/io/pbf_input.hpp>
 
 #include <thread>

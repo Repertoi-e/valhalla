@@ -20,7 +20,7 @@
 #include <valhalla/thor/unidirectional_astar.h>
 #include <valhalla/worker.h>
 
-#include <boost/property_tree/ptree_fwd.hpp>
+#include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <tuple>
 #include <vector>

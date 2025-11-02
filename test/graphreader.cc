@@ -2,7 +2,7 @@
 #include "baldr/connectivity_map.h"
 #include "baldr/tilehierarchy.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <fcntl.h>
 #include <gtest/gtest.h>
 

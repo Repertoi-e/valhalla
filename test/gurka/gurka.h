@@ -14,7 +14,7 @@
 #include "midgard/pointll.h"
 #include "proto/api.pb.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <string>
 #include <tuple>

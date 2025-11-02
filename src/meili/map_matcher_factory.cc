@@ -5,7 +5,7 @@
 #include "meili/map_matcher.h"
 #include "sif/costconstants.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 namespace {
 

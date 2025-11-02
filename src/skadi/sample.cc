@@ -5,7 +5,7 @@
 #include "midgard/sequence.h"
 #include "valhalla/baldr/curl_tilegetter.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #if !defined __EMSCRIPTEN__
 #include <lz4frame.h>
 #endif

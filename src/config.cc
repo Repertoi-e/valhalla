@@ -1,7 +1,7 @@
 #include "config.h"
 #include "baldr/rapidjson_utils.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <filesystem>
 

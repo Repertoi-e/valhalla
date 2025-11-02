@@ -2,7 +2,7 @@
 #include "midgard/logging.h"
 #include "odin/util.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <gtest/gtest.h>
 
 #include <locale>

@@ -1,7 +1,7 @@
 #include "test.h"
 #include "tyr/actor.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 using namespace valhalla;
 using namespace valhalla::midgard;

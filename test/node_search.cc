@@ -8,7 +8,7 @@
 #include "mjolnir/graphtilebuilder.h"
 #include "mjolnir/graphvalidator.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <gtest/gtest.h>
 
 #include <cstdint>

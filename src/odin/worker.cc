@@ -3,7 +3,7 @@
 #include "odin/directionsbuilder.h"
 #include "tyr/serializers.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <functional>
 #include <string>

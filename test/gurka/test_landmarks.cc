@@ -7,7 +7,7 @@
 #include "mjolnir/util.h"
 #include "test/test.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <gtest/gtest.h>
 
 #include <filesystem>

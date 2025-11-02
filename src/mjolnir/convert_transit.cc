@@ -15,7 +15,7 @@
 #include "proto/transit.pb.h"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <cmath>
 #include <cstdint>

@@ -3,7 +3,7 @@
 #include "midgard/logging.h"
 #include "mjolnir/way_edges_processor.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <cxxopts.hpp>
 
 #include <cstdlib>

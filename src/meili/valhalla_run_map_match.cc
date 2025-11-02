@@ -4,7 +4,7 @@
 #include "meili/measurement.h"
 
 #include <iostream>
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 using namespace valhalla::midgard;
 using namespace valhalla::meili;

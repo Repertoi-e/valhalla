@@ -1,7 +1,6 @@
 #include "gurka.h"
 #include "test.h"
 
-#include <boost/format.hpp>
 #include <gtest/gtest.h>
 
 #if !defined(VALHALLA_SOURCE_DIR)
@@ -223,10 +222,9 @@ gurka::map HOV2Test::map = {};
 //------------------------------------------------------------------
 TEST_F(HOV2Test, default_avoids_hov2) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % "")
-          .str();
+      (midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), ""));
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "RT 36");
@@ -235,10 +233,9 @@ TEST_F(HOV2Test, default_avoids_hov2) {
 //------------------------------------------------------------------
 TEST_F(HOV2Test, hov2_true_uses_hov2) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % include_hov2_true)
-          .str();
+      (midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), include_hov2_true.c_str()));
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "HOVExpress2");
@@ -247,10 +244,9 @@ TEST_F(HOV2Test, hov2_true_uses_hov2) {
 //------------------------------------------------------------------
 TEST_F(HOV2Test, hot_true_avoids_hov2) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % include_hot_true)
-          .str();
+      (midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), include_hot_true.c_str()));
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "RT 36");
@@ -259,10 +255,9 @@ TEST_F(HOV2Test, hot_true_avoids_hov2) {
 //------------------------------------------------------------------
 TEST_F(HOV2Test, hov3_true_uses_hov2) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % include_hov3_true)
-          .str();
+      (midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), include_hov3_true.c_str()));
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "HOVExpress2");
@@ -279,10 +274,9 @@ TEST_F(HOV2Test, hov_costing_uses_auto_hov2) {
   };
 
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % "")
-          .str();
+       midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), "");
   replace_all(req, "auto", "hov");
   auto result = gurka::do_action(Options::route, map, req, reader);
 
@@ -324,10 +318,9 @@ gurka::map HOV3Test::map = {};
 //------------------------------------------------------------------
 TEST_F(HOV3Test, default_avoids_hov3) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % "")
-          .str();
+       midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), "");
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "RT 36");
@@ -336,10 +329,9 @@ TEST_F(HOV3Test, default_avoids_hov3) {
 //------------------------------------------------------------------
 TEST_F(HOV3Test, hov2_true_avoids_hov3) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % include_hov2_true)
-          .str();
+       midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), include_hov2_true.c_str());
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "RT 36");
@@ -348,10 +340,9 @@ TEST_F(HOV3Test, hov2_true_avoids_hov3) {
 //------------------------------------------------------------------
 TEST_F(HOV3Test, hot_true_avoids_hov3) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % include_hot_true)
-          .str();
+       midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), include_hot_true.c_str());
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "RT 36");
@@ -360,10 +351,9 @@ TEST_F(HOV3Test, hot_true_avoids_hov3) {
 //------------------------------------------------------------------
 TEST_F(HOV3Test, hov3_true_uses_hov3) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % include_hov3_true)
-          .str();
+       midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), include_hov3_true.c_str());
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "HOVExpress3");
@@ -405,10 +395,9 @@ gurka::map HOTTest::map = {};
 //------------------------------------------------------------------
 TEST_F(HOTTest, default_avoids_hot) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % "")
-          .str();
+       midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), "");
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "RT 36");
@@ -417,10 +406,9 @@ TEST_F(HOTTest, default_avoids_hot) {
 //------------------------------------------------------------------
 TEST_F(HOTTest, hov2_true_avoids_hot3) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % include_hov2_true)
-          .str();
+       midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), include_hov2_true.c_str());
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "RT 36");
@@ -429,10 +417,9 @@ TEST_F(HOTTest, hov2_true_avoids_hot3) {
 //------------------------------------------------------------------
 TEST_F(HOTTest, hov3_true_uses_hot3) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % include_hov3_true)
-          .str();
+       midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), include_hov3_true.c_str());
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "HOTExpress3");
@@ -441,10 +428,9 @@ TEST_F(HOTTest, hov3_true_uses_hot3) {
 //------------------------------------------------------------------
 TEST_F(HOTTest, hot_true_uses_hot3) {
   std::string req =
-      (boost::format(req_hov) % std::to_string(map.nodes.at("1").lat()) %
-       std::to_string(map.nodes.at("1").lng()) % std::to_string(map.nodes.at("2").lat()) %
-       std::to_string(map.nodes.at("2").lng()) % include_hot_true)
-          .str();
+       midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("1").lat()).c_str(),
+       std::to_string(map.nodes.at("1").lng()).c_str(), std::to_string(map.nodes.at("2").lat()).c_str(),
+       std::to_string(map.nodes.at("2").lng()).c_str(), include_hot_true.c_str());
   auto result = gurka::do_action(Options::route, map, req, reader);
 
   EXPECT_EQ(result.directions().routes(0).legs(0).maneuver(0).street_name(0).value(), "HOTExpress3");
@@ -503,10 +489,9 @@ gurka::map HOVChoices::map = {};
 TEST_F(HOVChoices, choices) {
   {
     std::string req =
-        (boost::format(req_hov) % std::to_string(map.nodes.at("D").lat()) %
-         std::to_string(map.nodes.at("D").lng()) % std::to_string(map.nodes.at("G").lat()) %
-         std::to_string(map.nodes.at("G").lng()) % "")
-            .str();
+         midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("D").lat()).c_str(),
+         std::to_string(map.nodes.at("D").lng()).c_str(), std::to_string(map.nodes.at("G").lat()).c_str(),
+         std::to_string(map.nodes.at("G").lng()).c_str(), "");
     auto result = gurka::do_action(Options::route, map, req, reader);
 
     // The hov lane is fastest, but router cannot choose it because
@@ -517,10 +502,9 @@ TEST_F(HOVChoices, choices) {
 
   {
     std::string req =
-        (boost::format(req_hov) % std::to_string(map.nodes.at("D").lat()) %
-         std::to_string(map.nodes.at("D").lng()) % std::to_string(map.nodes.at("G").lat()) %
-         std::to_string(map.nodes.at("G").lng()) % include_hov2_true)
-            .str();
+         midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("D").lat()).c_str(),
+         std::to_string(map.nodes.at("D").lng()).c_str(), std::to_string(map.nodes.at("G").lat()).c_str(),
+         std::to_string(map.nodes.at("G").lng()).c_str(), include_hov2_true.c_str());
     auto result = gurka::do_action(Options::route, map, req, reader);
 
     // The hov lane is fastest, but router cannot choose it because
@@ -531,10 +515,9 @@ TEST_F(HOVChoices, choices) {
 
   {
     std::string req =
-        (boost::format(req_hov) % std::to_string(map.nodes.at("D").lat()) %
-         std::to_string(map.nodes.at("D").lng()) % std::to_string(map.nodes.at("G").lat()) %
-         std::to_string(map.nodes.at("G").lng()) % include_hot_true)
-            .str();
+         midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("D").lat()).c_str(),
+         std::to_string(map.nodes.at("D").lng()).c_str(), std::to_string(map.nodes.at("G").lat()).c_str(),
+         std::to_string(map.nodes.at("G").lng()).c_str(), include_hot_true.c_str());
     auto result = gurka::do_action(Options::route, map, req, reader);
 
     // User allows hot-lanes and the router can choose the faster US 36 Express Lane.
@@ -548,10 +531,9 @@ TEST_F(HOVChoices, choices) {
 
   {
     std::string req =
-        (boost::format(req_hov) % std::to_string(map.nodes.at("D").lat()) %
-         std::to_string(map.nodes.at("D").lng()) % std::to_string(map.nodes.at("G").lat()) %
-         std::to_string(map.nodes.at("G").lng()) % include_hov3_true)
-            .str();
+         midgard::logging::sprintf(req_hov.c_str(), std::to_string(map.nodes.at("D").lat()).c_str(),
+         std::to_string(map.nodes.at("D").lng()).c_str(), std::to_string(map.nodes.at("G").lat()).c_str(),
+         std::to_string(map.nodes.at("G").lng()).c_str(), include_hov3_true.c_str());
     auto result = gurka::do_action(Options::route, map, req, reader);
 
     // User allows hov3-lanes and the router can choose the faster US 36 Express Lane.

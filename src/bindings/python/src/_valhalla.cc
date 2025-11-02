@@ -4,7 +4,7 @@
 #include "midgard/util.h"
 #include "tyr/actor.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <pybind11/pybind11.h>
 
 #include <string>

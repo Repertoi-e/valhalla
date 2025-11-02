@@ -10,7 +10,7 @@
 #include "tyr/serializers.h"
 #include "worker.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <cxxopts.hpp>
 
 #include <cmath>

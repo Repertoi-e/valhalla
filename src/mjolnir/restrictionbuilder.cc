@@ -12,7 +12,7 @@
 #include "mjolnir/osmrestriction.h"
 #include "scoped_timer.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <future>
 #include <queue>

@@ -7,7 +7,7 @@
 #include "thor/worker.h"
 #include "tyr/serializers.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <string>
 

@@ -3,7 +3,7 @@
 #include "loki/search.h"
 #include "midgard/logging.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <cstdint>
 #include <functional>

@@ -12,9 +12,8 @@
 #include "scoped_timer.h"
 #include "sif/osrm_car_duration.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #ifdef LOGGING_LEVEL_DEBUG
-#include <boost/format.hpp>
 #endif
 
 #include <string>
@@ -755,9 +754,8 @@ std::pair<uint32_t, uint32_t> FormShortcuts(GraphReader& reader, const TileLevel
 
     // Store the new tile
     tilebuilder.StoreTileData();
-    LOG_DEBUG((boost::format("ShortcutBuilder created tile %1%: %2% bytes") % tile %
-               tilebuilder.header_builder().end_offset())
-                  .str());
+    LOG_DEBUG((logging::sprintf("ShortcutBuilder created tile %x: %d bytes", tile.get(),
+               tilebuilder.header_builder().end_offset())));
 
     // Check if we need to clear the tile cache.
     if (reader.OverCommitted()) {

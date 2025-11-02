@@ -6,7 +6,6 @@
 #include "test.h"
 #include "valhalla/worker.h"
 
-#include <boost/format.hpp>
 
 #include <string>
 #include <vector>
@@ -294,11 +293,9 @@ TEST(StandAlone, Warnings) {
   std::string from = "A";
   std::string via = "B";
   std::string to = "C";
-  req =
-      (boost::format(req) % std::to_string(map_no_mod.nodes.at(from).lat()) %
-       std::to_string(map_no_mod.nodes.at(from).lng()) %
-       std::to_string(map_no_mod.nodes.at(to).lat()) % std::to_string(map_no_mod.nodes.at(to).lng()))
-          .str();
+  req = logging::sprintf(req.c_str(), std::to_string(map_no_mod.nodes.at(from).lat()).c_str(),
+       std::to_string(map_no_mod.nodes.at(from).lng()).c_str(),
+       std::to_string(map_no_mod.nodes.at(to).lat()).c_str(), std::to_string(map_no_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_no_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
 
@@ -309,13 +306,12 @@ TEST(StandAlone, Warnings) {
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 1000}}}}
     })";
 
-  req =
-      (boost::format(req) % std::to_string(map_no_mod.nodes.at(from).lat()) %
-       std::to_string(map_no_mod.nodes.at(from).lng()) %
-       std::to_string(map_no_mod.nodes.at(via).lat()) %
-       std::to_string(map_no_mod.nodes.at(via).lng()) %
-       std::to_string(map_no_mod.nodes.at(to).lat()) % std::to_string(map_no_mod.nodes.at(to).lng()))
-          .str();
+  req = logging::sprintf(req.c_str(), std::to_string(map_no_mod.nodes.at(from).lat()).c_str(),
+       std::to_string(map_no_mod.nodes.at(from).lng()).c_str(),
+       std::to_string(map_no_mod.nodes.at(via).lat()).c_str(),
+       std::to_string(map_no_mod.nodes.at(via).lng()).c_str(),
+       std::to_string(map_no_mod.nodes.at(to).lat()).c_str(),
+       std::to_string(map_no_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_no_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
   EXPECT_EQ(result.info().warnings(0).code(), 209);
@@ -342,10 +338,10 @@ TEST(StandAlone, Warnings) {
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 100000}}}}
     })";
 
-  req = (boost::format(req) % std::to_string(map_mod.nodes.at(from).lat()) %
-         std::to_string(map_mod.nodes.at(from).lng()) % std::to_string(map_mod.nodes.at(to).lat()) %
-         std::to_string(map_mod.nodes.at(to).lng()))
-            .str();
+  req = logging::sprintf(req.c_str(), std::to_string(map_mod.nodes.at(from).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
+         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
   EXPECT_EQ(result.info().warnings(0).code(), 210);
@@ -357,11 +353,12 @@ TEST(StandAlone, Warnings) {
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 1000}}}}
     })";
 
-  req = (boost::format(req) % std::to_string(map_mod.nodes.at(from).lat()) %
-         std::to_string(map_mod.nodes.at(from).lng()) % std::to_string(map_mod.nodes.at(via).lat()) %
-         std::to_string(map_mod.nodes.at(via).lng()) % std::to_string(map_mod.nodes.at(to).lat()) %
-         std::to_string(map_mod.nodes.at(to).lng()))
-            .str();
+  req = logging::sprintf(req.c_str(), std::to_string(map_mod.nodes.at(from).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
+         std::to_string(map_mod.nodes.at(via).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(via).lng()).c_str(),
+         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
   EXPECT_EQ(result.info().warnings(0).code(), 210);
@@ -373,10 +370,10 @@ TEST(StandAlone, Warnings) {
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 10, "expand_within_distance": 10}}}}
     })";
 
-  req = (boost::format(req) % std::to_string(map_mod.nodes.at(from).lat()) %
-         std::to_string(map_mod.nodes.at(from).lng()) % std::to_string(map_mod.nodes.at(to).lat()) %
-         std::to_string(map_mod.nodes.at(to).lng()))
-            .str();
+  req = logging::sprintf(req.c_str(), std::to_string(map_mod.nodes.at(from).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
+         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 0);
 
@@ -387,11 +384,12 @@ TEST(StandAlone, Warnings) {
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 10, "expand_within_distance": 10}}}}
     })";
 
-  req = (boost::format(req) % std::to_string(map_mod.nodes.at(from).lat()) %
-         std::to_string(map_mod.nodes.at(from).lng()) % std::to_string(map_mod.nodes.at(via).lat()) %
-         std::to_string(map_mod.nodes.at(via).lng()) % std::to_string(map_mod.nodes.at(to).lat()) %
-         std::to_string(map_mod.nodes.at(to).lng()))
-            .str();
+  req = logging::sprintf(req.c_str(), std::to_string(map_mod.nodes.at(from).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
+         std::to_string(map_mod.nodes.at(via).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(via).lng()).c_str(),
+         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
+         std::to_string(map_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 0);
 }

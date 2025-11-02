@@ -10,7 +10,7 @@
 #include "mjolnir/pbfgraphparser.h"
 #include "proto/common.pb.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <gtest/gtest.h>
 
 #include <cstdint>

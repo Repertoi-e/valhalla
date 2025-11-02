@@ -2,7 +2,7 @@
 #include "valhalla/midgard/logging.h"
 #include "valhalla/midgard/util.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <cxxopts.hpp>
 
 #include <filesystem>

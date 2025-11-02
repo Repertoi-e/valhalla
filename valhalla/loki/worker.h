@@ -10,7 +10,7 @@
 #include <valhalla/skadi/sample.h>
 #include <valhalla/worker.h>
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <vector>
 

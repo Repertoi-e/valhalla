@@ -4,7 +4,7 @@
 #include <valhalla/proto/api.pb.h>
 #include <valhalla/sif/dynamiccost.h>
 
-#include <boost/property_tree/ptree_fwd.hpp>
+#include <valhalla/property_tree/ptree_fwd.hpp>
 
 #ifdef ENABLE_SERVICES
 #include <prime_server/http_protocol.hpp>

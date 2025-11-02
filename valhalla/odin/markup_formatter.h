@@ -3,7 +3,7 @@
 #include <valhalla/baldr/streetname.h>
 #include <valhalla/odin/sign.h>
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <optional>
 #include <string>

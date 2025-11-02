@@ -13,7 +13,7 @@
 #include <valhalla/thor/pathalgorithm.h>
 #include <valhalla/thor/pathinfo.h>
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <cstdint>
 #include <map>

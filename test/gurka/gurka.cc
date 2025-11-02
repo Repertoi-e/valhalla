@@ -13,7 +13,7 @@
 #include "tyr/serializers.h"
 #include "valhalla/proto_conversions.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <gtest/gtest.h>
 #include <osmium/builder/attr.hpp>
 #include <osmium/io/output_iterator.hpp>

@@ -2,7 +2,7 @@
 #include "baldr/rapidjson_utils.h"
 #include "midgard/vector2.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <gtest/gtest.h>
 
 #include <string>

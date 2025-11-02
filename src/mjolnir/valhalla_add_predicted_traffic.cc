@@ -1,7 +1,7 @@
 #include "argparse_utils.h"
 #include "mjolnir/add_predicted_speeds.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <cxxopts.hpp>
 
 #include <filesystem>

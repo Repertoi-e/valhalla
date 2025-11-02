@@ -8,7 +8,7 @@
 #include <valhalla/proto/expansion.pb.h>
 #include <valhalla/sif/dynamiccost.h>
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <functional>
 

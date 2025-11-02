@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/property_tree/ptree_fwd.hpp>
+#include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <filesystem>
 #include <string>

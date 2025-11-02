@@ -2,7 +2,7 @@
 #include "baldr/graphid.h"
 #include "mjolnir/validatetransit.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <cxxopts.hpp>
 
 #include <filesystem>

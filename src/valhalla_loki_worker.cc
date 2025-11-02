@@ -1,7 +1,7 @@
 #include "baldr/rapidjson_utils.h"
 #include "loki/worker.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <iostream>
 

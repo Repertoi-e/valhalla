@@ -10,7 +10,7 @@
 #include "midgard/pointll.h"
 #include "midgard/polyline2.h"
 
-#include <boost/property_tree/ptree_fwd.hpp>
+#include <valhalla/property_tree/ptree_fwd.hpp>
 #include <gmock/gmock-matchers.h>
 #include <gtest/gtest-assertion-result.h>
 

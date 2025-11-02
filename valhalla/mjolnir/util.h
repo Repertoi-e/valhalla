@@ -7,7 +7,7 @@
 #include <valhalla/baldr/nodeinfo.h>
 #include <valhalla/midgard/pointll.h>
 
-#include <boost/property_tree/ptree_fwd.hpp>
+#include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <list>
 #include <map>

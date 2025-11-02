@@ -20,7 +20,6 @@
 #include "midgard/pointll.h"
 #endif
 
-#include <boost/format.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -192,13 +191,11 @@ std::list<Maneuver> ManeuversBuilder::Build() {
                               ? ""
                               : trip_path_->GetCurrEdge(last_node_index)->name(0).value();
   std::string units = options_.units() == valhalla::Options::kilometers ? "kilometers" : "miles";
-  LOG_DEBUG((boost::format("ROUTE_REQUEST|-j "
+  LOG_DEBUG((logging::sprintf("ROUTE_REQUEST|-j "
                            "'{\"locations\":[{\"lat\":%1$.6f,\"lon\":%2$.6f,\"street\":\"%3%\"},{"
                            "\"lat\":%4$.6f,\"lon\":%5$.6f,\"street\":\"%6%\"}],\"costing\":"
-                           "\"auto\",\"units\":\"%7%\"}'") %
-             orig.ll().lat() % orig.ll().lng() % first_name % dest.ll().lat() % dest.ll().lng() %
-             last_name % units)
-                .str());
+                           "\"auto\",\"units\":\"%7%\"}'", orig.ll().lat(), orig.ll().lng(), first_name,
+             dest.ll().lat(), dest.ll().lng(), last_name, units)));
 #endif
 
   return maneuvers;

@@ -3,7 +3,7 @@
 #include "test.h"
 #include "thor/worker.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <algorithm> // std::copy
 #include <optional>

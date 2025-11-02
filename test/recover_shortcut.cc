@@ -3,7 +3,7 @@
 #include "src/baldr/shortcut_recovery.h"
 #include "test.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 #include <string>
 #include <vector>

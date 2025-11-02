@@ -13,7 +13,7 @@
 #include "sif/hierarchylimits.h"
 #include "worker.h"
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <cpp-statsd-client/StatsdClient.hpp>
 
 #include <sstream>

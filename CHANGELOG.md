@@ -1,3 +1,8 @@
+* REMOVED: boost::optional in favor of std::optional
+* REMOVED: protobuf and protobuflib in favor of a shim around plain old C++ structs and protozero for se/de (part of bigger compaign to remove protobuf entirely)
+* REMOVED: boost::format in favor of a tiny wrapper around sprintf
+* REMOVED: boost::property_tree::ptree for a light shim; guys seriously ???
+
 ## UNRELEASED
 * **Removed**
    * REMOVED: ENABLE_GDAL define for **Linux-only** Python binding releases [#5642](https://github.com/valhalla/valhalla/pull/5642)

@@ -8,7 +8,7 @@
 #include "baldr/wasm_tile_getter.h"
 #endif
 
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 
 using namespace valhalla;
 using namespace valhalla::loki;

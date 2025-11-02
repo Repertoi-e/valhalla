@@ -11,7 +11,7 @@
 #include "mjolnir/util.h"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <valhalla/property_tree/ptree.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <filesystem>

@@ -3,7 +3,7 @@
 
 #include <valhalla/mjolnir/osmdata.h>
 
-#include <boost/property_tree/ptree_fwd.hpp>
+#include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <string>
 #include <vector>
