@@ -81,8 +81,36 @@ get_optional(V&& v, const char* source) {
   // try to convert from a string
   if (ptr->IsString()) {
     try {
-      // return boost::lexical_cast<T>(ptr->template Get<std::string>());
-      // use std:: 
+      std::string str = ptr->template Get<std::string>();
+      if constexpr (std::is_same_v<T, int>) {
+        return std::stoi(str);
+      } else if constexpr (std::is_same_v<T, long>) {
+        return std::stol(str);
+      } else if constexpr (std::is_same_v<T, long long>) {
+        return std::stoll(str);
+      } else if constexpr (std::is_same_v<T, unsigned>) {
+        return static_cast<unsigned>(std::stoul(str));
+      } else if constexpr (std::is_same_v<T, unsigned long>) {
+        return std::stoul(str);
+      } else if constexpr (std::is_same_v<T, unsigned long long>) {
+        return std::stoull(str);
+      } else if constexpr (std::is_same_v<T, float>) {
+        return std::stof(str);
+      } else if constexpr (std::is_same_v<T, double>) {
+        return std::stod(str);
+      } else if constexpr (std::is_same_v<T, long double>) {
+        return std::stold(str);
+      } else if constexpr (std::is_same_v<T, bool>) {
+        if (str == "true" || str == "1") {
+          return true;
+        } else if (str == "false" || str == "0") {
+          return false;
+        } else {
+          return std::nullopt;
+        }
+      } else {
+        static_assert(always_false<T>, "Unsupported type for conversion from string");
+      }
     } catch (...) {}
   }
   // numbers are strict in rapidjson but we don't want that strictness because it aborts the program
