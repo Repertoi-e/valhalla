@@ -205,7 +205,6 @@ json::ArrayPtr serializeWarnings(const valhalla::Api &api) {
 }
 
 std::string serializePbf(Api &request) {
-#if !defined __EMSCRIPTEN__
   // if they dont want to select the parts just pick the obvious thing they
   // would want based on action
   PbfFieldSelector selection = request.options().pbf_field_selector();
@@ -278,9 +277,6 @@ std::string serializePbf(Api &request) {
   }
 
   return bytes;
-#else
-  throw std::runtime_error("PBF serialization is not implemented ");
-#endif
 }
 
 // Generate leg shape in geojson format.
