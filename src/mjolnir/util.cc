@@ -414,7 +414,7 @@ namespace mjolnir {
  * Splits a tag into a vector of strings.  Delim defaults to ;
  */
 std::vector<std::string> GetTagTokens(const std::string& tag_value, char delim) {
-  return split(tag_value, delim, SplitMode::KeepEmpty);
+  return split(tag_value, delim, SplitMode::SkipEmpty);
 }
 
 std::vector<std::string> GetTagTokens(const std::string& tag_value, const std::string& delim_str) {
