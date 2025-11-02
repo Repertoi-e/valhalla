@@ -206,7 +206,7 @@ TEST(EnhancedTripPathHasNonDirectionalTurnLane, True) {
   TryHasNonDirectionalTurnLane(std::make_unique<EnhancedTripLeg_Edge>(&edge_2), true);
 }
 
-void ClearActiveTurnLanes(::google::protobuf::RepeatedPtrField<::valhalla::TurnLane> turn_lanes) {
+void ClearActiveTurnLanes(::valhalla::proto::RepeatedFieldShim<::valhalla::TurnLane> turn_lanes) {
   for (auto& turn_lane : (turn_lanes)) {
     turn_lane.clear_state();
   }

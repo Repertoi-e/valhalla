@@ -41,11 +41,11 @@ Pass it a valid configuration object, otherwise it throws
 ```C++
 #include <valhalla/meili/map_matcher_factory.h>
 
-boost::property_tree::ptree config;
-boost::property_tree::json_parser read(config, "conf/valhalla.json");
+property_tree config;
+rapidjson::read_json("conf/valhalla.json", config);
 
 // Constructor
-meili::MapMatcherFactory(const boost::property_tree::ptree& config);
+meili::MapMatcherFactory(const property_tree& config);
 ```
 
 To create a `MapMatcher` object of a specific transport mode:

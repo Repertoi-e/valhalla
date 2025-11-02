@@ -16,7 +16,6 @@ jobs:
             make \
             mingw64-curl \
             mingw64-boost \
-            mingw64-protobuf \
             mingw64-geos \
             mingw64-gdal \
             mingw64-python3 \

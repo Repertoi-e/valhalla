@@ -2,8 +2,6 @@
 
 #include "arche/arche.h"
 #undef ref
-#undef search        // boost shih
-#undef always_inline // boost shih
 
 #include "baldr/rapidjson_utils.h"
 #include "baldr/tilegetter.h"

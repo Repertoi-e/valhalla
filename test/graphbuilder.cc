@@ -195,7 +195,7 @@ TEST(Graphbuilder, AdminBbox) {
 
   const auto& tiling = TileHierarchy::levels().back().tiles;
 
-  // Problematic tile in Belgium where boost::geometry::intersection(box, polygon) fails to produce
+  // Problematic tile in Belgium where intersection(box, polygon) fails to produce
   // multiple polygons.
   const GraphId id(811462);
   GraphTileBuilder graphtile(tile_dir, id, false);

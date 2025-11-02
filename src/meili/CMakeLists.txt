@@ -33,6 +33,4 @@ valhalla_module(NAME meili
       ${rapidjson_include_dir}
       ${protozero_include_dir}
   DEPENDS
-    valhalla::sif
-    ${valhalla_protobuf_targets}
-    Boost::boost)
+    valhalla::sif)

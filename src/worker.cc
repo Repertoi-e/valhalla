@@ -71,7 +71,7 @@ rapidjson::Document from_string(const std::string& json, const valhalla_exceptio
 }
 
 bool add_date_to_locations(Options& options,
-                           google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+                           valhalla::proto::RepeatedFieldShim<valhalla::Location>& locations,
                            const std::string& node) {
   if (options.has_date_time_case() && !locations.empty()) {
     auto dt = options.date_time_type();
@@ -382,7 +382,7 @@ void parse_locations(const rapidjson::Document& doc,
   auto options_targets = options.mutable_targets();
   auto options_exclude_locations = options.mutable_exclude_locations();
 
-  google::protobuf::RepeatedPtrField<valhalla::Location>* locations = nullptr;
+  valhalla::proto::RepeatedFieldShim<valhalla::Location>* locations = nullptr;
   if (node == "locations") {
     locations = &options_locations;
   } else if (node == "shape") {
@@ -461,7 +461,7 @@ void parse_locations(const rapidjson::Document& doc,
 }
 
 void parse_contours(const rapidjson::Document& doc,
-                    google::protobuf::RepeatedPtrField<Contour>& contours) {
+                    valhalla::proto::RepeatedFieldShim<Contour>& contours) {
 
   // make sure the isoline definitions are valid
   auto json_contours = rapidjson::get_optional<rapidjson::Value::ConstArray>(doc, "/contours");

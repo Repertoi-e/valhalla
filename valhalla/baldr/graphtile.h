@@ -29,7 +29,7 @@
 #include <valhalla/midgard/util.h>
 
 #ifndef ENABLE_THREAD_SAFE_TILE_REF_COUNT
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <valhalla/midgard/intrusive.h>
 #endif
 
 #include <cstdint>

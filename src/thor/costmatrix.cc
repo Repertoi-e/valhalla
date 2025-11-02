@@ -326,8 +326,8 @@ bool CostMatrix::SourceToTarget(Api& request,
 // are the same get set to 0 time, distance and do not add to the
 // remaining locations set.
 void CostMatrix::Initialize(
-    const google::protobuf::RepeatedPtrField<valhalla::Location>& source_locations,
-    const google::protobuf::RepeatedPtrField<valhalla::Location>& target_locations,
+    const valhalla::proto::RepeatedFieldShim<valhalla::Location>& source_locations,
+    const valhalla::proto::RepeatedFieldShim<valhalla::Location>& target_locations,
     const valhalla::Matrix& matrix) {
 
   locs_count_[MATRIX_FORW] = source_locations.size();
@@ -1125,9 +1125,9 @@ void CostMatrix::UpdateStatus(const uint32_t source, const uint32_t target) {
 // Sets the source/origin locations. Search expands forward from these
 // locations.
 void CostMatrix::SetSources(GraphReader& graphreader,
-                            const google::protobuf::RepeatedPtrField<valhalla::Location>& sources,
+                            const valhalla::proto::RepeatedFieldShim<valhalla::Location>& sources,
                             const std::vector<baldr::TimeInfo>& time_infos,
-                            const google::protobuf::RepeatedPtrField<valhalla::Location>& targets) {
+                            const valhalla::proto::RepeatedFieldShim<valhalla::Location>& targets) {
   std::unordered_multimap<GraphId, double> target_edges;
   for (const auto& t : targets) {
     for (const auto& e : t.correlation().edges()) {
@@ -1223,8 +1223,8 @@ void CostMatrix::SetSources(GraphReader& graphreader,
 // Set the target/destination locations. Search expands backwards from
 // these locations.
 void CostMatrix::SetTargets(baldr::GraphReader& graphreader,
-                            const google::protobuf::RepeatedPtrField<valhalla::Location>& targets,
-                            const google::protobuf::RepeatedPtrField<valhalla::Location>& sources) {
+                            const valhalla::proto::RepeatedFieldShim<valhalla::Location>& targets,
+                            const valhalla::proto::RepeatedFieldShim<valhalla::Location>& sources) {
 
   std::unordered_multimap<GraphId, double> source_edges;
   for (const auto& s : sources) {

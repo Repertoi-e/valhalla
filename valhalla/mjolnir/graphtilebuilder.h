@@ -17,8 +17,6 @@
 #include <valhalla/mjolnir/complexrestrictionbuilder.h>
 #include <valhalla/mjolnir/edgeinfobuilder.h>
 
-#include <boost/functional/hash.hpp>
-
 #include <cstdint>
 #include <list>
 #include <string>
@@ -518,9 +516,9 @@ protected:
   struct EdgeTupleHasher {
     std::size_t operator()(const edge_tuple& k) const {
       std::size_t seed = 13;
-      boost::hash_combine(seed, index_hasher(std::get<0>(k)));
-      boost::hash_combine(seed, id_hasher(std::get<1>(k)));
-      boost::hash_combine(seed, id_hasher(std::get<2>(k)));
+      midgard::hash_combine(seed, index_hasher(std::get<0>(k)));
+      midgard::hash_combine(seed, id_hasher(std::get<1>(k)));
+      midgard::hash_combine(seed, id_hasher(std::get<2>(k)));
       return seed;
     }
     // function to hash each id
@@ -630,7 +628,7 @@ protected:
 #ifdef ENABLE_THREAD_SAFE_TILE_REF_COUNT
 using graph_tile_builder_ptr = std::shared_ptr<GraphTileBuilder>;
 #else
-using graph_tile_builder_ptr = boost::intrusive_ptr<GraphTileBuilder>;
+using graph_tile_builder_ptr = midgard::intrusive_ptr<GraphTileBuilder>;
 #endif
 
 } // namespace mjolnir

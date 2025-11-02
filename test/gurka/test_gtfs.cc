@@ -3,15 +3,13 @@
 #include "gurka.h"
 #include "just_gtfs/just_gtfs.h"
 #include "midgard/logging.h"
+#include "midgard/util.h"
 #include "mjolnir/convert_transit.h"
 #include "mjolnir/ingest_transit.h"
 #include "proto/common.pb.h"
 #include "proto/transit.pb.h"
 #include "test.h"
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
 #include <gtest/gtest.h>
 
 using namespace gtfs;
@@ -19,9 +17,6 @@ using namespace std::chrono;
 using namespace valhalla;
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;
-using boost::geometry::within;
-using point_type = boost::geometry::model::d2::point_xy<double>;
-using polygon_type = boost::geometry::model::polygon<point_type>;
 using rp = rapidjson::Pointer;
 
 // since writing GTFS feeds with C++ is sooo annoying, we'll have some var templates, e.g.
@@ -1064,10 +1059,7 @@ TEST(GtfsExample, route_trip4) {
 
 TEST(GtfsExample, isochrones) {
 
-  auto WaypointToBoostPoint = [&](const std::string& waypoint) {
-    auto point = map.nodes[waypoint];
-    return point_type(point.x(), point.y());
-  };
+  auto WaypointToPoint = [&](const std::string& waypoint) { return map.nodes[waypoint]; };
 
   std::string res_string;
   valhalla::Api res =
@@ -1079,17 +1071,17 @@ TEST(GtfsExample, isochrones) {
                        {}, &res_string);
 
   std::vector<PointLL> iso_polygon = polygon_from_geojson(res_string);
-  polygon_type polygon;
-  for (const auto& p : iso_polygon) {
-    boost::geometry::append(polygon.outer(), point_type(p.x(), p.y()));
+  std::vector<PointLL> polygon = iso_polygon;
+  if (!polygon.empty() && polygon.front() != polygon.back()) {
+    polygon.push_back(polygon.front());
   }
 
-  EXPECT_EQ(within(WaypointToBoostPoint("D"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("2"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("E"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("4"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("F"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("1"), polygon), false);
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("D"), polygon));
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("2"), polygon));
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("E"), polygon));
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("4"), polygon));
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("F"), polygon));
+  EXPECT_FALSE(midgard::point_in_poly(WaypointToPoint("1"), polygon));
 }
 
 TEST(GtfsExample, status) {

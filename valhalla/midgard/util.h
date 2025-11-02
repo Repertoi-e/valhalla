@@ -488,6 +488,26 @@ bool point_in_poly(const coord_t& pt, const container_t& poly);
 template <class container_t>
 typename container_t::value_type::first_type polygon_area(const container_t& polygon);
 
+/**
+ * Compute the perimeter of a closed ring in meters. If the ring is not explicitly closed
+ * the function will close it by adding the segment from the last point back to the first.
+ *
+ * @param ring  container of points representing the ring geometry
+ * @return accumulated edge length in meters
+ */
+template <class container_t> double ring_length(const container_t& ring);
+
+/**
+ * Determine whether a ring intersects a given polyline. Intersection is reported when any
+ * polyline vertex lies inside the ring or any pair of segments crosses or touches.
+ *
+ * @param ring      container of points representing the ring geometry
+ * @param polyline  container of points representing the polyline geometry
+ * @return true if the ring and polyline intersect, false otherwise
+ */
+template <class ring_container_t, class polyline_container_t>
+bool ring_intersects_polyline(const ring_container_t& ring, const polyline_container_t& polyline);
+
 template <typename T> struct ring_queue_t {
   ring_queue_t(size_t limit) : limit(limit), i(0) {
     v.reserve(limit);

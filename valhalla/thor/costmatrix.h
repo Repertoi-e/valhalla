@@ -172,8 +172,8 @@ protected:
    * @param  source_location_list   List of source/origin locations.
    * @param  target_location_list   List of target/destination locations.
    */
-  void Initialize(const google::protobuf::RepeatedPtrField<valhalla::Location>& source_location_list,
-                  const google::protobuf::RepeatedPtrField<valhalla::Location>& target_location_list,
+  void Initialize(const valhalla::proto::RepeatedFieldShim<valhalla::Location>& source_location_list,
+                  const valhalla::proto::RepeatedFieldShim<valhalla::Location>& target_location_list,
                   const valhalla::Matrix& matrix);
 
   /**
@@ -246,9 +246,9 @@ protected:
    * @param  targets       List of target locations.
    */
   void SetSources(baldr::GraphReader& graphreader,
-                  const google::protobuf::RepeatedPtrField<valhalla::Location>& sources,
+                  const valhalla::proto::RepeatedFieldShim<valhalla::Location>& sources,
                   const std::vector<baldr::TimeInfo>& time_infos,
-                  const google::protobuf::RepeatedPtrField<valhalla::Location>& targets);
+                  const valhalla::proto::RepeatedFieldShim<valhalla::Location>& targets);
 
   /**
    * Set the target/destination locations. Search expands backwards from
@@ -258,8 +258,8 @@ protected:
    * @param  source       List of source locations.
    */
   void SetTargets(baldr::GraphReader& graphreader,
-                  const google::protobuf::RepeatedPtrField<valhalla::Location>& targets,
-                  const google::protobuf::RepeatedPtrField<valhalla::Location>& sources);
+                  const valhalla::proto::RepeatedFieldShim<valhalla::Location>& targets,
+                  const valhalla::proto::RepeatedFieldShim<valhalla::Location>& sources);
 
   /**
    * If time awareness was requested for the CostMatrix algorithm, we need
@@ -289,7 +289,7 @@ protected:
    * @returns                  time info for each location
    */
   std::vector<baldr::TimeInfo>
-  SetOriginTimes(google::protobuf::RepeatedPtrField<valhalla::Location>& origins,
+  SetOriginTimes(valhalla::proto::RepeatedFieldShim<valhalla::Location>& origins,
                  baldr::GraphReader& reader) {
     // loop over all locations setting the date time with timezone
     std::vector<baldr::TimeInfo> infos;

@@ -1186,7 +1186,7 @@ std::string EnhancedTripLeg_Edge::ToParameterString() const {
 }
 
 std::string EnhancedTripLeg_Edge::StreetNamesToParameterString(
-    const ::google::protobuf::RepeatedPtrField<::valhalla::StreetName>& street_names) const {
+    const ::valhalla::proto::RepeatedFieldShim<::valhalla::StreetName>& street_names) const {
   std::string str;
   std::string param_list;
 
@@ -1217,7 +1217,7 @@ std::string EnhancedTripLeg_Edge::StreetNamesToParameterString(
 }
 
 std::string EnhancedTripLeg_Edge::SignElementsToParameterString(
-    const ::google::protobuf::RepeatedPtrField<::valhalla::TripSignElement>& sign_elements) const {
+    const ::valhalla::proto::RepeatedFieldShim<::valhalla::TripSignElement>& sign_elements) const {
   std::string str;
   std::string param_list;
 

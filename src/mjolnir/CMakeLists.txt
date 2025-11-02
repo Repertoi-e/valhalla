@@ -68,8 +68,7 @@ set(sources
 set(system_includes
   ${date_include_dir}
   ${rapidjson_include_dir}
-  $<$<BOOL:${WIN32}>:${dirent_include_dir}>
-  ${PROTOBUF_INCLUDE_DIR})
+  $<$<BOOL:${WIN32}>:${dirent_include_dir}>)
 if(APPLE)
   list(APPEND system_includes ${VALHALLA_SOURCE_DIR}/third_party/date/include/date)
 endif()
@@ -97,7 +96,6 @@ valhalla_module(NAME mjolnir
     PkgConfig::GEOS
     PkgConfig::SpatiaLite
     SQLite3::SQLite3
-    Boost::boost
     PkgConfig::LuaJIT
     Threads::Threads
     PkgConfig::ZLIB

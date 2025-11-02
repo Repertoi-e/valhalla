@@ -150,7 +150,7 @@ The `map.pbf` and tiles will be written to `test/data/example`. The value `100` 
 
 The returned `map` object has two properties:
 
-- `config` - the `boost::property_tree` that was used to generate the tiles.
+- `config` - the `property_tree` that was used to generate the tiles.
 - `nodes` - an `std::unordered_map`, where keys are nodes, and values are corresponding `PointLL` coordinates on a generated map.
 
 ## Using a generated map
@@ -237,7 +237,7 @@ void expect_match(valhalla::Api& raw_result,
 The main purpose of Gurka is to write high-level, end-to-end tests on minimaps. There are some
 low-level helper functions available in case you want to do something a little more custom:
 
-- `gurka::detail::build_config(workdir)` - builds a `boost::property_tree` for tile generation in `workdir`.
+- `gurka::detail::build_config(workdir)` - builds a `property_tree` for tile generation in `workdir`.
 - `gurka::detail::map_to_coordinates(ascii_map, gridsize)` - calculates coordinates for all the `A-Za-z0-9` nodes in the `ascii_map` given the `gridsize`.
 - `gurka::detail::build_pbf(node_locations, ways, nodes, relations, pbf_filename)` - generates an OSM PBF for the nodes, ways, and relations you've defined. The `nodemap` is the result of `gurka::detail::map_to_coordinates`.
 

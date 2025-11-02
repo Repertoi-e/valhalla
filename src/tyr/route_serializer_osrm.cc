@@ -365,7 +365,7 @@ json::MapPtr serialize_annotations(const valhalla::TripLeg& trip_leg) {
 // Serialize waypoints for optimized route. Note that OSRM retains the
 // original location order, and stores an index for the waypoint index in
 // the optimized sequence.
-json::ArrayPtr waypoints(google::protobuf::RepeatedPtrField<valhalla::Location>& locs) {
+json::ArrayPtr waypoints(valhalla::proto::RepeatedFieldShim<valhalla::Location>& locs) {
   // Create a vector of indexes.
   std::vector<uint32_t> indexes(locs.size());
   std::iota(indexes.begin(), indexes.end(), 0);
@@ -1698,7 +1698,7 @@ std::string get_pronunciations(const valhalla::DirectionsLeg::Maneuver& maneuver
 // Serialize each leg
 json::ArrayPtr serialize_legs(const std::vector<valhalla::DirectionsLeg>& legs,
                               const std::vector<std::string>& leg_summaries,
-                              google::protobuf::RepeatedPtrField<valhalla::TripLeg>& path_legs,
+                              valhalla::proto::RepeatedFieldShim<valhalla::TripLeg>& path_legs,
                               bool imperial,
                               const valhalla::Options& options,
                               const baldr::AttributesController& controller) {

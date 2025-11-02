@@ -1,7 +1,11 @@
+## Repertoi-e fork
+
+* REMOVED: Dependency on boost in favor of std:: or tiny replacements 
 * REMOVED: boost::optional in favor of std::optional
-* REMOVED: protobuf and protobuflib in favor of a shim around plain old C++ structs and protozero for se/de (part of bigger compaign to remove protobuf entirely)
 * REMOVED: boost::format in favor of a tiny wrapper around sprintf
-* REMOVED: boost::property_tree::ptree for a light shim
+* REMOVED: boost::property_tree::ptree in favor of a light replacement
+* REMOVED: Dependency on google's libprotobuf in favor of a shim around plain old C++ structs and protozero for serialization/deserialization. 
+           This removes dependecy on a bunch of libraries that Google's protobuf uses, this alone opened the possibility to build Valhalla to WASM with emscripten.
 
 ## UNRELEASED
 * **Removed**

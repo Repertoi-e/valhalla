@@ -22,7 +22,6 @@ public:
 };
 
 namespace {
-// register a few boost.geometry types
 using ring_bg_t = std::vector<vm::PointLL>;
 
 rapidjson::Value get_avoid_locs(const std::vector<vm::PointLL>& locs,

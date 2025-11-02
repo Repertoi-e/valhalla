@@ -19,7 +19,7 @@ using namespace valhalla::loki;
 
 namespace valhalla {
 namespace loki {
-void loki_worker_t::parse_locations(google::protobuf::RepeatedPtrField<valhalla::Location> locations,
+void loki_worker_t::parse_locations(valhalla::proto::RepeatedFieldShim<valhalla::Location> locations,
                                     Api& request,
                                     std::optional<valhalla_exception_t> required_exception) {
   bool has_302 = false, has_303 = false;

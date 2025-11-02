@@ -47,6 +47,4 @@ valhalla_module(NAME odin
       ${protozero_include_dir}
   DEPENDS
     valhalla::proto
-    ${valhalla_protobuf_targets}
-    Boost::boost
     ${libprime_server_targets})

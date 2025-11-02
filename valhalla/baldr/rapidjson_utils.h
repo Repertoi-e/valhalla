@@ -3,7 +3,6 @@
 
 #include <valhalla/baldr/rapidjson_fwd.h>
 
-#include <boost/lexical_cast.hpp>
 #include <rapidjson/allocators.h>
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
@@ -82,7 +81,8 @@ get_optional(V&& v, const char* source) {
   // try to convert from a string
   if (ptr->IsString()) {
     try {
-      return boost::lexical_cast<T>(ptr->template Get<std::string>());
+      // return boost::lexical_cast<T>(ptr->template Get<std::string>());
+      // use std:: 
     } catch (...) {}
   }
   // numbers are strict in rapidjson but we don't want that strictness because it aborts the program

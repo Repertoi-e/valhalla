@@ -2,16 +2,16 @@
 #ifndef MMP_PRIORITY_QUEUE_H_
 #define MMP_PRIORITY_QUEUE_H_
 
-#include <boost/heap/fibonacci_heap.hpp>
-
+#include <functional>
+#include <queue>
 #include <unordered_map>
+#include <vector>
 
-// Shortest-path-specific priority queue
-// (A friendly wrapper of boost::heap::fibonacci_heap)
+// Shortest-path-specific priority queue using a binary heap with lazy duplicate pruning.
 template <typename T> class SPQueue {
 public:
   // Min heap
-  using Heap = boost::heap::fibonacci_heap<T, boost::heap::compare<std::greater<T>>>;
+  using Heap = std::priority_queue<T, std::vector<T>, std::greater<T>>;
 
   ~SPQueue() {
     clear();
@@ -19,41 +19,64 @@ public:
 
   void push(const T& label) {
     const auto& id = label.id();
-    const auto it = handlers_.find(id);
-    if (it == handlers_.end()) {
-      handlers_.emplace(id, heap_.push(label));
-    } else if (label < *(it->second)) {
-      heap_.update(it->second, label);
+    auto it = best_.find(id);
+    if (it == best_.end()) {
+      best_.emplace(id, label);
+      heap_.push(label);
+    } else if (label < it->second) {
+      it->second = label;
+      heap_.push(label);
     }
   }
 
   void pop() {
-    const auto& top = heap_.top();
-    handlers_.erase(top.id());
+    prune();
+    if (heap_.empty()) {
+      return;
+    }
+    best_.erase(heap_.top().id());
     heap_.pop();
   }
 
   const T& top() const {
+    const_cast<SPQueue*>(this)->prune();
     return heap_.top();
   }
 
   bool empty() const {
+    const_cast<SPQueue*>(this)->prune();
     return heap_.empty();
   }
 
   void clear() {
-    heap_.clear();
-    handlers_.clear();
+    Heap empty_heap;
+    heap_.swap(empty_heap);
+    best_.clear();
   }
 
   typename Heap::size_type size() const {
-    return heap_.size();
+    return static_cast<typename Heap::size_type>(best_.size());
   }
 
 protected:
-  Heap heap_;
+  void prune() {
+    while (!heap_.empty()) {
+      const auto& candidate = heap_.top();
+      auto it = best_.find(candidate.id());
+      if (it == best_.end() || !equivalent(candidate, it->second)) {
+        heap_.pop();
+        continue;
+      }
+      break;
+    }
+  }
 
-  std::unordered_map<typename T::id_type, typename Heap::handle_type> handlers_;
+  static bool equivalent(const T& lhs, const T& rhs) {
+    return !(lhs < rhs) && !(rhs < lhs);
+  }
+
+  Heap heap_;
+  std::unordered_map<typename T::id_type, T> best_;
 };
 
 #endif // MMP_PRIORITY_QUEUE_H_

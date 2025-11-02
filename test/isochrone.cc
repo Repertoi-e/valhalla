@@ -5,9 +5,7 @@
 #include "test.h"
 #include "thor/worker.h"
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
+#include "midgard/util.h"
 
 #include <iostream>
 #include <string>
@@ -16,10 +14,6 @@
 #ifdef ENABLE_GDAL
 #include <gdal_priv.h>
 #endif
-
-using point_type = boost::geometry::model::d2::point_xy<double>;
-using polygon_type = boost::geometry::model::polygon<point_type>;
-using boost::geometry::within;
 
 using namespace valhalla;
 using namespace valhalla::thor;
@@ -251,17 +245,14 @@ TEST(Isochrones, OriginEdge) {
                                  {{"/contours/0/time", "10"}}, {}, &geojson);
   std::vector<PointLL> iso_polygon = polygon_from_geojson(geojson);
 
-  auto WaypointToBoostPoint = [&](const std::string& waypoint) {
-    auto point = map.nodes[waypoint];
-    return point_type(point.x(), point.y());
-  };
-  polygon_type polygon;
-  for (const auto& p : iso_polygon) {
-    boost::geometry::append(polygon.outer(), point_type(p.x(), p.y()));
+  auto WaypointToPoint = [&](const std::string& waypoint) { return map.nodes[waypoint]; };
+  std::vector<PointLL> polygon = iso_polygon;
+  if (!polygon.empty() && polygon.front() != polygon.back()) {
+    polygon.push_back(polygon.front());
   }
-  EXPECT_EQ(within(WaypointToBoostPoint("b"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("a"), polygon), false);
-  EXPECT_EQ(within(WaypointToBoostPoint("c"), polygon), false);
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("b"), polygon));
+  EXPECT_FALSE(midgard::point_in_poly(WaypointToPoint("a"), polygon));
+  EXPECT_FALSE(midgard::point_in_poly(WaypointToPoint("c"), polygon));
 }
 
 TEST(Isochrones, LongEdge) {
@@ -286,23 +277,20 @@ TEST(Isochrones, LongEdge) {
                                  {{"/contours/0/time", "15"}}, {}, &geojson);
   std::vector<PointLL> iso_polygon = polygon_from_geojson(geojson);
 
-  auto WaypointToBoostPoint = [&](const std::string& waypoint) {
-    auto point = map.nodes[waypoint];
-    return point_type(point.x(), point.y());
-  };
-  polygon_type polygon;
-  for (const auto& p : iso_polygon) {
-    boost::geometry::append(polygon.outer(), point_type(p.x(), p.y()));
+  auto WaypointToPoint = [&](const std::string& waypoint) { return map.nodes[waypoint]; };
+  std::vector<PointLL> polygon = iso_polygon;
+  if (!polygon.empty() && polygon.front() != polygon.back()) {
+    polygon.push_back(polygon.front());
   }
-  EXPECT_EQ(within(WaypointToBoostPoint("a"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("b"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("c"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("d"), polygon), true);
-  EXPECT_EQ(within(WaypointToBoostPoint("f"), polygon), false);
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("a"), polygon));
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("b"), polygon));
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("c"), polygon));
+  EXPECT_TRUE(midgard::point_in_poly(WaypointToPoint("d"), polygon));
+  EXPECT_FALSE(midgard::point_in_poly(WaypointToPoint("f"), polygon));
 
   // check that b-f edges is visited and is partially within the isochrone
   auto interpolated = map.nodes["b"].PointAlongSegment(map.nodes["f"], 0.4);
-  EXPECT_EQ(within(point_type(interpolated.x(), interpolated.y()), polygon), true);
+  EXPECT_TRUE(midgard::point_in_poly(interpolated, polygon));
 }
 
 class IsochroneTest : public thor::Isochrone {

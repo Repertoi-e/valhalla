@@ -6,11 +6,9 @@
 #include "midgard/polyline2.h"
 #include "midgard/vector2.h"
 
-#include <boost/archive/iterators/base64_from_binary.hpp>
-#include <boost/archive/iterators/binary_from_base64.hpp>
-#include <boost/archive/iterators/remove_whitespace.hpp>
-#include <boost/archive/iterators/transform_width.hpp>
 #include <sys/stat.h>
+
+#include <assert.h>
 
 #include <algorithm>
 #include <array>
@@ -21,6 +19,7 @@
 #include <fstream>
 #include <list>
 #include <random>
+#include <stdexcept>
 #include <vector>
 
 namespace {
@@ -110,6 +109,62 @@ template void adjust_delta<valhalla::midgard::PointLL>(int8_t&,
                                                        const valhalla::midgard::PointLL&
 
 );
+
+constexpr double kSegmentIntersectionEpsilon = 1e-12;
+
+template <class coord_t> double orientation_value(const coord_t& a, const coord_t& b, const coord_t& c) {
+  return (static_cast<double>(b.first) - static_cast<double>(a.first)) *
+             (static_cast<double>(c.second) - static_cast<double>(a.second)) -
+         (static_cast<double>(b.second) - static_cast<double>(a.second)) *
+             (static_cast<double>(c.first) - static_cast<double>(a.first));
+}
+
+template <class coord_t> bool on_segment(const coord_t& a, const coord_t& b, const coord_t& p) {
+  const double min_x = std::min(static_cast<double>(a.first), static_cast<double>(b.first)) -
+                       kSegmentIntersectionEpsilon;
+  const double max_x = std::max(static_cast<double>(a.first), static_cast<double>(b.first)) +
+                       kSegmentIntersectionEpsilon;
+  const double min_y = std::min(static_cast<double>(a.second), static_cast<double>(b.second)) -
+                       kSegmentIntersectionEpsilon;
+  const double max_y = std::max(static_cast<double>(a.second), static_cast<double>(b.second)) +
+                       kSegmentIntersectionEpsilon;
+  const double px = static_cast<double>(p.first);
+  const double py = static_cast<double>(p.second);
+  return px >= min_x && px <= max_x && py >= min_y && py <= max_y;
+}
+
+template <class coord_t>
+bool segments_intersect(const coord_t& a1, const coord_t& a2, const coord_t& b1, const coord_t& b2) {
+  const double o1 = orientation_value(a1, a2, b1);
+  const double o2 = orientation_value(a1, a2, b2);
+  const double o3 = orientation_value(b1, b2, a1);
+  const double o4 = orientation_value(b1, b2, a2);
+
+  const auto different_sign = [](double lhs, double rhs) {
+    return (lhs > 0 && rhs < 0) || (lhs < 0 && rhs > 0);
+  };
+
+  if (different_sign(o1, o2) && different_sign(o3, o4)) {
+    return true;
+  }
+
+  const auto is_zero = [](double value) { return std::abs(value) <= kSegmentIntersectionEpsilon; };
+
+  if (is_zero(o1) && on_segment(a1, a2, b1)) {
+    return true;
+  }
+  if (is_zero(o2) && on_segment(a1, a2, b2)) {
+    return true;
+  }
+  if (is_zero(o3) && on_segment(b1, b2, a1)) {
+    return true;
+  }
+  if (is_zero(o4) && on_segment(b1, b2, a2)) {
+    return true;
+  }
+
+  return false;
+}
 
 } // namespace
 
@@ -635,6 +690,9 @@ bool point_in_poly(const coord_t& pt, const container_t& poly) {
 template bool point_in_poly<valhalla::midgard::PointLL, std::list<valhalla::midgard::PointLL>>(
     const valhalla::midgard::PointLL&,
     const std::list<valhalla::midgard::PointLL>&);
+template bool point_in_poly<valhalla::midgard::PointLL, std::vector<valhalla::midgard::PointLL>>(
+  const valhalla::midgard::PointLL&,
+  const std::vector<valhalla::midgard::PointLL>&);
 
 template <class container_t>
 typename container_t::value_type::first_type polygon_area(const container_t& polygon) {
@@ -654,6 +712,82 @@ template PointLL::first_type polygon_area(const std::list<PointLL>&);
 template PointLL::first_type polygon_area(const std::vector<PointLL>&);
 template Point2::first_type polygon_area(const std::list<Point2>&);
 template Point2::first_type polygon_area(const std::vector<Point2>&);
+
+template <class container_t> double ring_length(const container_t& ring) {
+  if (ring.size() < 2) {
+    return 0.0;
+  }
+
+  double length = 0.0;
+  auto prev = ring.begin();
+  auto curr = std::next(prev);
+  for (; curr != ring.end(); ++prev, ++curr) {
+    if (*prev == *curr) {
+      continue;
+    }
+    length += static_cast<double>(prev->Distance(*curr));
+  }
+
+  if (!(ring.front() == ring.back())) {
+    length += static_cast<double>(ring.back().Distance(ring.front()));
+  }
+
+  return length;
+}
+
+template double ring_length<std::vector<PointLL>>(const std::vector<PointLL>&);
+
+template <class ring_container_t, class polyline_container_t>
+bool ring_intersects_polyline(const ring_container_t& ring, const polyline_container_t& polyline) {
+  if (ring.size() < 3 || polyline.size() < 2) {
+    return false;
+  }
+
+  for (const auto& vertex : polyline) {
+    if (point_in_poly(vertex, ring)) {
+      return true;
+    }
+  }
+
+  const bool ring_closed = ring.front() == ring.back();
+  auto ring_begin = ring.begin();
+  auto ring_end = ring.end();
+
+  auto line_prev = polyline.begin();
+  auto line_curr = std::next(line_prev);
+  for (; line_curr != polyline.end(); ++line_prev, ++line_curr) {
+    if (*line_prev == *line_curr) {
+      continue;
+    }
+
+    auto ring_prev = ring_begin;
+    auto ring_curr = std::next(ring_prev);
+    for (; ring_curr != ring_end; ++ring_prev, ++ring_curr) {
+      if (*ring_prev == *ring_curr) {
+        continue;
+      }
+      if (segments_intersect(*ring_prev, *ring_curr, *line_prev, *line_curr)) {
+        return true;
+      }
+    }
+
+    if (!ring_closed) {
+      const auto& last_point = ring.back();
+      const auto& first_point = ring.front();
+      if (last_point == first_point) {
+        continue;
+      }
+      if (segments_intersect(last_point, first_point, *line_prev, *line_curr)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+template bool ring_intersects_polyline<std::vector<PointLL>, std::vector<PointLL>>(const std::vector<PointLL>&,
+                                                                                   const std::vector<PointLL>&);
 
 std::vector<midgard::PointLL> simulate_gps(const std::vector<gps_segment_t>& segments,
                                            std::vector<float>& accuracies,
@@ -823,32 +957,123 @@ polygon_t to_boundary(const std::unordered_set<uint32_t>& region, const Tiles<Po
 }
 
 constexpr char PADDING_ENCODED = '=';
-constexpr char ZERO_ENCODED = 'A';
+
+namespace {
+
+constexpr char BASE64_ALPHABET[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+constexpr uint8_t BASE64_INVALID = 0xFF;
+
+inline uint8_t decode_base64_char(char c) {
+  static const std::array<uint8_t, 256> table = []() {
+    std::array<uint8_t, 256> values{};
+    values.fill(BASE64_INVALID);
+    for (uint8_t i = 0; i < 64; ++i) {
+      values[static_cast<uint8_t>(BASE64_ALPHABET[i])] = i;
+    }
+    return values;
+  }();
+
+  auto value = table[static_cast<uint8_t>(c)];
+  if (value == BASE64_INVALID) {
+    throw std::invalid_argument("Invalid character in base64 input");
+  }
+  return value;
+}
+
+} // namespace
 
 std::string encode64(const std::string& text) {
-  using namespace boost::archive::iterators;
-  using Base64Encode = base64_from_binary<transform_width<std::string::const_iterator, 6, 8>>;
-  // Encode and add padding to string per octet encoding described here:
-  // https://tools.ietf.org/html/rfc4648#section-4
-  std::string encoded(Base64Encode(text.begin()), Base64Encode(text.end()));
-  size_t num_pad_chars = (3 - text.size() % 3) % 3;
-  encoded.append(num_pad_chars, PADDING_ENCODED);
+  if (text.empty()) {
+    return {};
+  }
+
+  const auto* bytes = reinterpret_cast<const uint8_t*>(text.data());
+  std::string encoded;
+  encoded.reserve(((text.size() + 2) / 3) * 4);
+
+  size_t i = 0;
+  for (; i + 2 < text.size(); i += 3) {
+    uint32_t triple = (static_cast<uint32_t>(bytes[i]) << 16) |
+                      (static_cast<uint32_t>(bytes[i + 1]) << 8) |
+                      static_cast<uint32_t>(bytes[i + 2]);
+
+    encoded.push_back(BASE64_ALPHABET[(triple >> 18) & 0x3F]);
+    encoded.push_back(BASE64_ALPHABET[(triple >> 12) & 0x3F]);
+    encoded.push_back(BASE64_ALPHABET[(triple >> 6) & 0x3F]);
+    encoded.push_back(BASE64_ALPHABET[triple & 0x3F]);
+  }
+
+  const size_t remainder = text.size() - i;
+  if (remainder == 1) {
+    uint32_t triple = static_cast<uint32_t>(bytes[i]) << 16;
+    encoded.push_back(BASE64_ALPHABET[(triple >> 18) & 0x3F]);
+    encoded.push_back(BASE64_ALPHABET[(triple >> 12) & 0x3F]);
+    encoded.push_back(PADDING_ENCODED);
+    encoded.push_back(PADDING_ENCODED);
+  } else if (remainder == 2) {
+    uint32_t triple = (static_cast<uint32_t>(bytes[i]) << 16) |
+                      (static_cast<uint32_t>(bytes[i + 1]) << 8);
+    encoded.push_back(BASE64_ALPHABET[(triple >> 18) & 0x3F]);
+    encoded.push_back(BASE64_ALPHABET[(triple >> 12) & 0x3F]);
+    encoded.push_back(BASE64_ALPHABET[(triple >> 6) & 0x3F]);
+    encoded.push_back(PADDING_ENCODED);
+  }
+
   return encoded;
 }
 
 std::string decode64(const std::string& encoded) {
-  using namespace boost::archive::iterators;
-  using Base64Decode =
-      transform_width<binary_from_base64<remove_whitespace<std::string::const_iterator>>, 8, 6>;
-  // NOTE(mookerji): Ugh, for more details, see:
-  // https://stackoverflow.com/questions/10521581/base64-encode-using-boost-throw-exception
-  size_t num_pad_chars = (4 - encoded.size() % 4) % 4;
-  std::string padded = encoded;
-  padded.append(num_pad_chars, PADDING_ENCODED);
-  size_t pad_chars = std::count(padded.begin(), padded.end(), PADDING_ENCODED);
-  std::replace(padded.begin(), padded.end(), PADDING_ENCODED, ZERO_ENCODED);
-  std::string decoded(Base64Decode(padded.begin()), Base64Decode(padded.end()));
-  decoded.erase(decoded.end() - pad_chars, decoded.end());
+  if (encoded.empty()) {
+    return {};
+  }
+
+  std::string cleaned;
+  cleaned.reserve(encoded.size());
+  for (char c : encoded) {
+    if (!std::isspace(static_cast<unsigned char>(c))) {
+      cleaned.push_back(c);
+    }
+  }
+
+  if (cleaned.empty()) {
+    return {};
+  }
+
+  size_t padding_needed = (4 - cleaned.size() % 4) % 4;
+  cleaned.append(padding_needed, PADDING_ENCODED);
+  size_t pad_chars = std::count(cleaned.begin(), cleaned.end(), PADDING_ENCODED);
+
+  std::string decoded;
+  size_t decoded_capacity = (cleaned.size() / 4) * 3;
+  if (pad_chars <= decoded_capacity) {
+    decoded_capacity -= pad_chars;
+  } else {
+    decoded_capacity = 0;
+  }
+  decoded.reserve(decoded_capacity);
+
+  for (size_t i = 0; i < cleaned.size(); i += 4) {
+    uint8_t values[4];
+    for (size_t j = 0; j < 4; ++j) {
+      char c = cleaned[i + j];
+      values[j] = (c == PADDING_ENCODED) ? 0 : decode_base64_char(c);
+    }
+
+    uint32_t triple = (static_cast<uint32_t>(values[0]) << 18) |
+                      (static_cast<uint32_t>(values[1]) << 12) |
+                      (static_cast<uint32_t>(values[2]) << 6) |
+                      static_cast<uint32_t>(values[3]);
+
+    decoded.push_back(static_cast<char>((triple >> 16) & 0xFF));
+    if (cleaned[i + 2] != PADDING_ENCODED) {
+      decoded.push_back(static_cast<char>((triple >> 8) & 0xFF));
+    }
+    if (cleaned[i + 3] != PADDING_ENCODED) {
+      decoded.push_back(static_cast<char>(triple & 0xFF));
+    }
+  }
+
   return decoded;
 }
 

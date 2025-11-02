@@ -26,4 +26,5 @@ valhalla_module(NAME midgard
     PRIVATE
       ${unordered_dense_include_dir}
   DEPENDS
-    Boost::boost)
+  
+  )

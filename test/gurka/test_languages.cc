@@ -2861,7 +2861,6 @@ TEST_F(RouteWithStreetnameAndSign_en_USForwardBackwardNoName, CheckBackwardNames
   EXPECT_EQ(std::get<kLinguisticMapTuplePronunciationIndex>(lang_iter->second), "");
 }
 
-/* TODO  Fix this edge case. This works while using degrees (boost) for points but it is too slow.
 class RouteWithStreetnameAndSign_fr_nl_MesenBelgiumRightLeft : public ::testing::Test {
 protected:
   valhalla::gurka::map BuildPBF(const std::string& workdir) {
@@ -2887,7 +2886,7 @@ protected:
       EXPECT_TRUE(created);
     }
 
-    constexpr double gridsize = 100;
+    // constexpr double gridsize = 100;
 
     const auto layout =
         gurka::detail::map_to_coordinates(ascii_map, gridsize_metres, {2.9305333, 50.7672572});
@@ -2999,7 +2998,6 @@ edgeinfo.GetLinguisticMap(); std::unordered_map<uint8_t, std::tuple<uint8_t, uin
 std::string>>::const_iterator lang_iter = linguistics.find(0); ASSERT_EQ(lang_iter,
 linguistics.end()); ASSERT_EQ(std::get<0>(names_and_types.at(0)), "Chemin des Quatre Rois");
 }
-*/
 
 class RouteWithStreetnameAndSign_fr_de_FribourgSwitzerlandMulti : public ::testing::Test {
 protected:

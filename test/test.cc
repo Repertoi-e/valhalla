@@ -7,8 +7,8 @@
 #include "microtar.h"
 #include "midgard/sequence.h"
 #include "mjolnir/graphtilebuilder.h"
+#include "midgard/string_utils.h"
 
-#include <boost/algorithm/string.hpp>
 #include <valhalla/property_tree/ptree.hpp>
 
 #include <cmath>
@@ -79,13 +79,12 @@ bool json_deep_equality(const rapidjson::Value& j1, const rapidjson::Value& j2) 
   return false;
 }
 
-// TODO: this should support boost::property_tree::path
+// TODO: this should support property_tree::path
 // like get_child does to make it obvious that it supports
 // the path separator notation for specifying sub children
 bool remove_child(valhalla::property_tree& pt, const std::string& path) {
   // split up the path into each sub part
-  std::vector<std::string> path_parts;
-  boost::split(path_parts, path, boost::is_any_of("."));
+  std::vector<std::string> path_parts = valhalla::midgard::string_utils::split(path, ".");
 
   // check each part of the path
   auto* root = &pt;
@@ -490,7 +489,7 @@ valhalla::property_tree make_config(const std::string& path_prefix,
   )";
 
   // force the paths to be different
-  boost::replace_all(defaults, "%%", path_prefix);
+  valhalla::midgard::string_utils::replace_all(defaults, "%%", path_prefix);
 
   // make ptree and override defaults
   auto pt = json_to_pt(defaults);

@@ -6,10 +6,6 @@
 #include "proto/incidents.pb.h"
 
 #include <valhalla/property_tree/ptree.hpp>
-#if !defined __EMSCRIPTEN__
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#endif
 
 #include <chrono>
 #include <condition_variable>

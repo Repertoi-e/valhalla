@@ -352,7 +352,7 @@ void TimeDistanceBSSMatrix::SetOrigin(GraphReader& graphreader, const valhalla::
 template <const ExpansionType expansion_direction, const bool FORWARD>
 void TimeDistanceBSSMatrix::InitDestinations(
     GraphReader& graphreader,
-    const google::protobuf::RepeatedPtrField<valhalla::Location>& locations) {
+    const valhalla::proto::RepeatedFieldShim<valhalla::Location>& locations) {
   // For each destination
   uint32_t idx = 0;
   for (const auto& loc : locations) {
@@ -417,7 +417,7 @@ void TimeDistanceBSSMatrix::InitDestinations(
 // have be settled.
 bool TimeDistanceBSSMatrix::UpdateDestinations(
     const valhalla::Location& origin,
-    const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+    const valhalla::proto::RepeatedFieldShim<valhalla::Location>& locations,
     std::vector<uint32_t>& destinations,
     const DirectedEdge* edge,
     const graph_tile_ptr& tile,

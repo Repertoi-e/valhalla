@@ -16,12 +16,6 @@ function(configure_valhalla_pc)
   set(REQUIRES "zlib")
   set(LIBS_PRIVATE "${CMAKE_THREAD_LIBS_INIT}")
   set(CFLAGS "-I$\{includedir\}/valhalla/third_party")
-
-  if(TARGET protobuf::libprotobuf-lite)
-    list(APPEND REQUIRES protobuf-lite)
-  else()
-    list(APPEND REQUIRES protobuf)
-  endif()
   
   if(ENABLE_DATA_TOOLS)
     list(APPEND REQUIRES spatialite sqlite3 luajit geos openssl)

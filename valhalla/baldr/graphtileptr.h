@@ -5,7 +5,7 @@
 #ifdef ENABLE_THREAD_SAFE_TILE_REF_COUNT
 #include <memory>
 #else
-#include <boost/intrusive_ptr.hpp>
+#include <valhalla/midgard/intrusive.h>
 #endif
 
 namespace valhalla {

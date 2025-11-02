@@ -44,7 +44,7 @@ public:
   void set_interrupt(const std::function<void()>* interrupt) override;
 
 protected:
-  void parse_locations(google::protobuf::RepeatedPtrField<valhalla::Location> locations,
+  void parse_locations(valhalla::proto::RepeatedFieldShim<valhalla::Location> locations,
                        Api& request,
                        std::optional<valhalla_exception_t> required_exception = valhalla_exception_t{
                            110});

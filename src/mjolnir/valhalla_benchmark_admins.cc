@@ -7,11 +7,6 @@
 #include "midgard/pointll.h"
 #include "mjolnir/sqlite3.h"
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/multi_polygon.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/io/wkt/wkt.hpp>
 #include <valhalla/property_tree/ptree.hpp>
 #include <cxxopts.hpp>
 #include <sqlite3.h>
@@ -24,19 +19,14 @@
 using namespace valhalla::midgard;
 using namespace valhalla::baldr;
 
-// Geometry types for admin queries
-typedef boost::geometry::model::d2::point_xy<double> point_type;
-typedef boost::geometry::model::polygon<point_type> polygon_type;
-typedef boost::geometry::model::multi_polygon<polygon_type> multi_polygon_type;
-
 std::filesystem::path config_file_path;
 
-std::unordered_map<uint32_t, multi_polygon_type>
+std::unordered_map<uint32_t, std::string>
 GetAdminInfo(valhalla::mjolnir::Sqlite3& db,
              std::unordered_map<uint32_t, bool>& drive_on_right,
              const AABB2<PointLL>& aabb) {
   // Polys (return)
-  std::unordered_map<uint32_t, multi_polygon_type> polys;
+  std::unordered_map<uint32_t, std::string> polys;
 
   // Form query
   std::string sql = "SELECT state.rowid, country.name, state.name, country.iso_code, ";
@@ -112,9 +102,7 @@ GetAdminInfo(valhalla::mjolnir::Sqlite3& db,
         geom = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)));
       }
 
-      multi_polygon_type multi_poly;
-      boost::geometry::read_wkt(geom, multi_poly);
-      polys.emplace(index, multi_poly);
+  polys.emplace(index, geom);
       drive_on_right.emplace(index, dor);
       index++;
 
@@ -149,7 +137,7 @@ void Benchmark(const property_tree& pt) {
   auto tiles = TileHierarchy::levels().back().tiles;
 
   // Iterate through the tiles and perform enhancements
-  std::unordered_map<uint32_t, multi_polygon_type> polys;
+  std::unordered_map<uint32_t, std::string> polys;
   std::unordered_map<uint32_t, bool> drive_on_right;
   for (uint32_t id = 0; id < tiles.TileCount(); id++) {
     // Get the admin polys if there is data for tiles that exist

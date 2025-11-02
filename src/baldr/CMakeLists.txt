@@ -135,7 +135,5 @@ valhalla_module(NAME baldr
   DEPENDS
     valhalla::midgard
     valhalla::proto
-    ${valhalla_protobuf_targets}
-    Boost::boost
     ${curl_target}
     PkgConfig::ZLIB)

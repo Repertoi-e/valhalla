@@ -74,4 +74,4 @@ valhalla_module(NAME proto
     PRIVATE
       ${protozero_include_dir}
   DEPENDS
-    ${valhalla_protobuf_targets})
+  )

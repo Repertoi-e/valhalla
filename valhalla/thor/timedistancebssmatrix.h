@@ -203,7 +203,7 @@ protected:
   template <const ExpansionType expansion_direction,
             const bool FORWARD = expansion_direction == ExpansionType::forward>
   void InitDestinations(baldr::GraphReader& graphreader,
-                        const google::protobuf::RepeatedPtrField<valhalla::Location>& locations);
+                        const valhalla::proto::RepeatedFieldShim<valhalla::Location>& locations);
 
   /**
    * Set the available destination edges for each origin.
@@ -234,7 +234,7 @@ protected:
    * @return  Returns true if all destinations have been settled.
    */
   bool UpdateDestinations(const valhalla::Location& origin,
-                          const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+                          const valhalla::proto::RepeatedFieldShim<valhalla::Location>& locations,
                           std::vector<uint32_t>& destinations,
                           const baldr::DirectedEdge* edge,
                           const baldr::graph_tile_ptr& tile,

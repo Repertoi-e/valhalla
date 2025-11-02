@@ -362,13 +362,4 @@ constexpr bool operator!=(Integral lhs, Enum rhs) noexcept {
 }
 } // namespace valhalla
 
-namespace google {
-namespace protobuf {
-using uint32 = ::uint32_t;
-
-template <typename T>
-using RepeatedPtrField = valhalla::proto::RepeatedFieldShim<T>;
-} // namespace protobuf
-} // namespace google
-
 #endif // VALHALLA_CUSTOM_WASM_SHIMS_H_

@@ -113,12 +113,6 @@ endif()
 # NOTE: this is only supported for cmake >= 3.15, but shouldn't be a problem in real life
 set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 
-# Boost has no .pc file..
-find_package(Boost 1.71 REQUIRED)
-add_definitions(-DBOOST_NO_CXX11_SCOPED_ENUMS)
-add_definitions(-DBOOST_ALLOW_DEPRECATED_HEADERS)
-add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
-
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 

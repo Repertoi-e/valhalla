@@ -1,7 +1,7 @@
 #include "mjolnir/timeparsing.h"
 #include "baldr/timedomain.h"
+#include "midgard/string_utils.h"
 
-#include <boost/algorithm/string/split.hpp>
 #include <gtest/gtest.h>
 
 #include <cstdint>
@@ -10,14 +10,12 @@
 using namespace std;
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
+using namespace valhalla::midgard::string_utils;
 
 namespace {
 
-std::vector<std::string> GetTagTokens(const std::string& tag_value, const char delim) {
-  std::vector<std::string> tokens;
-  boost::algorithm::split(
-      tokens, tag_value, [delim](const char c) { return c == delim; },
-      boost::algorithm::token_compress_on);
+std::vector<std::string> GetTagTokens(const std::string& tag_value, char delim) {
+  std::vector<std::string> tokens = split(tag_value, delim, SplitMode::SkipEmpty);
   return tokens;
 }
 

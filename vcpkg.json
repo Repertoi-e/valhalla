@@ -33,7 +33,6 @@
     "spatialite-tools",
     "luajit",
     "lz4",
-    "protobuf",
     "sqlite3",
     "zlib",
     "unordered-dense",

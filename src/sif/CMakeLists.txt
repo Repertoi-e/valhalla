@@ -31,6 +31,4 @@ valhalla_module(NAME sif
       ${protozero_include_dir}
   DEPENDS
     valhalla::baldr
-    valhalla::proto
-    ${valhalla_protobuf_targets}
-    Boost::boost)
+    valhalla::proto)

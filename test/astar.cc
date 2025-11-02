@@ -7,6 +7,7 @@
 #include "loki/search.h"
 #include "loki/worker.h"
 #include "midgard/logging.h"
+#include "midgard/string_utils.h"
 #include "midgard/pointll.h"
 #include "mjolnir/graphtilebuilder.h"
 #include "mjolnir/util.h"
@@ -26,7 +27,6 @@
 #include "tyr/serializers.h"
 #include "worker.h"
 
-#include <boost/algorithm/string/join.hpp>
 #include <valhalla/property_tree/ptree.hpp>
 
 #include <cstdint>
@@ -38,6 +38,7 @@
 
 using namespace valhalla;
 using namespace valhalla::baldr;
+using namespace valhalla::midgard;
 namespace vm = valhalla::midgard;
 namespace vb = valhalla::baldr;
 namespace vs = valhalla::sif;
@@ -480,8 +481,8 @@ TEST(Astar, test_oneway) {
 
   auto correct_route = std::vector<std::string>{"Quay Street", ""};
   EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         boost::algorithm::join(names, ", ") + ", expected: \n" +
-                                         boost::algorithm::join(correct_route, ", ");
+                                         string_utils::join(names, ", ") + ", expected: \n" +
+                                         string_utils::join(correct_route, ", ");
 }
 
 TEST(Astar, test_oneway_wrong_way) {
@@ -544,8 +545,8 @@ TEST(Astar, test_deadend) {
                                "Quay Street", // The u-turn on Quay Street is optimized away
                                "", ""};
   EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         boost::algorithm::join(names, ", ") + ", expected: \n" +
-                                         boost::algorithm::join(correct_route, ", ");
+                                         string_utils::join(names, ", ") + ", expected: \n" +
+                                         string_utils::join(correct_route, ", ");
 
   EXPECT_EQ(uturn_street, "Quay Street") << "We did not find the expected u-turn";
 }
@@ -593,8 +594,8 @@ TEST(Astar, test_time_dep_forward_with_current_time) {
                                "Quay Street", // The u-turn on Quay Street is optimized away
                                "", ""};
   EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         boost::algorithm::join(names, ", ") + ", expected: \n" +
-                                         boost::algorithm::join(correct_route, ", ");
+                                         string_utils::join(names, ", ") + ", expected: \n" +
+                                         string_utils::join(correct_route, ", ");
 }
 
 TEST(Astar, test_deadend_timedep_forward) {
@@ -645,8 +646,8 @@ TEST(Astar, test_deadend_timedep_forward) {
                                "Quay Street", // The u-turn on Quay Street is optimized away
                                "", ""};
   EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         boost::algorithm::join(names, ", ") + ", expected: \n" +
-                                         boost::algorithm::join(correct_route, ", ");
+                                         string_utils::join(names, ", ") + ", expected: \n" +
+                                         string_utils::join(correct_route, ", ");
 
   EXPECT_EQ(uturn_street, "Quay Street") << "We did not find the expected u-turn";
 }
@@ -698,8 +699,8 @@ TEST(Astar, test_deadend_timedep_reverse) {
                                "Quay Street", // The u-turn on Quay Street is optimized away
                                "", ""};
   EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         boost::algorithm::join(names, ", ") + ", expected: \n" +
-                                         boost::algorithm::join(correct_route, ", ");
+                                         string_utils::join(names, ", ") + ", expected: \n" +
+                                         string_utils::join(correct_route, ", ");
 
   EXPECT_EQ(uturn_street, "Quay Street") << "We did not find the expected u-turn";
 }
@@ -741,8 +742,8 @@ TEST(Astar, test_time_restricted_road_bidirectional) {
 
   auto correct_route = std::vector<std::string>{"Via Goito", "Via Montebello", ""};
   EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         boost::algorithm::join(names, ", ") + ", expected: \n" +
-                                         boost::algorithm::join(correct_route, ", ");
+                                         string_utils::join(names, ", ") + ", expected: \n" +
+                                         string_utils::join(correct_route, ", ");
 
   EXPECT_TRUE(response.trip().routes(0).legs(0).node(1).edge().has_time_restrictions())
       << "Expected leg to have time_restriction";
@@ -971,8 +972,8 @@ void test_backtrack_complex_restriction(int date_time_type) {
   auto correct_route = std::vector<std::string>{"Sheares Link", "Bayfront Avenue", "Bayfront Avenue",
                                                 "Sheares Link", ""};
   if (names != correct_route) {
-    throw std::logic_error("Incorrect route, got: \n" + boost::algorithm::join(names, ", ") +
-                           ", expected: \n" + boost::algorithm::join(correct_route, ", "));
+    throw std::logic_error("Incorrect route, got: \n" + string_utils::join(names, ", ") +
+                           ", expected: \n" + string_utils::join(correct_route, ", "));
   }
 }
 

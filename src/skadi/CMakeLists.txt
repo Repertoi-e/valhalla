@@ -15,6 +15,5 @@ valhalla_module(NAME skadi
       $<$<BOOL:${WIN32}>:${dirent_include_dir}>
   DEPENDS
     valhalla::baldr
-    Boost::boost
     PkgConfig::ZLIB
     PkgConfig::LZ4)
