@@ -10,7 +10,7 @@ namespace meili {
 struct Config {
   // create config with default parameters
   Config() = default;
-  // read parameters from boost::ptree (use default values for missing params)
+  // read parameters from property_tree (use default values for missing params)
   explicit Config(const property_tree& params);
   // override default config parameters
   void Read(const property_tree& params);

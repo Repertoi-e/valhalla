@@ -44,7 +44,6 @@ valhalla_module(NAME odin
       ${system_includes}
     PRIVATE
       ${rapidjson_include_dir}
-      ${protozero_include_dir}
   DEPENDS
     valhalla::proto
     ${libprime_server_targets})

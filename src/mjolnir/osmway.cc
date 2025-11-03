@@ -1117,11 +1117,7 @@ void OSMWay::GetTaggedValues(const UniqueNames& name_offset_map,
       std::pair<float, float> range;
       if (dash_pos != std::string::npos && dash_pos != 0) {
         // we're dealing with a range
-        std::vector<std::string> nums = split(token, dash, SplitMode::SkipEmpty);
-        if (nums.size() < 2) {
-          LOG_WARN("Invalid level range: " + token + "; way_id " + std::to_string(osmwayid_));
-          continue;
-        }
+        std::vector<std::string> nums = split(token, dash, SplitMode::KeepEmpty);
 
         try {
           std::smatch match;

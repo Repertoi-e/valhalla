@@ -21,6 +21,48 @@ namespace mjolnir {
 
 namespace {
 
+/*constexpr uint64_t kDebugWayId = 368899834ULL;
+
+void DebugPrintEdgeNames(uint64_t wayid,
+                         uint32_t edgeindex,
+                         const baldr::GraphId& nodea,
+                         const baldr::GraphId& nodeb,
+                         const std::vector<std::string>& names,
+                         const std::vector<std::string>& tagged_values,
+                         const std::vector<std::string>& linguistics,
+                         const std::vector<baldr::NameInfo>& name_info_list,
+                         bool diff_names) {
+  if (wayid != kDebugWayId) {
+    return;
+  }
+
+  printf("AddEdgeInfo debug: wayid %llu edgeindex %u nodea %u/%u/%u nodeb %u/%u/%u diff_names=%d\n",
+         static_cast<unsigned long long>(wayid), edgeindex, nodea.tileid(), nodea.level(),
+         nodea.id(), nodeb.tileid(), nodeb.level(), nodeb.id(), diff_names ? 1 : 0);
+
+  printf("  names (%zu):\n", names.size());
+  size_t untagged_index = 0;
+  for (size_t i = 0; i < names.size(); ++i) {
+    bool is_route = false;
+    if (!names[i].empty()) {
+      if (untagged_index < name_info_list.size()) {
+        const auto& info = name_info_list[untagged_index];
+        is_route = info.is_route_num_ != 0;
+      }
+      ++untagged_index;
+    }
+    printf("    [%zu] %s (route=%d)\n", i, names[i].c_str(), is_route ? 1 : 0);
+  }
+
+  printf("  tagged_values (%zu):\n", tagged_values.size());
+  for (size_t i = 0; i < tagged_values.size(); ++i) {
+    printf("    [%zu] %s\n", i, tagged_values[i].c_str());
+  }
+
+  printf("  linguistics count: %zu\n", linguistics.size());
+  printf("  name_info_list size: %zu\n", name_info_list.size());
+}*/
+
 std::vector<ComplexRestrictionBuilder> DeserializeRestrictions(char* restrictions,
                                                                size_t restrictions_size) {
   std::vector<ComplexRestrictionBuilder> builders;
@@ -714,6 +756,8 @@ uint32_t GraphTileBuilder::AddEdgeInfo(const uint32_t edgeindex,
 
     edgeinfo.set_name_info_list(name_info_list);
 
+    // DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics, name_info_list, diff_names);
+
     // Add to the map
     edge_offset_map_.emplace(edge_tuple_item, edge_info_offset_);
 
@@ -836,6 +880,8 @@ uint32_t GraphTileBuilder::AddEdgeInfo(const uint32_t edgeindex,
 
     ProcessTaggedValues(edgeindex, linguistics, name_count, name_info_list);
     edgeinfo.set_name_info_list(name_info_list);
+
+    // DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics, name_info_list, diff_names);
 
     // Add to the map
     edge_offset_map_.emplace(edge_tuple_item, edge_info_offset_);

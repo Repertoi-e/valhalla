@@ -990,18 +990,17 @@ void write_pbf(const Transit& tile, const std::filesystem::path& transit_tile) {
   if (!std::filesystem::exists(transit_tile.parent_path())) {
     std::filesystem::create_directories(transit_tile.parent_path());
   }
-#if GOOGLE_PROTOBUF_VERSION >= 3001000
-  auto size = tile.ByteSizeLong();
-#else
-  auto size = tile.ByteSize();
-#endif
-  valhalla::midgard::mem_map<char> buffer;
-  buffer.create(transit_tile.string(), size);
-  if (!tile.SerializeToArray(buffer.get(), size)) {
-    LOG_ERROR("Couldn't write: " + transit_tile.string() + " it would have been " +
-              std::to_string(size));
+
+  std::string serialized;
+  if (!tile.SerializeToProtozero(&serialized)) {
+    LOG_ERROR("Couldn't write: " + transit_tile.string());
+    return;
   }
 
+  valhalla::midgard::mem_map<char> buffer;
+  buffer.create(transit_tile.string(), serialized.size());
+  memcpy(buffer.get(), serialized.data(), serialized.size());
+  
   if (tile.routes_size() && tile.nodes_size() && tile.stop_pairs_size() && tile.shapes_size()) {
     LOG_INFO(transit_tile.string() + " had " + std::to_string(tile.nodes_size()) + " nodes " +
              std::to_string(tile.routes_size()) + " routes " + std::to_string(tile.shapes_size()) +

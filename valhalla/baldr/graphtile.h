@@ -48,7 +48,7 @@ class tile_getter_t;
  * Graph information for a tile within the Tiled Hierarchical Graph.
  */
 #ifndef ENABLE_THREAD_SAFE_TILE_REF_COUNT
-class GraphTile : public boost::intrusive_ref_counter<GraphTile, boost::thread_unsafe_counter> {
+class GraphTile : public midgard::intrusive_ref_counter<GraphTile> {
 #else
 class GraphTile {
 #endif // ENABLE_THREAD_SAFE_TILE_REF_COUNT

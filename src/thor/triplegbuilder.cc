@@ -1095,6 +1095,11 @@ TripLeg_Edge* AddTripEdge(const AttributesController& controller,
   // Add names to edge if requested
   if (controller(kEdgeNames)) {
     auto names_and_types = edgeinfo.GetNamesAndTypes(true);
+    /*printf("Edge names and types size for wayid %llu: %zu\n", edgeinfo.wayid(), names_and_types.size());
+    for (const auto& name_and_type : names_and_types) {
+      printf("  Name: %s, IsRouteNumber: %d, Type: %d\n", std::get<0>(name_and_type).c_str(),
+             std::get<1>(name_and_type) ? 1 : 0, std::get<2>(name_and_type));
+    }*/
     if (blind_instructions)
       FilterUnneededStreetNumbers(names_and_types);
     trip_edge->mutable_name()->Reserve(names_and_types.size());

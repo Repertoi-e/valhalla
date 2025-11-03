@@ -131,7 +131,6 @@ valhalla_module(NAME baldr
     PUBLIC
       ${system_includes}
     PRIVATE
-      ${protozero_include_dir}
   DEPENDS
     valhalla::midgard
     valhalla::proto

@@ -147,7 +147,7 @@ struct curler_t::pimpl_t {
     assert_curl(curl_easy_setopt(connection.get(), CURLOPT_URL, url.c_str()), "Failed to set URL ");
     // set the location of the result
     GET_response_t result;
-    assert_curl(curl_easy_setopt(connection.get(), CURLOPT_WRITEDATA, &result.bytes_),
+    assert_curl(curl_easy_setopt(connection.get(), CURLOPT_WRITEDATA, &result.data_),
                 "Failed to set write data ");
     // get the url
     assert_curl(curl_easy_perform(connection.get()), "Failed to get URL ");

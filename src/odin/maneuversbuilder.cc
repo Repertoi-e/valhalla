@@ -20,6 +20,7 @@
 #include "midgard/pointll.h"
 #endif
 
+#include <assert.h>
 
 #include <algorithm>
 #include <cstdint>

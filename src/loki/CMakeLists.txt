@@ -37,7 +37,6 @@ valhalla_module(NAME loki
       ${system_includes}
     PRIVATE
       ${unordered_dense_include_dir}
-      ${protozero_include_dir}
   DEPENDS
     valhalla::skadi
     valhalla::sif

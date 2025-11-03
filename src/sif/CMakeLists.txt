@@ -28,7 +28,6 @@ valhalla_module(NAME sif
     PUBLIC
       ${system_includes}
     PRIVATE:
-      ${protozero_include_dir}
   DEPENDS
     valhalla::baldr
     valhalla::proto)
