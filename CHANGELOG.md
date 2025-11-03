@@ -6,6 +6,7 @@
 * REMOVED: boost::property_tree::ptree in favor of a light replacement
 * REMOVED: Dependency on google's libprotobuf in favor of a shim around plain old C++ structs and protozero for serialization/deserialization. 
            This removes dependecy on a bunch of libraries that Google's protobuf uses, this alone opened the possibility to build Valhalla to WASM with emscripten.
+* REMOVED: Fibonacci heap in favor of std::priority_queue (Fibonnaci heap is hella slow in practice, no?), we're not even doing performance-aware cache utilization yet so will benchmark later probably
 
 ## UNRELEASED
 * **Removed**
