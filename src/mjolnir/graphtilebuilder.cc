@@ -5,7 +5,6 @@
 #include "baldr/tilehierarchy.h"
 #include "midgard/logging.h"
 
-
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -25,6 +24,11 @@
 #include <intrin.h>
 #endif
 
+void stub_printf(const char*, ...) {}
+
+// #define DEBUG_PRINTF(...) printf(__VA_ARGS__)
+#define DEBUG_PRINTF(...) stub_printf(__VA_ARGS__)
+
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;
 
@@ -33,7 +37,7 @@ namespace mjolnir {
 
 namespace {
 
-/*constexpr uint64_t kDebugWayId = 368899834ULL;
+constexpr uint64_t kDebugWayId = 368899834ULL;
 
 void DebugPrintEdgeNames(uint64_t wayid,
                          uint32_t edgeindex,
@@ -48,11 +52,11 @@ void DebugPrintEdgeNames(uint64_t wayid,
     return;
   }
 
-  printf("AddEdgeInfo debug: wayid %llu edgeindex %u nodea %u/%u/%u nodeb %u/%u/%u diff_names=%d\n",
+  DEBUG_PRINTF("AddEdgeInfo debug: wayid %llu edgeindex %u nodea %u/%u/%u nodeb %u/%u/%u diff_names=%d\n",
          static_cast<unsigned long long>(wayid), edgeindex, nodea.tileid(), nodea.level(),
          nodea.id(), nodeb.tileid(), nodeb.level(), nodeb.id(), diff_names ? 1 : 0);
 
-  printf("  names (%zu):\n", names.size());
+  DEBUG_PRINTF("  names (%zu):\n", names.size());
   size_t untagged_index = 0;
   for (size_t i = 0; i < names.size(); ++i) {
     bool is_route = false;
@@ -63,21 +67,23 @@ void DebugPrintEdgeNames(uint64_t wayid,
       }
       ++untagged_index;
     }
-    printf("    [%zu] %s (route=%d)\n", i, names[i].c_str(), is_route ? 1 : 0);
+    DEBUG_PRINTF("    [%zu] %s (route=%d)\n", i, names[i].c_str(), is_route ? 1 : 0);
   }
 
-  printf("  tagged_values (%zu):\n", tagged_values.size());
+  DEBUG_PRINTF("  tagged_values (%zu):\n", tagged_values.size());
   for (size_t i = 0; i < tagged_values.size(); ++i) {
-    printf("    [%zu] %s\n", i, tagged_values[i].c_str());
+    DEBUG_PRINTF("    [%zu] %s\n", i, tagged_values[i].c_str());
   }
 
-  printf("  linguistics count: %zu\n", linguistics.size());
-  printf("  name_info_list size: %zu\n", name_info_list.size());
-}*/
+  DEBUG_PRINTF("  linguistics count: %zu\n", linguistics.size());
+  DEBUG_PRINTF("  name_info_list size: %zu\n", name_info_list.size());
+}
 
 void DebugPrintSectionStats(const char* label, const void* data, size_t size) {
+  return;
+
   if (!size || data == nullptr) {
-    printf("%s: size=0\n", label);
+    DEBUG_PRINTF("%s: size=0\n", label);
     return;
   }
   const auto* bytes = static_cast<const uint8_t*>(data);
@@ -87,8 +93,7 @@ void DebugPrintSectionStats(const char* label, const void* data, size_t size) {
   }
   const double zero_pct =
       (size > 0) ? (static_cast<double>(zero) * 100.0 / static_cast<double>(size)) : 0.0;
-  printf("%s: size=%zu zero=%zu (%.2f%%) non_zero=%zu\n", label, size, zero, zero_pct,
-         size - zero);
+  DEBUG_PRINTF("%s: size=%zu zero=%zu (%.2f%%) non_zero=%zu\n", label, size, zero, zero_pct, size - zero);
 }
 
 struct DirectedEdgeFieldStats {
@@ -136,18 +141,18 @@ struct DirectedEdgeFieldStats {
       delta_abs_sum += static_cast<long double>(std::llabs(delta));
       ++delta_count;
       const uint64_t zigzag = (static_cast<uint64_t>(delta) << 1) ^
-                               static_cast<uint64_t>(static_cast<int64_t>(delta) >> 63);
-      const uint32_t bits = zigzag == 0 ? 0U :
+                              static_cast<uint64_t>(static_cast<int64_t>(delta) >> 63);
+      const uint32_t bits =
+          zigzag == 0 ? 0U :
 #if defined(_MSC_VER)
-                                ([](uint64_t v) {
-                                  unsigned long idx;
-                                  return _BitScanReverse64(&idx, v) ? static_cast<uint32_t>(idx + 1)
-                                                                    : 0U;
-                                })(zigzag)
+                      ([](uint64_t v) {
+                        unsigned long idx;
+                        return _BitScanReverse64(&idx, v) ? static_cast<uint32_t>(idx + 1) : 0U;
+                      })(zigzag)
 #else
-                                static_cast<uint32_t>(64U - __builtin_clzll(zigzag))
+                      static_cast<uint32_t>(64U - __builtin_clzll(zigzag))
 #endif
-                                ;
+          ;
       zigzag_bit_sum += bits;
       if (bits > max_zigzag_bits) {
         max_zigzag_bits = bits;
@@ -169,8 +174,7 @@ struct DirectedEdgeFieldDesc {
 
 constexpr uint64_t MaskForBits(uint8_t bits) {
   return bits == 0 ? 0ULL
-                   : (bits >= 64 ? std::numeric_limits<uint64_t>::max()
-                                  : ((1ULL << bits) - 1ULL));
+                   : (bits >= 64 ? std::numeric_limits<uint64_t>::max() : ((1ULL << bits) - 1ULL));
 }
 
 uint64_t ExtractDirectedEdgeField(const uint64_t* words, const DirectedEdgeFieldDesc& desc) {
@@ -180,11 +184,9 @@ uint64_t ExtractDirectedEdgeField(const uint64_t* words, const DirectedEdgeField
 
 void DebugPrintDirectedEdgeBitfieldStats(const std::vector<DirectedEdge>& edges) {
   if (edges.empty()) {
-    printf("DirectedEdge bitfield stats: count=0\n");
+    DEBUG_PRINTF("DirectedEdge bitfield stats: count=0\n");
     return;
   }
-
-  return;
 
   static_assert(sizeof(DirectedEdge) == sizeof(uint64_t) * 6,
                 "DirectedEdge layout expectation has changed");
@@ -280,33 +282,33 @@ void DebugPrintDirectedEdgeBitfieldStats(const std::vector<DirectedEdge>& edges)
     }
   }
 
-  printf("DirectedEdge bitfield stats (%zu entries):\n", edges.size());
+  DEBUG_PRINTF("DirectedEdge bitfield stats (%zu entries):\n", edges.size());
   constexpr size_t kTopHistogram = 6;
   for (size_t i = 0; i < stats.size(); ++i) {
     const auto& desc = kFields[i];
     const auto& st = stats[i];
     const uint64_t min_value = st.count ? st.min : 0ULL;
     const uint64_t max_value = st.count ? st.max : 0ULL;
-    const double mean = st.count ? static_cast<double>(st.sum / static_cast<long double>(st.count))
-                                 : 0.0;
+    const double mean =
+        st.count ? static_cast<double>(st.sum / static_cast<long double>(st.count)) : 0.0;
     const double zero_pct =
-        st.count ? static_cast<double>(st.zero_count) * 100.0 / static_cast<double>(st.count)
-                 : 0.0;
-    printf("  %-20s bits=%2u min=%llu max=%llu mean=%.4f zero=%llu (%.2f%%)\n", st.name.c_str(),
+        st.count ? static_cast<double>(st.zero_count) * 100.0 / static_cast<double>(st.count) : 0.0;
+    DEBUG_PRINTF("  %-20s bits=%2u min=%llu max=%llu mean=%.4f zero=%llu (%.2f%%)\n", st.name.c_str(),
            desc.bits, static_cast<unsigned long long>(min_value),
            static_cast<unsigned long long>(max_value), mean,
            static_cast<unsigned long long>(st.zero_count), zero_pct);
     if (st.delta_count) {
-      const double mean_delta = static_cast<double>(st.delta_sum / static_cast<long double>(st.delta_count));
+      const double mean_delta =
+          static_cast<double>(st.delta_sum / static_cast<long double>(st.delta_count));
       const double mean_abs_delta =
           static_cast<double>(st.delta_abs_sum / static_cast<long double>(st.delta_count));
       const double avg_zigzag_bits =
           static_cast<double>(st.zigzag_bit_sum) / static_cast<double>(st.delta_count);
-      printf("    delta: min=%lld max=%lld mean=%.4f mean_abs=%.4f zigzag_bits(avg=%.2f max=%u)\n",
-             static_cast<long long>(st.min_delta), static_cast<long long>(st.max_delta),
-             mean_delta, mean_abs_delta, avg_zigzag_bits, st.max_zigzag_bits);
+      DEBUG_PRINTF("    delta: min=%lld max=%lld mean=%.4f mean_abs=%.4f zigzag_bits(avg=%.2f max=%u)\n",
+             static_cast<long long>(st.min_delta), static_cast<long long>(st.max_delta), mean_delta,
+             mean_abs_delta, avg_zigzag_bits, st.max_zigzag_bits);
     } else {
-      printf("    delta: insufficient samples\n");
+      DEBUG_PRINTF("    delta: insufficient samples\n");
     }
 
     std::vector<std::pair<uint64_t, uint64_t>> hist(st.histogram.begin(), st.histogram.end());
@@ -319,33 +321,31 @@ void DebugPrintDirectedEdgeBitfieldStats(const std::vector<DirectedEdge>& edges)
     if (!hist.empty()) {
       const size_t limit = std::min(hist.size(), kTopHistogram);
       uint64_t top_total = 0;
-      printf("    histogram:");
+      DEBUG_PRINTF("    histogram:");
       for (size_t h = 0; h < limit; ++h) {
         const auto& entry = hist[h];
         top_total += entry.second;
-        const double pct = st.count ? (static_cast<double>(entry.second) * 100.0 /
-                                       static_cast<double>(st.count))
-                                     : 0.0;
-        printf(" %llu->%llu (%.2f%%)", static_cast<unsigned long long>(entry.first),
+        const double pct =
+            st.count ? (static_cast<double>(entry.second) * 100.0 / static_cast<double>(st.count))
+                     : 0.0;
+        DEBUG_PRINTF(" %llu->%llu (%.2f%%)", static_cast<unsigned long long>(entry.first),
                static_cast<unsigned long long>(entry.second), pct);
       }
       if (hist.size() > limit) {
         const uint64_t remaining = st.count - top_total;
-        const double pct = st.count ? (static_cast<double>(remaining) * 100.0 /
-                                       static_cast<double>(st.count))
-                                     : 0.0;
-        printf(" others=%llu (%.2f%%) unique=%zu", static_cast<unsigned long long>(remaining),
-               pct, hist.size());
+        const double pct =
+            st.count ? (static_cast<double>(remaining) * 100.0 / static_cast<double>(st.count)) : 0.0;
+        DEBUG_PRINTF(" others=%llu (%.2f%%) unique=%zu", static_cast<unsigned long long>(remaining), pct,
+               hist.size());
       } else {
-        printf(" unique=%zu", hist.size());
+        DEBUG_PRINTF(" unique=%zu", hist.size());
       }
-      printf("\n");
+      DEBUG_PRINTF("\n");
     }
   }
 }
 
 template <typename T> void DebugPrintVectorStats(const char* label, const std::vector<T>& v) {
-  return;
   const void* data = v.empty() ? nullptr : static_cast<const void*>(v.data());
   DebugPrintSectionStats(label, data, v.size() * sizeof(T));
 }
@@ -626,26 +626,26 @@ void GraphTileBuilder::StoreTileData() {
 
     // Sort and write the transit departures
     header_builder_.set_departurecount(departure_builder_.size());
-  std::sort(departure_builder_.begin(), departure_builder_.end());
-  DebugPrintVectorStats("TransitDeparture", departure_builder_);
+    std::sort(departure_builder_.begin(), departure_builder_.end());
+    DebugPrintVectorStats("TransitDeparture", departure_builder_);
     in_mem.write(reinterpret_cast<const char*>(departure_builder_.data()),
                  departure_builder_.size() * sizeof(TransitDeparture));
 
     // Sort write the transit stops
-  header_builder_.set_stopcount(stop_builder_.size());
-  DebugPrintVectorStats("TransitStop", stop_builder_);
+    header_builder_.set_stopcount(stop_builder_.size());
+    DebugPrintVectorStats("TransitStop", stop_builder_);
     in_mem.write(reinterpret_cast<const char*>(stop_builder_.data()),
                  stop_builder_.size() * sizeof(TransitStop));
 
     // Write the transit routes
-  header_builder_.set_routecount(route_builder_.size());
-  DebugPrintVectorStats("TransitRoute", route_builder_);
+    header_builder_.set_routecount(route_builder_.size());
+    DebugPrintVectorStats("TransitRoute", route_builder_);
     in_mem.write(reinterpret_cast<const char*>(route_builder_.data()),
                  route_builder_.size() * sizeof(TransitRoute));
 
     // Write transit schedules
-  header_builder_.set_schedulecount(schedule_builder_.size());
-  DebugPrintVectorStats("TransitSchedule", schedule_builder_);
+    header_builder_.set_schedulecount(schedule_builder_.size());
+    DebugPrintVectorStats("TransitSchedule", schedule_builder_);
     in_mem.write(reinterpret_cast<const char*>(schedule_builder_.data()),
                  schedule_builder_.size() * sizeof(TransitSchedule));
 
@@ -654,20 +654,20 @@ void GraphTileBuilder::StoreTileData() {
 
     // Write the signs
     std::stable_sort(signs_builder_.begin(), signs_builder_.end());
-  header_builder_.set_signcount(signs_builder_.size());
-  DebugPrintVectorStats("Sign", signs_builder_);
+    header_builder_.set_signcount(signs_builder_.size());
+    DebugPrintVectorStats("Sign", signs_builder_);
     in_mem.write(reinterpret_cast<const char*>(signs_builder_.data()),
                  signs_builder_.size() * sizeof(Sign));
 
     // Write turn lanes
-  header_builder_.set_turnlane_count(turnlanes_builder_.size());
-  DebugPrintVectorStats("TurnLanes", turnlanes_builder_);
+    header_builder_.set_turnlane_count(turnlanes_builder_.size());
+    DebugPrintVectorStats("TurnLanes", turnlanes_builder_);
     in_mem.write(reinterpret_cast<const char*>(turnlanes_builder_.data()),
                  turnlanes_builder_.size() * sizeof(TurnLanes));
 
     // Write the admins
-  header_builder_.set_admincount(admins_builder_.size());
-  DebugPrintVectorStats("Admin", admins_builder_);
+    header_builder_.set_admincount(admins_builder_.size());
+    DebugPrintVectorStats("Admin", admins_builder_);
     in_mem.write(reinterpret_cast<const char*>(admins_builder_.data()),
                  admins_builder_.size() * sizeof(Admin));
 
@@ -693,7 +693,7 @@ void GraphTileBuilder::StoreTileData() {
       for (const auto& cr : complex_restriction_forward_builder_) {
         total += cr.SizeOf();
       }
-      printf("ComplexRestrictionForward: entries=%zu size=%llu\n",
+      DEBUG_PRINTF("ComplexRestrictionForward: entries=%zu size=%llu\n",
              complex_restriction_forward_builder_.size(), static_cast<unsigned long long>(total));
     }
     for (auto& complex_restriction : complex_restriction_forward_builder_) {
@@ -710,7 +710,7 @@ void GraphTileBuilder::StoreTileData() {
       for (const auto& cr : complex_restriction_reverse_builder_) {
         total += cr.SizeOf();
       }
-      printf("ComplexRestrictionReverse: entries=%zu size=%llu\n",
+      DEBUG_PRINTF("ComplexRestrictionReverse: entries=%zu size=%llu\n",
              complex_restriction_reverse_builder_.size(), static_cast<unsigned long long>(total));
     }
     for (auto& complex_restriction : complex_restriction_reverse_builder_) {
@@ -727,7 +727,7 @@ void GraphTileBuilder::StoreTileData() {
       in_mem << edgeinfo;
       total_edgeinfo_size += edgeinfo.SizeOf();
     }
-    printf("EdgeInfo entries=%zu size=%llu\n", edgeinfo_list_.size(),
+    DEBUG_PRINTF("EdgeInfo entries=%zu size=%llu\n", edgeinfo_list_.size(),
            static_cast<unsigned long long>(total_edgeinfo_size));
     int64_t edge_info_size = in_mem.tellp() - current_size;
 
@@ -742,12 +742,12 @@ void GraphTileBuilder::StoreTileData() {
       text_zero += static_cast<size_t>(std::count(text.begin(), text.end(), '\0'));
     }
     if (text_total == 0) {
-      printf("TextList: size=0 entries=%zu\n", textlistbuilder_.size());
+      DEBUG_PRINTF("TextList: size=0 entries=%zu\n", textlistbuilder_.size());
     } else {
       const double zero_pct =
           static_cast<double>(text_zero) * 100.0 / static_cast<double>(text_total);
-      printf("TextList: size=%zu zero=%zu (%.2f%%) non_zero=%zu entries=%zu\n", text_total,
-             text_zero, zero_pct, text_total - text_zero, textlistbuilder_.size());
+      DEBUG_PRINTF("TextList: size=%zu zero=%zu (%.2f%%) non_zero=%zu entries=%zu\n", text_total, text_zero,
+             zero_pct, text_total - text_zero, textlistbuilder_.size());
     }
 
     // Add padding (if needed) to align to 8-byte word.
@@ -778,12 +778,12 @@ void GraphTileBuilder::StoreTileData() {
                 " padding = " + std::to_string(padding));
     }
 
-    LOG_DEBUG((logging::sprintf("Write: %1% nodes = %2% directededges = %3% signs %4% edgeinfo offset "
-                             "= %5% textlist offset = %6% lane connections = %7%") %
-               filename % nodes_builder_.size() % directededges_builder_.size() %
-               signs_builder_.size() % edge_info_offset_ % text_list_offset_ %
-               lane_connectivity_builder_.size())
-                  .str());
+    LOG_DEBUG(
+        (logging::sprintf("Write: %1% nodes = %2% directededges = %3% signs %4% edgeinfo offset "
+                          "= %5% textlist offset = %6% lane connections = %7%") %
+         filename % nodes_builder_.size() % directededges_builder_.size() % signs_builder_.size() %
+         edge_info_offset_ % text_list_offset_ % lane_connectivity_builder_.size())
+            .str());
     LOG_DEBUG((logging::sprintf("   admins = %1%  departures = %2% stops = %3% routes = %4%") %
                admins_builder_.size() % departure_builder_.size() % stop_builder_.size() %
                route_builder_.size())
@@ -1090,7 +1090,7 @@ uint32_t GraphTileBuilder::AddEdgeInfo(const uint32_t edgeindex,
 
     edgeinfo.set_name_info_list(name_info_list);
 
-    // DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics, name_info_list, diff_names);
+    DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics, name_info_list, diff_names);
 
     // Add to the map
     edge_offset_map_.emplace(edge_tuple_item, edge_info_offset_);
@@ -1215,7 +1215,7 @@ uint32_t GraphTileBuilder::AddEdgeInfo(const uint32_t edgeindex,
     ProcessTaggedValues(edgeindex, linguistics, name_count, name_info_list);
     edgeinfo.set_name_info_list(name_info_list);
 
-    // DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics, name_info_list, diff_names);
+    DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics, name_info_list, diff_names);
 
     // Add to the map
     edge_offset_map_.emplace(edge_tuple_item, edge_info_offset_);
