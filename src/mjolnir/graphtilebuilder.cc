@@ -7,6 +7,8 @@
 
 
 #include <algorithm>
+#include <cstdint>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <list>
@@ -62,6 +64,27 @@ void DebugPrintEdgeNames(uint64_t wayid,
   printf("  linguistics count: %zu\n", linguistics.size());
   printf("  name_info_list size: %zu\n", name_info_list.size());
 }*/
+
+void DebugPrintSectionStats(const char* label, const void* data, size_t size) {
+  if (!size || data == nullptr) {
+    printf("%s: size=0\n", label);
+    return;
+  }
+  const auto* bytes = static_cast<const uint8_t*>(data);
+  size_t zero = 0;
+  for (size_t i = 0; i < size; ++i) {
+    zero += bytes[i] == 0 ? 1 : 0;
+  }
+  const double zero_pct =
+      (size > 0) ? (static_cast<double>(zero) * 100.0 / static_cast<double>(size)) : 0.0;
+  printf("%s: size=%zu zero=%zu (%.2f%%) non_zero=%zu\n", label, size, zero, zero_pct,
+         size - zero);
+}
+
+template <typename T> void DebugPrintVectorStats(const char* label, const std::vector<T>& v) {
+  const void* data = v.empty() ? nullptr : static_cast<const void*>(v.data());
+  DebugPrintSectionStats(label, data, v.size() * sizeof(T));
+}
 
 std::vector<ComplexRestrictionBuilder> DeserializeRestrictions(char* restrictions,
                                                                size_t restrictions_size) {
@@ -301,21 +324,25 @@ void GraphTileBuilder::StoreTileData() {
   if (file.is_open()) {
     // Write the nodes
     header_builder_.set_nodecount(nodes_builder_.size());
+    DebugPrintVectorStats("NodeInfo", nodes_builder_);
     in_mem.write(reinterpret_cast<const char*>(nodes_builder_.data()),
                  nodes_builder_.size() * sizeof(NodeInfo));
 
     // Write the node transitions
     header_builder_.set_transitioncount(transitions_builder_.size());
+    DebugPrintVectorStats("NodeTransition", transitions_builder_);
     in_mem.write(reinterpret_cast<const char*>(transitions_builder_.data()),
                  transitions_builder_.size() * sizeof(NodeTransition));
 
     // Write the directed edges
     header_builder_.set_directededgecount(directededges_builder_.size());
+    DebugPrintVectorStats("DirectedEdge", directededges_builder_);
     in_mem.write(reinterpret_cast<const char*>(directededges_builder_.data()),
                  directededges_builder_.size() * sizeof(DirectedEdge));
 
     // Write extended directed edge attributes if they exist.
     if (directededges_ext_builder_.size() > 0) {
+      DebugPrintVectorStats("DirectedEdgeExt", directededges_ext_builder_);
       if (directededges_ext_builder_.size() != directededges_builder_.size()) {
         LOG_ERROR("DirectedEdge extended attributes not same size as directed edges");
       } else {
@@ -328,27 +355,32 @@ void GraphTileBuilder::StoreTileData() {
     // Sort and write the access restrictions
     header_builder_.set_access_restriction_count(access_restriction_builder_.size());
     std::sort(access_restriction_builder_.begin(), access_restriction_builder_.end());
+    DebugPrintVectorStats("AccessRestriction", access_restriction_builder_);
     in_mem.write(reinterpret_cast<const char*>(access_restriction_builder_.data()),
                  access_restriction_builder_.size() * sizeof(AccessRestriction));
 
     // Sort and write the transit departures
     header_builder_.set_departurecount(departure_builder_.size());
-    std::sort(departure_builder_.begin(), departure_builder_.end());
+  std::sort(departure_builder_.begin(), departure_builder_.end());
+  DebugPrintVectorStats("TransitDeparture", departure_builder_);
     in_mem.write(reinterpret_cast<const char*>(departure_builder_.data()),
                  departure_builder_.size() * sizeof(TransitDeparture));
 
     // Sort write the transit stops
-    header_builder_.set_stopcount(stop_builder_.size());
+  header_builder_.set_stopcount(stop_builder_.size());
+  DebugPrintVectorStats("TransitStop", stop_builder_);
     in_mem.write(reinterpret_cast<const char*>(stop_builder_.data()),
                  stop_builder_.size() * sizeof(TransitStop));
 
     // Write the transit routes
-    header_builder_.set_routecount(route_builder_.size());
+  header_builder_.set_routecount(route_builder_.size());
+  DebugPrintVectorStats("TransitRoute", route_builder_);
     in_mem.write(reinterpret_cast<const char*>(route_builder_.data()),
                  route_builder_.size() * sizeof(TransitRoute));
 
     // Write transit schedules
-    header_builder_.set_schedulecount(schedule_builder_.size());
+  header_builder_.set_schedulecount(schedule_builder_.size());
+  DebugPrintVectorStats("TransitSchedule", schedule_builder_);
     in_mem.write(reinterpret_cast<const char*>(schedule_builder_.data()),
                  schedule_builder_.size() * sizeof(TransitSchedule));
 
@@ -357,17 +389,20 @@ void GraphTileBuilder::StoreTileData() {
 
     // Write the signs
     std::stable_sort(signs_builder_.begin(), signs_builder_.end());
-    header_builder_.set_signcount(signs_builder_.size());
+  header_builder_.set_signcount(signs_builder_.size());
+  DebugPrintVectorStats("Sign", signs_builder_);
     in_mem.write(reinterpret_cast<const char*>(signs_builder_.data()),
                  signs_builder_.size() * sizeof(Sign));
 
     // Write turn lanes
-    header_builder_.set_turnlane_count(turnlanes_builder_.size());
+  header_builder_.set_turnlane_count(turnlanes_builder_.size());
+  DebugPrintVectorStats("TurnLanes", turnlanes_builder_);
     in_mem.write(reinterpret_cast<const char*>(turnlanes_builder_.data()),
                  turnlanes_builder_.size() * sizeof(TurnLanes));
 
     // Write the admins
-    header_builder_.set_admincount(admins_builder_.size());
+  header_builder_.set_admincount(admins_builder_.size());
+  DebugPrintVectorStats("Admin", admins_builder_);
     in_mem.write(reinterpret_cast<const char*>(admins_builder_.data()),
                  admins_builder_.size() * sizeof(Admin));
 
@@ -388,6 +423,14 @@ void GraphTileBuilder::StoreTileData() {
         (signs_builder_.size() * sizeof(Sign)) + (turnlanes_builder_.size() * sizeof(TurnLanes)) +
         (admins_builder_.size() * sizeof(Admin)));
     uint32_t forward_restriction_size = 0;
+    if (!complex_restriction_forward_builder_.empty()) {
+      uint64_t total = 0;
+      for (const auto& cr : complex_restriction_forward_builder_) {
+        total += cr.SizeOf();
+      }
+      printf("ComplexRestrictionForward: entries=%zu size=%llu\n",
+             complex_restriction_forward_builder_.size(), static_cast<unsigned long long>(total));
+    }
     for (auto& complex_restriction : complex_restriction_forward_builder_) {
       in_mem << complex_restriction;
       forward_restriction_size += complex_restriction.SizeOf();
@@ -397,6 +440,14 @@ void GraphTileBuilder::StoreTileData() {
     header_builder_.set_complex_restriction_reverse_offset(
         header_builder_.complex_restriction_forward_offset() + forward_restriction_size);
     uint32_t reverse_restriction_size = 0;
+    if (!complex_restriction_reverse_builder_.empty()) {
+      uint64_t total = 0;
+      for (const auto& cr : complex_restriction_reverse_builder_) {
+        total += cr.SizeOf();
+      }
+      printf("ComplexRestrictionReverse: entries=%zu size=%llu\n",
+             complex_restriction_reverse_builder_.size(), static_cast<unsigned long long>(total));
+    }
     for (auto& complex_restriction : complex_restriction_reverse_builder_) {
       in_mem << complex_restriction;
       reverse_restriction_size += complex_restriction.SizeOf();
@@ -406,15 +457,32 @@ void GraphTileBuilder::StoreTileData() {
     int64_t current_size = in_mem.tellp();
     header_builder_.set_edgeinfo_offset(header_builder_.complex_restriction_reverse_offset() +
                                         reverse_restriction_size);
+    uint64_t total_edgeinfo_size = 0;
     for (const auto& edgeinfo : edgeinfo_list_) {
       in_mem << edgeinfo;
+      total_edgeinfo_size += edgeinfo.SizeOf();
     }
+    printf("EdgeInfo entries=%zu size=%llu\n", edgeinfo_list_.size(),
+           static_cast<unsigned long long>(total_edgeinfo_size));
     int64_t edge_info_size = in_mem.tellp() - current_size;
 
     // Write the names
     header_builder_.set_textlist_offset(header_builder_.edgeinfo_offset() + edge_info_size);
+    size_t text_total = 0;
+    size_t text_zero = 0;
     for (const auto& text : textlistbuilder_) {
       in_mem << text << '\0';
+      text_total += text.size() + 1;
+      text_zero += 1;
+      text_zero += static_cast<size_t>(std::count(text.begin(), text.end(), '\0'));
+    }
+    if (text_total == 0) {
+      printf("TextList: size=0 entries=%zu\n", textlistbuilder_.size());
+    } else {
+      const double zero_pct =
+          static_cast<double>(text_zero) * 100.0 / static_cast<double>(text_total);
+      printf("TextList: size=%zu zero=%zu (%.2f%%) non_zero=%zu entries=%zu\n", text_total,
+             text_zero, zero_pct, text_total - text_zero, textlistbuilder_.size());
     }
 
     // Add padding (if needed) to align to 8-byte word.
@@ -428,6 +496,7 @@ void GraphTileBuilder::StoreTileData() {
     header_builder_.set_lane_connectivity_offset(header_builder_.textlist_offset() +
                                                  text_list_offset_ + padding);
     std::sort(lane_connectivity_builder_.begin(), lane_connectivity_builder_.end());
+    DebugPrintVectorStats("LaneConnectivity", lane_connectivity_builder_);
     in_mem.write(reinterpret_cast<const char*>(lane_connectivity_builder_.data()),
                  lane_connectivity_builder_.size() * sizeof(LaneConnectivity));
 
