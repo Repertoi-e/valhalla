@@ -9,6 +9,7 @@ Emscripten.
 
 from __future__ import annotations
 
+from csv import writer
 import os
 import re
 import sys
@@ -145,9 +146,6 @@ class Generator:
         writer.write("#include <utility>")
         writer.write("#include <vector>")
         writer.write()
-        writer.write("#include <protozero/pbf_reader.hpp>")
-        writer.write("#include <protozero/pbf_writer.hpp>")
-        writer.write()
         writer.write('#include "protobuf_shims.h"')
         writer.write()
         for dependency in file_descriptor.dependencies:
@@ -192,64 +190,15 @@ class Generator:
         writer.write(HEADER_COMMENT.strip())
         include_path = os.path.splitext(file_descriptor.name)[0] + ".pb.h"
         writer.write(f'#include "{include_path}"')
-        # writer.write("#include <emscripten/bind.h>")
         writer.write()
-        return writer.render()
-    
-        binding_block = self._make_binding_block_name(file_descriptor.name)
-        writer.write(f"EMSCRIPTEN_BINDINGS({binding_block}) {{")
-        writer.indent()
-        for element_type, reg_name in sorted(context.vector_types.items()):
-            already_reg_set = self.already_reg_set
-            if reg_name not in already_reg_set:
-                if element_type == "bool":
-                    writer.write(f'emscripten::register_vector_bool("{reg_name}");')
-                else:
-                    writer.write(f'emscripten::register_vector<{element_type}>("{reg_name}");')
-                already_reg_set.add(reg_name)
-        for (key_type, value_type), reg_name in sorted(context.map_types.items()):
-            writer.write(f'emscripten::register_map<{key_type}, {value_type}>("{reg_name}");')
-        if context.vector_types or context.map_types:
-            writer.write()
-        for enum_descriptor, binding_name in context.enum_bindings:
-            qualified = self._qualify_enum(enum_descriptor)
-            writer.write(f'emscripten::enum_<{qualified}>("{binding_name}")')
-            writer.indent()
-            for value in enum_descriptor.values:
-                writer.write(f'.value("{value.name}", {qualified}::{value.name})')
-            writer.write(';')
-            writer.dedent()
-        if context.enum_bindings:
-            writer.write()
+        writer.write("#include <protozero/pbf_reader.hpp>")
+        writer.write("#include <protozero/pbf_writer.hpp>")
+        writer.write()
+        writer.write(f"namespace {NAMESPACE} {{")
         for binding in context.message_bindings:
-            writer.write(f'emscripten::register_optional<{binding.qualified_name}>();')
-            writer.write(f'emscripten::class_<{binding.qualified_name}>("{binding.binding_name}")')
-            writer.write('.constructor<>()')
-            writer.indent()
-            for metadata in binding.field_metadata:
-                needs_reference_policy = metadata.category in {"string", "message", "repeated", "map"}
-                field_name = metadata.field.name
-                ret_type = f"decltype({binding.qualified_name}::{field_name}_)"
-                set_type = f"const decltype({binding.qualified_name}::{field_name}_)&" if needs_reference_policy else f"decltype({binding.qualified_name}::{field_name}_)"
-                getter = f'static_cast<{ret_type} ({binding.qualified_name}::*)() const>(&{binding.qualified_name}::get_{field_name})'
-                setter = f'static_cast<void ({binding.qualified_name}::*)({set_type})>( &{binding.qualified_name}::set_{field_name})'
-                if needs_reference_policy:
-                    writer.write(
-                        f'.property("{field_name}", {getter}, {setter}, emscripten::return_value_policy::reference())'
-                    )
-                else:
-                    writer.write(f'.property("{field_name}", {getter}, {setter})')
-                if metadata.category == "repeated":
-                    add_thing_type = f"const {metadata.element_type}&" if (metadata.field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE) else metadata.element_type
-                    add_thing = f'static_cast<void ({binding.qualified_name}::*)({add_thing_type})>( &{binding.qualified_name}::add_{field_name})'
-
-                    writer.write(f'.function("clear_{field_name}", &{binding.qualified_name}::clear_{field_name})')
-                    writer.write(f'.function("{field_name}_size", &{binding.qualified_name}::{field_name}_size)')
-                    writer.write(f'.function("add_{field_name}", {add_thing})')
-            writer.write(';')
-            writer.dedent()
-        writer.dedent()
-        writer.write('}')
+            self._emit_serialization_methods(binding, binding.qualified_name, writer)
+        writer.write(f"}} // namespace {NAMESPACE}")
+        writer.write()
         return writer.render()
 
     def _emit_enum_definition(self, enum_descriptor: EnumDescriptor, writer: CodeWriter, context: FileContext) -> None:
@@ -389,16 +338,6 @@ class Generator:
                 shim_name = f"{metadata.storage_name}__shim_"
                 map_shims.append((shim_name, metadata.storage_name, metadata.key_type, metadata.value_type))
 
-        if False and (repeated_shims or map_shims):
-            writer.write()
-            for shim_name, storage_name, element_type in repeated_shims:
-                writer.write(
-                    f"mutable valhalla::proto::RepeatedFieldShim<{element_type}> {shim_name}{{&{storage_name}}};"
-                )
-            for shim_name, storage_name, key_type, value_type in map_shims:
-                writer.write(
-                    f"mutable valhalla::proto::MapFieldShim<{key_type}, {value_type}> {shim_name}{{&{storage_name}}};"
-                )
         if binding.field_metadata:
             writer.write()
             for field_metadata in binding.field_metadata:
@@ -406,15 +345,7 @@ class Generator:
 
         class_name = message_descriptor.name
         flattened_name = self._get_flattened_message_name(message_descriptor)
-        #writer.write(f"{flattened_name}() = default;")
-        #writer.write(f"{flattened_name}(const {flattened_name}& other) {{ CopyFrom(other); }}")
-        #writer.write(f"{flattened_name}({flattened_name}&& other) noexcept {{ MoveFrom(std::move(other)); }}")
-        #writer.write(
-        #    f"inline {flattened_name}& operator=(const {flattened_name}& other) {{ if (this != &other) {{ CopyFrom(other); }} return *this; }}"
-        #)
-        #writer.write(
-        #    f"inline {flattened_name}& operator=({flattened_name}&& other) noexcept {{ if (this != &other) {{ MoveFrom(std::move(other)); }} return *this; }}"
-        #)
+
         writer.write(f"inline void Swap({flattened_name}* other) {{")
         writer.indent()
         writer.write("if (this == other) return;")
@@ -422,23 +353,14 @@ class Generator:
             writer.write(f"std::swap({storage_name}, other->{storage_name});")
         writer.dedent()
         writer.write("}")
-
         writer.write(f"inline void CopyFrom(const {flattened_name}& other) {{")
         writer.indent()
         writer.write("*this = other;")
-        #writer.write("if (this == &other) { return; }")
-        #for storage_name in copy_fields:
-        #    writer.write(f"{storage_name} = other.{storage_name};")
-        #writer.write("__RebindShims();")
         writer.dedent()
         writer.write("}")
         writer.write(f"inline void MoveFrom({flattened_name}&& other) {{")
         writer.indent()
         writer.write("*this = std::move(other);")
-        #writer.write("if (this == &other) { return; }")
-        #for storage_name in copy_fields:
-        #    writer.write(f"{storage_name} = std::move(other.{storage_name});")
-        #writer.write("__RebindShims();")
         writer.dedent()
         writer.write("}")
         writer.write(f"inline void Clear() {{ *this = {flattened_name}{{}}; }}")
@@ -450,30 +372,16 @@ class Generator:
         writer.dedent()
         writer.write("}")
         writer.write()
-
-        # Emit serialization methods
-        self._emit_serialization_methods(binding, flattened_name, writer)
-        
-        """
-        writer.write("private:")
-        writer.indent()
-        writer.write("inline void __RebindShims() {")
-        writer.indent()
-        for shim_name, storage_name, _ in repeated_shims:
-            writer.write(f"{shim_name}.Reset(&{storage_name});")
-        for shim_name, storage_name, _, _ in map_shims:
-            writer.write(f"{shim_name}.Reset(&{storage_name});")
+        writer.write("bool SerializeToProtozero(std::string* buffer) const;")
+        writer.write("bool SerializeToArray(void* data, int size) const;")
+        writer.write("bool SerializeToString(std::string* output) const;")
+        writer.write("bool ParseFromArray(const void* data, int size);")
+        writer.write("bool ParseFromString(const std::string& input);")
         writer.dedent()
-        writer.write("}")
-        writer.dedent()
-        """
         writer.write("};")
         writer.write()
 
     def _emit_serialization_methods(self, binding: MessageBinding, flattened_name: str, writer: CodeWriter) -> None:
-        """Emit SerializeToString, SerializeToArray, ParseFromArray methods."""
-        del flattened_name
-
         def writer_method(field: FieldDescriptor) -> str:
             mapping = {
                 FieldDescriptor.TYPE_DOUBLE: "add_double",
@@ -540,7 +448,7 @@ class Generator:
         }
         packable_types = set(packed_methods.keys())
 
-        writer.write("inline bool SerializeToProtozero(std::string* buffer) const {")
+        writer.write(f"bool {flattened_name}::SerializeToProtozero(std::string* buffer) const {{")
         writer.indent()
         writer.write("if (!buffer) return false;")
         writer.write("buffer->clear();")
@@ -669,7 +577,7 @@ class Generator:
         writer.write("}")
         writer.write()
 
-        writer.write("inline bool SerializeToArray(void* data, int size) const {")
+        writer.write(f"bool {flattened_name}::SerializeToArray(void* data, int size) const {{")
         writer.indent()
         writer.write("if (size < 0) return false;")
         writer.write("std::string buffer;")
@@ -687,7 +595,7 @@ class Generator:
         writer.write("}")
         writer.write()
 
-        writer.write("inline bool SerializeToString(std::string *output) const {")
+        writer.write(f"bool {flattened_name}::SerializeToString(std::string *output) const {{")
         writer.indent()
         writer.write("if (!output) return false;")
         writer.write("std::string buffer;")
@@ -698,24 +606,7 @@ class Generator:
         writer.write("}")
         writer.write()
 
-        writer.write("inline size_t ByteSizeLong() const {")
-        writer.indent()
-        writer.write("std::string buffer;")
-        writer.write("if (!SerializeToProtozero(&buffer)) return 0;")
-        writer.write("return buffer.size();")
-        writer.dedent()
-        writer.write("}")
-        writer.write()
-
-        writer.write("inline int ByteSize() const {")
-        writer.indent()
-        writer.write("const size_t size = ByteSizeLong();")
-        writer.write("return size > static_cast<size_t>(std::numeric_limits<int>::max()) ? std::numeric_limits<int>::max() : static_cast<int>(size);")
-        writer.dedent()
-        writer.write("}")
-        writer.write()
-
-        writer.write("inline bool ParseFromArray(const void* data, int size) {")
+        writer.write(f"bool {flattened_name}::ParseFromArray(const void* data, int size) {{")
         writer.indent()
         writer.write("if (size < 0) return false;")
         writer.write("if (!data && size > 0) return false;")
@@ -879,13 +770,12 @@ class Generator:
         writer.write("}")
         writer.write()
 
-        writer.write("inline bool ParseFromString(const std::string& data) {")
+        writer.write(f"bool {flattened_name}::ParseFromString(const std::string& data) {{")
         writer.indent()
         writer.write("return ParseFromArray(data.data(), static_cast<int>(data.size()));")
         writer.dedent()
         writer.write("}")
         writer.write()
-        writer.dedent()
 
 
     @staticmethod
