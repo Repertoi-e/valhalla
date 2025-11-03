@@ -7,13 +7,23 @@
 
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <list>
 #include <set>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
 
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;
@@ -79,6 +89,257 @@ void DebugPrintSectionStats(const char* label, const void* data, size_t size) {
       (size > 0) ? (static_cast<double>(zero) * 100.0 / static_cast<double>(size)) : 0.0;
   printf("%s: size=%zu zero=%zu (%.2f%%) non_zero=%zu\n", label, size, zero, zero_pct,
          size - zero);
+}
+
+struct DirectedEdgeFieldStats {
+  std::string name;
+  uint8_t bit_width = 0;
+  uint64_t count = 0;
+  uint64_t zero_count = 0;
+  uint64_t min = std::numeric_limits<uint64_t>::max();
+  uint64_t max = 0;
+  long double sum = 0.0L;
+  bool has_prev = false;
+  uint64_t prev_value = 0;
+  uint64_t delta_count = 0;
+  int64_t min_delta = std::numeric_limits<int64_t>::max();
+  int64_t max_delta = std::numeric_limits<int64_t>::min();
+  long double delta_sum = 0.0L;
+  long double delta_abs_sum = 0.0L;
+  uint64_t zigzag_bit_sum = 0;
+  uint32_t max_zigzag_bits = 0;
+  std::unordered_map<uint64_t, uint64_t> histogram;
+
+  void Add(uint64_t value) {
+    ++count;
+    if (value < min) {
+      min = value;
+    }
+    if (value > max) {
+      max = value;
+    }
+    sum += static_cast<long double>(value);
+    if (value == 0) {
+      ++zero_count;
+    }
+    ++histogram[value];
+
+    if (has_prev) {
+      const int64_t delta = static_cast<int64_t>(value) - static_cast<int64_t>(prev_value);
+      if (delta < min_delta) {
+        min_delta = delta;
+      }
+      if (delta > max_delta) {
+        max_delta = delta;
+      }
+      delta_sum += static_cast<long double>(delta);
+      delta_abs_sum += static_cast<long double>(std::llabs(delta));
+      ++delta_count;
+      const uint64_t zigzag = (static_cast<uint64_t>(delta) << 1) ^
+                               static_cast<uint64_t>(static_cast<int64_t>(delta) >> 63);
+      const uint32_t bits = zigzag == 0 ? 0U :
+#if defined(_MSC_VER)
+                                ([](uint64_t v) {
+                                  unsigned long idx;
+                                  return _BitScanReverse64(&idx, v) ? static_cast<uint32_t>(idx + 1)
+                                                                    : 0U;
+                                })(zigzag)
+#else
+                                static_cast<uint32_t>(64U - __builtin_clzll(zigzag))
+#endif
+                                ;
+      zigzag_bit_sum += bits;
+      if (bits > max_zigzag_bits) {
+        max_zigzag_bits = bits;
+      }
+    } else {
+      has_prev = true;
+    }
+
+    prev_value = value;
+  }
+};
+
+struct DirectedEdgeFieldDesc {
+  const char* name;
+  uint8_t word;
+  uint8_t offset;
+  uint8_t bits;
+};
+
+constexpr uint64_t MaskForBits(uint8_t bits) {
+  return bits == 0 ? 0ULL
+                   : (bits >= 64 ? std::numeric_limits<uint64_t>::max()
+                                  : ((1ULL << bits) - 1ULL));
+}
+
+uint64_t ExtractDirectedEdgeField(const uint64_t* words, const DirectedEdgeFieldDesc& desc) {
+  const uint64_t mask = MaskForBits(desc.bits);
+  return (words[desc.word] >> desc.offset) & mask;
+}
+
+void DebugPrintDirectedEdgeBitfieldStats(const std::vector<DirectedEdge>& edges) {
+  if (edges.empty()) {
+    printf("DirectedEdge bitfield stats: count=0\n");
+    return;
+  }
+
+  static_assert(sizeof(DirectedEdge) == sizeof(uint64_t) * 6,
+                "DirectedEdge layout expectation has changed");
+
+  static constexpr DirectedEdgeFieldDesc kFields[] = {
+      {"endnode", 0, 0, 46},
+      {"restrictions", 0, 46, 8},
+      {"opp_index", 0, 54, 7},
+      {"forward", 0, 61, 1},
+      {"leaves_tile", 0, 62, 1},
+      {"ctry_crossing", 0, 63, 1},
+      {"edgeinfo_offset", 1, 0, 25},
+      {"access_restriction", 1, 25, 12},
+      {"start_restriction", 1, 37, 12},
+      {"end_restriction", 1, 49, 12},
+      {"complex_restriction", 1, 61, 1},
+      {"dest_only", 1, 62, 1},
+      {"not_thru", 1, 63, 1},
+      {"speed", 2, 0, 8},
+      {"free_flow_speed", 2, 8, 8},
+      {"constrained_flow_speed", 2, 16, 8},
+      {"truck_speed", 2, 24, 8},
+      {"name_consistency", 2, 32, 8},
+      {"use", 2, 40, 6},
+      {"lanecount", 2, 46, 4},
+      {"density", 2, 50, 4},
+      {"classification", 2, 54, 3},
+      {"surface", 2, 57, 3},
+      {"toll", 2, 60, 1},
+      {"roundabout", 2, 61, 1},
+      {"truck_route", 2, 62, 1},
+      {"has_predicted_speed", 2, 63, 1},
+      {"forwardaccess", 3, 0, 12},
+      {"reverseaccess", 3, 12, 12},
+      {"max_up_slope_bits", 3, 24, 5},
+      {"max_down_slope_bits", 3, 29, 5},
+      {"sac_scale", 3, 34, 3},
+      {"cycle_lane", 3, 37, 2},
+      {"bike_network", 3, 39, 1},
+      {"use_sidepath", 3, 40, 1},
+      {"dismount", 3, 41, 1},
+      {"sidewalk_left", 3, 42, 1},
+      {"sidewalk_right", 3, 43, 1},
+      {"shoulder", 3, 44, 1},
+      {"lane_conn", 3, 45, 1},
+      {"turnlanes", 3, 46, 1},
+      {"sign", 3, 47, 1},
+      {"internal", 3, 48, 1},
+      {"tunnel", 3, 49, 1},
+      {"bridge", 3, 50, 1},
+      {"traffic_signal", 3, 51, 1},
+      {"spare1", 3, 52, 1},
+      {"deadend", 3, 53, 1},
+      {"bss_connection", 3, 54, 1},
+      {"stop_sign", 3, 55, 1},
+      {"yield_sign", 3, 56, 1},
+      {"hov_type", 3, 57, 1},
+      {"indoor", 3, 58, 1},
+      {"lit", 3, 59, 1},
+      {"dest_only_hgv", 3, 60, 1},
+      {"spare4", 3, 61, 3},
+      {"turntype_bits", 4, 0, 24},
+      {"edge_to_left_bits", 4, 24, 8},
+      {"length", 4, 32, 24},
+      {"weighted_grade_bits", 4, 56, 4},
+      {"curvature", 4, 60, 4},
+      {"stopimpact_bits", 5, 0, 24},
+      {"edge_to_right_bits", 5, 24, 8},
+      {"stop_or_line", 5, 0, 32},
+      {"localedgeidx", 5, 32, 7},
+      {"opp_local_idx", 5, 39, 7},
+      {"shortcut", 5, 46, 7},
+      {"superseded", 5, 53, 7},
+      {"is_shortcut", 5, 60, 1},
+      {"speed_type", 5, 61, 1},
+      {"named", 5, 62, 1},
+      {"link", 5, 63, 1},
+  };
+
+  constexpr size_t field_count = sizeof(kFields) / sizeof(kFields[0]);
+  std::vector<DirectedEdgeFieldStats> stats;
+  stats.reserve(field_count);
+  for (const auto& desc : kFields) {
+    stats.push_back({desc.name, desc.bits});
+  }
+
+  for (const auto& edge : edges) {
+    uint64_t words[6];
+    std::memcpy(words, &edge, sizeof(DirectedEdge));
+    for (size_t i = 0; i < field_count; ++i) {
+      const auto value = ExtractDirectedEdgeField(words, kFields[i]);
+      stats[i].Add(value);
+    }
+  }
+
+  printf("DirectedEdge bitfield stats (%zu entries):\n", edges.size());
+  constexpr size_t kTopHistogram = 6;
+  for (size_t i = 0; i < stats.size(); ++i) {
+    const auto& desc = kFields[i];
+    const auto& st = stats[i];
+    const uint64_t min_value = st.count ? st.min : 0ULL;
+    const uint64_t max_value = st.count ? st.max : 0ULL;
+    const double mean = st.count ? static_cast<double>(st.sum / static_cast<long double>(st.count))
+                                 : 0.0;
+    const double zero_pct =
+        st.count ? static_cast<double>(st.zero_count) * 100.0 / static_cast<double>(st.count)
+                 : 0.0;
+    printf("  %-20s bits=%2u min=%llu max=%llu mean=%.4f zero=%llu (%.2f%%)\n", st.name.c_str(),
+           desc.bits, static_cast<unsigned long long>(min_value),
+           static_cast<unsigned long long>(max_value), mean,
+           static_cast<unsigned long long>(st.zero_count), zero_pct);
+    if (st.delta_count) {
+      const double mean_delta = static_cast<double>(st.delta_sum / static_cast<long double>(st.delta_count));
+      const double mean_abs_delta =
+          static_cast<double>(st.delta_abs_sum / static_cast<long double>(st.delta_count));
+      const double avg_zigzag_bits =
+          static_cast<double>(st.zigzag_bit_sum) / static_cast<double>(st.delta_count);
+      printf("    delta: min=%lld max=%lld mean=%.4f mean_abs=%.4f zigzag_bits(avg=%.2f max=%u)\n",
+             static_cast<long long>(st.min_delta), static_cast<long long>(st.max_delta),
+             mean_delta, mean_abs_delta, avg_zigzag_bits, st.max_zigzag_bits);
+    } else {
+      printf("    delta: insufficient samples\n");
+    }
+
+    std::vector<std::pair<uint64_t, uint64_t>> hist(st.histogram.begin(), st.histogram.end());
+    std::sort(hist.begin(), hist.end(), [](const auto& a, const auto& b) {
+      if (a.second != b.second) {
+        return a.second > b.second;
+      }
+      return a.first < b.first;
+    });
+    if (!hist.empty()) {
+      const size_t limit = std::min(hist.size(), kTopHistogram);
+      uint64_t top_total = 0;
+      printf("    histogram:");
+      for (size_t h = 0; h < limit; ++h) {
+        const auto& entry = hist[h];
+        top_total += entry.second;
+        const double pct = st.count ? (static_cast<double>(entry.second) * 100.0 /
+                                       static_cast<double>(st.count))
+                                     : 0.0;
+        printf(" %llu->%llu (%.2f%%)", static_cast<unsigned long long>(entry.first),
+               static_cast<unsigned long long>(entry.second), pct);
+      }
+      if (hist.size() > limit) {
+        const uint64_t remaining = st.count - top_total;
+        const double pct = st.count ? (static_cast<double>(remaining) * 100.0 /
+                                       static_cast<double>(st.count))
+                                     : 0.0;
+        printf(" others=%llu (%.2f%%) unique=%zu", static_cast<unsigned long long>(remaining),
+               pct, hist.size());
+      } else {
+        printf(" unique=%zu", hist.size());
+      }
+      printf("\n");
+    }
+  }
 }
 
 template <typename T> void DebugPrintVectorStats(const char* label, const std::vector<T>& v) {
@@ -337,6 +598,8 @@ void GraphTileBuilder::StoreTileData() {
     // Write the directed edges
     header_builder_.set_directededgecount(directededges_builder_.size());
     DebugPrintVectorStats("DirectedEdge", directededges_builder_);
+  DebugPrintDirectedEdgeBitfieldStats(directededges_builder_);
+  
     in_mem.write(reinterpret_cast<const char*>(directededges_builder_.data()),
                  directededges_builder_.size() * sizeof(DirectedEdge));
 
