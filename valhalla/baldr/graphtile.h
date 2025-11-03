@@ -5,7 +5,6 @@
 #include <valhalla/baldr/admininfo.h>
 #include <valhalla/baldr/complexrestriction.h>
 #include <valhalla/baldr/directededge.h>
-#include <valhalla/baldr/directededge_soa.h>
 #include <valhalla/baldr/edgeinfo.h>
 #include <valhalla/baldr/graphconstants.h>
 #include <valhalla/baldr/graphid.h>
@@ -37,7 +36,6 @@
 #include <filesystem>
 #include <iterator>
 #include <memory>
-#include <vector>
 
 namespace valhalla {
 namespace baldr {
@@ -107,10 +105,6 @@ public:
    */
   static void SaveTileToFile(const std::vector<char>& tile_data,
                              const std::filesystem::path& disk_location);
-
-  static bool DecodeDirectedEdgeWordLanes(const uint8_t* data,
-                                          std::size_t size,
-                                          std::vector<DirectedEdge>& edges_out);
 
   /**
    * Destructor
@@ -816,7 +810,6 @@ protected:
 
   // List of directed edges. Fixed size structure indexed by Id within the tile.
   DirectedEdge* directededges_{};
-  std::vector<DirectedEdge> directededges_wordlane_storage_;
 
   // Extended directed edge records. For expansion. These are indexed by the same
   // Id as the directed edge.

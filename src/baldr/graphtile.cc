@@ -1,5 +1,4 @@
 #include "baldr/graphtile.h"
-#include "baldr/directededge_soa.h"
 #include "baldr/curl_tilegetter.h"
 #include "baldr/sign.h"
 #include "baldr/tilehierarchy.h"
@@ -17,7 +16,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-#include <cstring>
 
 using namespace valhalla::midgard;
 
@@ -225,12 +223,6 @@ graph_tile_ptr GraphTile::CacheTileURL(const std::string& tile_url,
 
 GraphTile::~GraphTile() = default;
 
-bool GraphTile::DecodeDirectedEdgeWordLanes(const uint8_t* data,
-                                            std::size_t size,
-                                            std::vector<DirectedEdge>& edges_out) {
-  return DirectedEdgeWordLanes::Decode(data, size, edges_out);
-}
-
 // Set pointers to internal tile data structures
 void GraphTile::Initialize(const GraphId& graphid) {
   if (!memory_) {
@@ -267,16 +259,9 @@ void GraphTile::Initialize(const GraphId& graphid) {
   transitions_ = reinterpret_cast<NodeTransition*>(ptr);
   ptr += header_->transitioncount() * sizeof(NodeTransition);
 
-  const std::size_t directededge_bytes = header_->directededgecount() * sizeof(DirectedEdge);
-  const auto* directededge_raw = reinterpret_cast<const uint8_t*>(ptr);
-  directededges_wordlane_storage_.clear();
-  if (DirectedEdgeWordLanes::Decode(directededge_raw, directededge_bytes,
-                                    directededges_wordlane_storage_)) {
-    directededges_ = directededges_wordlane_storage_.data();
-  } else {
-    directededges_ = reinterpret_cast<DirectedEdge*>(ptr);
-  }
-  ptr += directededge_bytes;
+  // Set a pointer to the directed edge list
+  directededges_ = reinterpret_cast<DirectedEdge*>(ptr);
+  ptr += header_->directededgecount() * sizeof(DirectedEdge);
 
   // Extended directed edge attribution (if available).
   if (header_->has_ext_directededge()) {

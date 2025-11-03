@@ -24,7 +24,7 @@ struct DirectedEdgeWordLaneBlob {
 class DirectedEdgeWordLanes {
 public:
   static constexpr uint32_t kMagic = 0x4445534f; // 'DESO'
-  static constexpr uint16_t kVersion = 1;
+  static constexpr uint16_t kVersion = 2;
 
   static DirectedEdgeWordLaneBlob Encode(const std::vector<DirectedEdge>& edges);
 

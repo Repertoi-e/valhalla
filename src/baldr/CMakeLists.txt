@@ -59,7 +59,6 @@ set(sources
     curler.cc
     datetime.cc
     directededge.cc
-    directededge_soa.cc
     edgeinfo.cc
     graphid.cc
     graphreader.cc

@@ -232,6 +232,41 @@ uint64_t ReadBE(const uint8_t*& data, std::size_t& remaining, std::size_t bytes)
   return value;
 }
 
+void AppendVarint(std::vector<uint8_t>& out, uint64_t value) {
+  while (value >= 0x80) {
+    out.push_back(static_cast<uint8_t>((value & 0x7f) | 0x80));
+    value >>= 7;
+  }
+  out.push_back(static_cast<uint8_t>(value));
+}
+
+bool ReadVarint(const uint8_t*& data, std::size_t& remaining, uint64_t& value_out) {
+  uint64_t value = 0;
+  uint32_t shift = 0;
+  while (true) {
+    if (remaining == 0 || shift >= 64) {
+      return false;
+    }
+    const uint8_t byte = *data++;
+    --remaining;
+    value |= static_cast<uint64_t>(byte & 0x7fu) << shift;
+    if ((byte & 0x80u) == 0) {
+      break;
+    }
+    shift += 7;
+  }
+  value_out = value;
+  return true;
+}
+
+inline uint64_t ZigZagEncode(int64_t value) {
+  return (static_cast<uint64_t>(value) << 1) ^ static_cast<uint64_t>(value >> 63);
+}
+
+inline int64_t ZigZagDecode(uint64_t value) {
+  return static_cast<int64_t>((value >> 1) ^ -static_cast<int64_t>(value & 1u));
+}
+
 class BitWriter {
 public:
   void Write(uint64_t value, uint8_t bits) {
@@ -330,14 +365,39 @@ DirectedEdge BuildEdgeFromWords(const EdgeWords& words) {
   return edge;
 }
 
-constexpr std::array<FieldId, 8> kGroup0Fields{FieldId::kSpeed,
-                         FieldId::kFreeFlowSpeed,
-                         FieldId::kConstrainedFlowSpeed,
-                         FieldId::kTruckSpeed,
-                         FieldId::kNameConsistency,
-                         FieldId::kOppIndex,
-                         FieldId::kEdgeToLeftBits,
-                         FieldId::kEdgeToRightBits};
+bool FieldHasAnyNonZero(const std::vector<EdgeWords>& words, const FieldDescriptor& desc) {
+  for (const auto& edge_words : words) {
+    if (ExtractField(edge_words.data(), desc) != 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+uint32_t CountNonZero(const std::vector<EdgeWords>& words, const FieldDescriptor& desc) {
+  uint32_t count = 0;
+  for (const auto& edge_words : words) {
+    if (ExtractField(edge_words.data(), desc) != 0) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+bool ShouldUseSparseBoolEncoding(std::size_t edge_count, uint32_t non_zero_count) {
+  if (edge_count == 0 || non_zero_count == 0) {
+    return false;
+  }
+  // Favor sparse list encoding when fewer than ~15% of values are set.
+  return static_cast<uint64_t>(non_zero_count) * 100ull <=
+         static_cast<uint64_t>(edge_count) * 15ull;
+}
+
+constexpr std::array<FieldId, 8> kGroup0Fields{
+  FieldId::kSpeed,                FieldId::kFreeFlowSpeed,
+  FieldId::kConstrainedFlowSpeed, FieldId::kTruckSpeed,
+  FieldId::kNameConsistency,      FieldId::kOppIndex,
+  FieldId::kEdgeToLeftBits,       FieldId::kEdgeToRightBits};
 
 constexpr std::array<FieldId, 3> kGroup1Fields{
     FieldId::kEndnode, FieldId::kEdgeinfoOffset, FieldId::kLength};
@@ -351,26 +411,26 @@ constexpr std::array<FieldId, 7> kGroup4Fields{
     FieldId::kNotThru};
 
 constexpr std::array<FieldId, 32> kGroup5Fields{
-  FieldId::kToll,         FieldId::kRoundabout, FieldId::kTruckRoute,
-  FieldId::kHasPredictedSpeed, FieldId::kCycleLane, FieldId::kBikeNetwork,
-  FieldId::kUseSidepath,  FieldId::kDismount,   FieldId::kSidewalkLeft,
-  FieldId::kSidewalkRight, FieldId::kShoulder,  FieldId::kLaneConn,
-  FieldId::kTurnlanes,    FieldId::kSign,       FieldId::kInternal,
-  FieldId::kTunnel,       FieldId::kBridge,     FieldId::kTrafficSignal,
-  FieldId::kSpare1,       FieldId::kDeadend,    FieldId::kBssConnection,
-  FieldId::kStopSign,     FieldId::kYieldSign,  FieldId::kHovType,
-  FieldId::kIndoor,       FieldId::kLit,        FieldId::kDestOnlyHgv,
-  FieldId::kSpare4,       FieldId::kIsShortcut, FieldId::kNamed,
-  FieldId::kLink,         FieldId::kSpeedType};
+    FieldId::kToll,            FieldId::kRoundabout,    FieldId::kTruckRoute,
+    FieldId::kHasPredictedSpeed, FieldId::kCycleLane,   FieldId::kBikeNetwork,
+    FieldId::kUseSidepath,     FieldId::kDismount,      FieldId::kSidewalkLeft,
+    FieldId::kSidewalkRight,   FieldId::kShoulder,      FieldId::kLaneConn,
+    FieldId::kTurnlanes,       FieldId::kSign,          FieldId::kInternal,
+    FieldId::kTunnel,          FieldId::kBridge,        FieldId::kTrafficSignal,
+    FieldId::kSpare1,          FieldId::kDeadend,       FieldId::kBssConnection,
+    FieldId::kStopSign,        FieldId::kYieldSign,     FieldId::kHovType,
+    FieldId::kIndoor,          FieldId::kLit,           FieldId::kDestOnlyHgv,
+    FieldId::kSpare4,          FieldId::kIsShortcut,    FieldId::kNamed,
+    FieldId::kLink,            FieldId::kSpeedType};
 
 constexpr std::array<FieldId, 19> kGroup6Fields{
-  FieldId::kTurntypeBits,     FieldId::kStopOrLine,   FieldId::kUse,
-  FieldId::kLanecount,        FieldId::kDensity,      FieldId::kClassification,
-  FieldId::kSurface,          FieldId::kCurvature,    FieldId::kWeightedGradeBits,
-  FieldId::kMaxUpSlopeBits,   FieldId::kMaxDownSlopeBits,
-  FieldId::kSacScale,         FieldId::kLocalEdgeIdx, FieldId::kOppLocalIdx,
-  FieldId::kShortcut,         FieldId::kSuperseded,   FieldId::kForward,
-  FieldId::kLeavesTile,       FieldId::kCtryCrossing};
+    FieldId::kTurntypeBits,   FieldId::kStopOrLine,   FieldId::kUse,
+    FieldId::kLanecount,      FieldId::kDensity,      FieldId::kClassification,
+    FieldId::kSurface,        FieldId::kCurvature,    FieldId::kWeightedGradeBits,
+    FieldId::kMaxUpSlopeBits, FieldId::kMaxDownSlopeBits,
+    FieldId::kSacScale,       FieldId::kLocalEdgeIdx, FieldId::kOppLocalIdx,
+    FieldId::kShortcut,       FieldId::kSuperseded,   FieldId::kForward,
+    FieldId::kLeavesTile,     FieldId::kCtryCrossing};
 
 constexpr std::size_t kGroupCount = 7;
 
@@ -389,10 +449,23 @@ struct GroupRecord {
   std::vector<uint8_t> payload;
 };
 
+enum class Group5Encoding : uint8_t {
+  kBitpack = 0,
+  kSparseList = 1,
+};
+
 std::vector<uint8_t> EncodeGroup0(const std::vector<EdgeWords>& words) {
   std::vector<uint8_t> data;
-  AppendLE<uint16_t>(data, static_cast<uint16_t>(kGroup0Fields.size()));
+  std::vector<FieldId> active_fields;
+  active_fields.reserve(kGroup0Fields.size());
   for (const auto field_id : kGroup0Fields) {
+    if (FieldHasAnyNonZero(words, GetDescriptor(field_id))) {
+      active_fields.push_back(field_id);
+    }
+  }
+
+  AppendLE<uint16_t>(data, static_cast<uint16_t>(active_fields.size()));
+  for (const auto field_id : active_fields) {
     const auto& desc = GetDescriptor(field_id);
     AppendLE<uint16_t>(data, static_cast<uint16_t>(field_id));
     for (const auto& edge_words : words) {
@@ -411,9 +484,18 @@ std::vector<uint8_t> EncodeGroup1(const std::vector<EdgeWords>& words) {
     AppendLE<uint16_t>(data, static_cast<uint16_t>(field_id));
     const auto bytes = BytesForBits(desc.bits);
     AppendLE<uint8_t>(data, static_cast<uint8_t>(bytes));
-    for (const auto& edge_words : words) {
-      const auto value = ExtractField(edge_words.data(), desc);
-      AppendBE(data, value, bytes);
+    if (words.empty()) {
+      continue;
+    }
+
+    uint64_t previous = ExtractField(words.front().data(), desc);
+    AppendBE(data, previous, bytes);
+
+    for (std::size_t i = 1; i < words.size(); ++i) {
+      const uint64_t value = ExtractField(words[i].data(), desc);
+      const int64_t delta = static_cast<int64_t>(value) - static_cast<int64_t>(previous);
+      AppendVarint(data, ZigZagEncode(delta));
+      previous = value;
     }
   }
   return data;
@@ -470,34 +552,90 @@ std::vector<uint8_t> EncodeGroup4(const std::vector<EdgeWords>& words) {
   return data;
 }
 
-std::vector<uint8_t> EncodeGroup5(const std::vector<EdgeWords>& words) {
-  std::vector<uint8_t> data;
-  AppendLE<uint16_t>(data, static_cast<uint16_t>(kGroup5Fields.size()));
-
-  std::vector<uint8_t> bit_widths;
-  bit_widths.reserve(kGroup5Fields.size());
-  uint32_t bits_per_edge = 0;
-  for (const auto field_id : kGroup5Fields) {
-    const auto& desc = GetDescriptor(field_id);
-    bit_widths.push_back(desc.bits);
-    bits_per_edge += desc.bits;
-    AppendLE<uint16_t>(data, static_cast<uint16_t>(field_id));
-    AppendLE<uint8_t>(data, desc.bits);
-  }
-
+std::vector<uint8_t> EncodeBitpackField(const std::vector<EdgeWords>& words,
+                                        const FieldDescriptor& desc) {
   BitWriter writer;
   for (const auto& edge_words : words) {
-    for (std::size_t i = 0; i < kGroup5Fields.size(); ++i) {
-      const auto& desc = GetDescriptor(kGroup5Fields[i]);
-      const auto value = ExtractField(edge_words.data(), desc);
-      writer.Write(value, bit_widths[i]);
-    }
+    const auto value = ExtractField(edge_words.data(), desc);
+    writer.Write(value, desc.bits);
   }
   writer.Flush();
 
-  AppendLE<uint32_t>(data, bits_per_edge);
-  AppendLE<uint32_t>(data, static_cast<uint32_t>(writer.data().size()));
-  data.insert(data.end(), writer.data().begin(), writer.data().end());
+  std::vector<uint8_t> payload;
+  AppendLE<uint8_t>(payload, desc.bits);
+  AppendLE<uint32_t>(payload, static_cast<uint32_t>(writer.data().size()));
+  payload.insert(payload.end(), writer.data().begin(), writer.data().end());
+  return payload;
+}
+
+std::vector<uint8_t> EncodeSparseBoolField(const std::vector<EdgeWords>& words,
+                                           const FieldDescriptor& desc,
+                                           uint32_t non_zero) {
+  std::vector<uint8_t> payload;
+  AppendLE<uint32_t>(payload, non_zero);
+  if (non_zero == 0) {
+    return payload;
+  }
+
+  uint32_t last_index = 0;
+  bool first = true;
+  for (std::size_t i = 0; i < words.size(); ++i) {
+    if (ExtractField(words[i].data(), desc) == 0) {
+      continue;
+    }
+    const uint32_t index = static_cast<uint32_t>(i);
+    if (first) {
+      AppendVarint(payload, index);
+      first = false;
+    } else {
+      AppendVarint(payload, index - last_index);
+    }
+    last_index = index;
+  }
+  return payload;
+}
+
+std::vector<uint8_t> EncodeGroup5(const std::vector<EdgeWords>& words) {
+  std::vector<uint8_t> data;
+  struct Plan {
+    FieldId id;
+    const FieldDescriptor* desc;
+    Group5Encoding encoding;
+    uint32_t non_zero;
+  };
+
+  std::vector<Plan> plans;
+  plans.reserve(kGroup5Fields.size());
+  const std::size_t edge_count = words.size();
+  for (const auto field_id : kGroup5Fields) {
+    const auto& desc = GetDescriptor(field_id);
+    const uint32_t non_zero = CountNonZero(words, desc);
+    if (non_zero == 0) {
+      continue;
+    }
+    Group5Encoding encoding = Group5Encoding::kBitpack;
+    if (desc.bits == 1 && ShouldUseSparseBoolEncoding(edge_count, non_zero)) {
+      encoding = Group5Encoding::kSparseList;
+    }
+    plans.push_back(Plan{field_id, &desc, encoding, non_zero});
+  }
+
+  AppendLE<uint16_t>(data, static_cast<uint16_t>(plans.size()));
+  for (const auto& plan : plans) {
+    AppendLE<uint16_t>(data, static_cast<uint16_t>(plan.id));
+    AppendLE<uint8_t>(data, static_cast<uint8_t>(plan.encoding));
+    std::vector<uint8_t> payload;
+    switch (plan.encoding) {
+    case Group5Encoding::kBitpack:
+      payload = EncodeBitpackField(words, *plan.desc);
+      break;
+    case Group5Encoding::kSparseList:
+      payload = EncodeSparseBoolField(words, *plan.desc, plan.non_zero);
+      break;
+    }
+    AppendLE<uint32_t>(data, static_cast<uint32_t>(payload.size()));
+    data.insert(data.end(), payload.begin(), payload.end());
+  }
   return data;
 }
 
@@ -524,6 +662,59 @@ GroupRecord MakeGroupRecord(GroupId id, std::vector<uint8_t>&& payload) {
   return record;
 }
 
+void DecodeGroup5Bitpack(const uint8_t*& data,
+                         std::size_t& remaining,
+                         const FieldDescriptor& desc,
+                         std::vector<EdgeWords>& words) {
+  const auto bits = static_cast<uint8_t>(ReadLE(data, remaining, sizeof(uint8_t)));
+  if (bits != desc.bits) {
+    throw std::runtime_error("DirectedEdgeWordLanes bitpack width mismatch");
+  }
+  const auto byte_count = static_cast<uint32_t>(ReadLE(data, remaining, sizeof(uint32_t)));
+  if (remaining < byte_count) {
+    throw std::runtime_error("DirectedEdgeWordLanes bitpack payload overflow");
+  }
+  BitReader reader(data, byte_count);
+  data += byte_count;
+  remaining -= byte_count;
+  if (bits == 0) {
+    return;
+  }
+  for (auto& edge_words : words) {
+    const auto value = reader.Read(bits);
+    SetField(edge_words.data(), desc, value);
+  }
+}
+
+void DecodeGroup5SparseList(const uint8_t*& data,
+                            std::size_t& remaining,
+                            const FieldDescriptor& desc,
+                            std::vector<EdgeWords>& words) {
+  if (desc.bits != 1) {
+    throw std::runtime_error("DirectedEdgeWordLanes sparse bool width mismatch");
+  }
+  const auto non_zero = static_cast<uint32_t>(ReadLE(data, remaining, sizeof(uint32_t)));
+  uint32_t last_index = 0;
+  for (uint32_t i = 0; i < non_zero; ++i) {
+    uint64_t delta = 0;
+    if (!ReadVarint(data, remaining, delta)) {
+      throw std::runtime_error("DirectedEdgeWordLanes sparse bool underflow");
+    }
+    if (delta > std::numeric_limits<uint32_t>::max()) {
+      throw std::runtime_error("DirectedEdgeWordLanes sparse bool index overflow");
+    }
+    uint32_t index = static_cast<uint32_t>(delta);
+    if (i > 0) {
+      index += last_index;
+    }
+    if (index >= words.size()) {
+      throw std::runtime_error("DirectedEdgeWordLanes sparse bool index out of range");
+    }
+    SetField(words[index].data(), desc, 1);
+    last_index = index;
+  }
+}
+
 void DecodeGroup0(const uint8_t*& data,
                   std::size_t& remaining,
                   std::vector<EdgeWords>& words) {
@@ -542,13 +733,29 @@ void DecodeGroup1(const uint8_t*& data,
                   std::size_t& remaining,
                   std::vector<EdgeWords>& words) {
   const auto field_count = static_cast<uint16_t>(ReadLE(data, remaining, sizeof(uint16_t)));
+  const std::size_t edge_count = words.size();
   for (uint16_t f = 0; f < field_count; ++f) {
     const auto field_id = static_cast<FieldId>(ReadLE(data, remaining, sizeof(uint16_t)));
     const auto bytes = static_cast<uint8_t>(ReadLE(data, remaining, sizeof(uint8_t)));
     const auto& desc = GetDescriptor(field_id);
-    for (auto& edge_words : words) {
-      const auto value = ReadBE(data, remaining, bytes);
-      SetField(edge_words.data(), desc, value);
+    if (edge_count == 0) {
+      continue;
+    }
+    uint64_t previous = ReadBE(data, remaining, bytes);
+    SetField(words[0].data(), desc, previous);
+    for (std::size_t i = 1; i < edge_count; ++i) {
+      uint64_t encoded_delta = 0;
+      if (!ReadVarint(data, remaining, encoded_delta)) {
+        throw std::runtime_error("DirectedEdgeWordLanes delta decode underflow");
+      }
+      const int64_t delta = ZigZagDecode(encoded_delta);
+      const int64_t current = static_cast<int64_t>(previous) + delta;
+      if (current < 0) {
+        throw std::runtime_error("DirectedEdgeWordLanes delta decode produced negative value");
+      }
+      const uint64_t value = static_cast<uint64_t>(current);
+      SetField(words[i].data(), desc, value);
+      previous = value;
     }
   }
 }
@@ -612,31 +819,32 @@ void DecodeGroup5(const uint8_t*& data,
                   std::size_t& remaining,
                   std::vector<EdgeWords>& words) {
   const auto field_count = static_cast<uint16_t>(ReadLE(data, remaining, sizeof(uint16_t)));
-  std::vector<FieldId> fields;
-  std::vector<uint8_t> widths;
-  fields.reserve(field_count);
-  widths.reserve(field_count);
   for (uint16_t f = 0; f < field_count; ++f) {
     const auto field_id = static_cast<FieldId>(ReadLE(data, remaining, sizeof(uint16_t)));
-    const auto width = static_cast<uint8_t>(ReadLE(data, remaining, sizeof(uint8_t)));
-    fields.push_back(field_id);
-    widths.push_back(width);
-  }
-  const auto bits_per_edge = static_cast<uint32_t>(ReadLE(data, remaining, sizeof(uint32_t)));
-  const auto byte_count = static_cast<uint32_t>(ReadLE(data, remaining, sizeof(uint32_t)));
-  if (remaining < byte_count) {
-    throw std::runtime_error("DirectedEdgeWordLanes decode packed bit overflow");
-  }
-  BitReader reader(data, byte_count);
-  data += byte_count;
-  remaining -= byte_count;
-  for (auto& edge_words : words) {
-    for (std::size_t i = 0; i < fields.size(); ++i) {
-      const auto value = reader.Read(widths[i]);
-      SetField(edge_words.data(), GetDescriptor(fields[i]), value);
+    const auto encoding = static_cast<Group5Encoding>(ReadLE(data, remaining, sizeof(uint8_t)));
+    const auto payload_size = static_cast<uint32_t>(ReadLE(data, remaining, sizeof(uint32_t)));
+    if (remaining < payload_size) {
+      throw std::runtime_error("DirectedEdgeWordLanes group5 payload overflow");
+    }
+    const uint8_t* payload = data;
+    std::size_t payload_remaining = payload_size;
+    data += payload_size;
+    remaining -= payload_size;
+    const auto& desc = GetDescriptor(field_id);
+    switch (encoding) {
+    case Group5Encoding::kBitpack:
+      DecodeGroup5Bitpack(payload, payload_remaining, desc, words);
+      break;
+    case Group5Encoding::kSparseList:
+      DecodeGroup5SparseList(payload, payload_remaining, desc, words);
+      break;
+    default:
+      throw std::runtime_error("DirectedEdgeWordLanes unknown group5 encoding");
+    }
+    if (payload_remaining != 0) {
+      throw std::runtime_error("DirectedEdgeWordLanes group5 payload under-consumed");
     }
   }
-  (void)bits_per_edge;
 }
 
 void DecodeGroup6(const uint8_t*& data,

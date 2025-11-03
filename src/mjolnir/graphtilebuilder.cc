@@ -1,6 +1,5 @@
 #include "mjolnir/graphtilebuilder.h"
 #include "baldr/directededge.h"
-#include "baldr/directededge_soa.h"
 #include "baldr/edgeinfo.h"
 #include "baldr/graphconstants.h"
 #include "baldr/tilehierarchy.h"
@@ -603,39 +602,6 @@ void GraphTileBuilder::StoreTileData() {
     header_builder_.set_directededgecount(directededges_builder_.size());
     DebugPrintVectorStats("DirectedEdge", directededges_builder_);
     DebugPrintDirectedEdgeBitfieldStats(directededges_builder_);
-    const auto wordlane_blob = DirectedEdgeWordLanes::Encode(directededges_builder_);
-    const double soa_ratio = wordlane_blob.stats.original_bytes > 0
-                                 ? (static_cast<double>(wordlane_blob.payload.size()) * 100.0 /
-                                    static_cast<double>(wordlane_blob.stats.original_bytes))
-                                 : 0.0;
-    printf("DirectedEdgeWordLanes: total=%zu bytes original=%zu (%.2f%%)\n",
-           wordlane_blob.payload.size(), wordlane_blob.stats.original_bytes, soa_ratio);
-    for (std::size_t g = 0; g < 7; ++g) {
-      const auto group_bytes = wordlane_blob.stats.group_bytes[g];
-      if (group_bytes == 0) {
-        continue;
-      }
-      printf("  group%zu=%zu bytes\n", g, group_bytes);
-    }
-    if (!wordlane_blob.payload.empty()) {
-      DebugPrintSectionStats("DirectedEdgeWordLanes", wordlane_blob.payload.data(),
-                             wordlane_blob.payload.size());
-      std::vector<DirectedEdge> reconstructed;
-      const bool decoded = DirectedEdgeWordLanes::Decode(wordlane_blob.payload.data(),
-                                                         wordlane_blob.payload.size(),
-                                                         reconstructed);
-      if (!decoded) {
-        printf("DirectedEdgeWordLanes decode failed\n");
-      } else {
-        const bool identical =
-            reconstructed.size() == directededges_builder_.size() &&
-            (reconstructed.empty() ||
-             std::memcmp(reconstructed.data(), directededges_builder_.data(),
-                         reconstructed.size() * sizeof(DirectedEdge)) == 0);
-        printf("DirectedEdgeWordLanes roundtrip=%s\n", identical ? "ok" : "mismatch");
-      }
-    }
-
     in_mem.write(reinterpret_cast<const char*>(directededges_builder_.data()),
                  directededges_builder_.size() * sizeof(DirectedEdge));
 
