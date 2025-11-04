@@ -2,6 +2,7 @@
 
 #include "arche/arche.h"
 #undef ref
+#undef always_inline
 
 #include "baldr/rapidjson_utils.h"
 #include "baldr/tilegetter.h"
