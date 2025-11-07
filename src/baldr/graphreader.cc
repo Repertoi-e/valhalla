@@ -117,9 +117,9 @@ GraphReader::tile_extract_t::tile_extract_t(const property_tree& pt,
 
     // get the info
     decltype(midgard::tar::contents) contents;
-    auto entries = midgard::iterable_t<tile_index_entry>(reinterpret_cast<tile_index_entry*>(
-                                                             const_cast<char*>(index_begin)),
-                                                         size / sizeof(tile_index_entry));
+    auto entries = std::span<tile_index_entry>(reinterpret_cast<tile_index_entry*>(
+                                                   const_cast<char*>(index_begin)),
+                                               size / sizeof(tile_index_entry));
     for (const auto& entry : entries) {
       contents.insert(
           std::make_pair(std::to_string(entry.tile_id),
