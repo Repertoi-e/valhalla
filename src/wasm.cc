@@ -1,9 +1,3 @@
-#include <valhalla/property_tree/ptree.hpp>
-
-#include "arche/arche.h"
-#undef ref
-#undef always_inline
-
 #include "baldr/rapidjson_utils.h"
 #include "baldr/tilegetter.h"
 #include "baldr/wasm_tile_getter.h"
@@ -13,59 +7,71 @@
 #include "tyr/actor.h"
 #include "valhalla/exceptions.h"
 
+#include <valhalla/property_tree/ptree.hpp>
+
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
+
+// Include last cuz unf it defines some weir shi 
+#include "arche/arche.h"
 
 namespace valhalla {
 
 using baldr::tile_getter_t;
 using baldr::wasm_tile_getter_t;
 
-odin::locales_singleton_t load_narrative_locals() { return {}; }
+odin::locales_singleton_t load_narrative_locals() {
+  return {};
+}
 
-std::shared_ptr<valhalla::odin::NarrativeDictionary> load_narrative_locals_for(const std::string& locale_string)
-{
-    auto module = emscripten::val::global("Module");
-    if (module.isNull() || module.isUndefined()) return nullptr;
-    auto fn = module["fetchLocale"];
-    if (fn.isNull() || fn.isUndefined()) return nullptr;
+std::shared_ptr<valhalla::odin::NarrativeDictionary>
+load_narrative_locals_for(const std::string& locale_string) {
+  auto module = emscripten::val::global("Module");
+  if (module.isNull() || module.isUndefined())
+    return nullptr;
+  auto fn = module["fetchLocale"];
+  if (fn.isNull() || fn.isUndefined())
+    return nullptr;
 
-    auto json_val = module.call<emscripten::val>("fetchLocale", locale_string).await();
-    std::string json = json_val.as<std::string>();
+  auto json_val = module.call<emscripten::val>("fetchLocale", locale_string).await();
+  std::string json = json_val.as<std::string>();
 
-    property_tree narrative_pt;
-    std::stringstream ss;
-    ss << json;
-    rapidjson::read_json(ss, narrative_pt);
-    auto narrative_dictionary = std::make_shared<valhalla::odin::NarrativeDictionary>(locale_string, narrative_pt);
-    return narrative_dictionary;
+  property_tree narrative_pt;
+  std::stringstream ss;
+  ss << json;
+  rapidjson::read_json(ss, narrative_pt);
+  auto narrative_dictionary =
+      std::make_shared<valhalla::odin::NarrativeDictionary>(locale_string, narrative_pt);
+  return narrative_dictionary;
 }
 
 tile_getter_t::GET_response_t
 wasm_tile_getter_t::get(const std::string& url, const uint64_t offset, const uint64_t size) {
-    tile_getter_t::GET_response_t response;
+  tile_getter_t::GET_response_t response;
 
-    auto module = emscripten::val::global("Module");
-    if (module.isNull() || module.isUndefined()) return response;
-    auto fn = module["fetchGraphTile"];
-    if (fn.isNull() || fn.isUndefined()) return response;
-    
-    auto tile = module.call<emscripten::val>("fetchGraphTile", url).await();
-
-    response.data_ = (char*)(tile["data"]["byteOffset"].as<size_t>());
-    response.size_ = tile["size"].as<uint64_t>();
-
-    // printf("C/ Tile fetched: %s, size: %zu\n", url.c_str(), response.size_);
-    uint8_t checksum = 0;
-    for (size_t i = 0; i < response.size_; ++i) {
-    checksum ^= response.data_[i];
-    }
-    // printf("C/ Tile checksum: %02x\n", checksum);
-
-    response.status_ = tile_getter_t::status_code_t::SUCCESS;
-    response.http_code_ = 200;
-
+  auto module = emscripten::val::global("Module");
+  if (module.isNull() || module.isUndefined())
     return response;
+  auto fn = module["fetchGraphTile"];
+  if (fn.isNull() || fn.isUndefined())
+    return response;
+
+  auto tile = module.call<emscripten::val>("fetchGraphTile", url).await();
+
+  response.data_ = (char*)(tile["data"]["byteOffset"].as<size_t>());
+  response.size_ = tile["size"].as<uint64_t>();
+
+  // printf("C/ Tile fetched: %s, size: %zu\n", url.c_str(), response.size_);
+  uint8_t checksum = 0;
+  for (size_t i = 0; i < response.size_; ++i) {
+    checksum ^= response.data_[i];
+  }
+  // printf("C/ Tile checksum: %02x\n", checksum);
+
+  response.status_ = tile_getter_t::status_code_t::SUCCESS;
+  response.http_code_ = 200;
+
+  return response;
 }
 } // namespace valhalla
 
@@ -122,7 +128,6 @@ int posix_memalign(void** memptr, size_t alignment, size_t size) {
 }
 
 namespace emscripten {
-
 val js_malloc(size_t size) {
   return val(typed_memory_view(size, (byte*)malloc<byte>({.Count = (s64)size})));
 }
@@ -154,17 +159,20 @@ class_<std::vector<bool, Allocator>> register_vector_bool(const char* name) {
 namespace valhalla {
 std::string serialize_error(const valhalla_exception_t& exception, Api& request);
 bool Options_Action_Enum_Parse(const std::string& action, Options::Action* a);
+} // namespace valhalla
+
+using namespace valhalla;
 
 tyr::actor_t* actor = nullptr;
 
-void init_actor(std::string valhalla_config_json) {
-  actor = new valhalla::tyr::actor_t(config(std::string(valhalla_config_json)));
+extern "C" EMSCRIPTEN_KEEPALIVE void init_actor(const char* valhalla_config_json) {
+  actor = new tyr::actor_t(config(std::string(valhalla_config_json)));
+
+  load_narrative_locals_for("en-US");
 }
-} // namespace valhalla
 
-
-extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js, const char* request_js) {
-  using namespace valhalla;
+extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js,
+                                                       const char* request_js) {
   // RequestArena.Used = 0; // Reset the arena for this request
   // if (!RequestArena.Block) {
   //   RequestArena.AutomaticBlockSize = 64_MiB;
@@ -237,9 +245,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js, co
 
 EMSCRIPTEN_BINDINGS(valhalla_bindings) {
   using namespace emscripten;
-  using namespace valhalla;
-
-  function("init_actor", &init_actor);
 
   function("_malloc", &js_malloc);
   function("_free", &js_free);
