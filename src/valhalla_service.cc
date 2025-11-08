@@ -24,7 +24,7 @@ using namespace prime_server;
 int main(int argc, char** argv) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   std::vector<std::string> pos_args;
-  property_tree config;
+  valhalla::property_tree config;
 
   cxxopts::Options options(
       program,

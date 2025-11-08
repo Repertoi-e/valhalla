@@ -354,7 +354,7 @@ void AddStatistics(statistics& stats,
   }
 }
 
-void build(const property_tree& pt,
+void build(const valhalla::property_tree& pt,
            std::deque<GraphId>& tilequeue,
            std::mutex& lock,
            std::promise<statistics>& result) {
@@ -493,7 +493,7 @@ void build(const property_tree& pt,
 }
 } // namespace
 
-void BuildStatistics(const property_tree& pt) {
+void BuildStatistics(const valhalla::property_tree& pt) {
 
   // Graph tile properties
   auto tile_properties = pt.get_child("mjolnir");
@@ -568,7 +568,7 @@ void BuildStatistics(const property_tree& pt) {
 int main(int argc, char** argv) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
-  property_tree config;
+  valhalla::property_tree config;
 
   try {
     // clang-format off

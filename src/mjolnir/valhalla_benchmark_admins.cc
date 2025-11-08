@@ -118,7 +118,7 @@ GetAdminInfo(valhalla::mjolnir::Sqlite3& db,
 }
 
 // Benchmark the admin DB access
-void Benchmark(const property_tree& pt) {
+void Benchmark(const valhalla::property_tree& pt) {
   std::cout << "In Benchmark" << std::endl;
 
   uint32_t counts[128] = {};
@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
   std::vector<std::string> input_files;
-  property_tree config;
+  valhalla::property_tree config;
 
   try {
     // clang-format off

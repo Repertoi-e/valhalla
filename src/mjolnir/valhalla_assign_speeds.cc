@@ -21,7 +21,7 @@
 using namespace valhalla::baldr;
 using namespace valhalla::mjolnir;
 
-void assign(const property_tree& config,
+void assign(const valhalla::property_tree& config,
             std::deque<GraphId>& tilequeue,
             std::mutex& lock,
             std::promise<std::pair<size_t, size_t>>& result) {

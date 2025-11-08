@@ -79,7 +79,7 @@ valhalla::sif::cost_ptr_t create_costing() {
   return valhalla::sif::CostFactory{}.Create(options);
 }
 
-void work(const property_tree& config, std::promise<results_t>& promise) {
+void work(const valhalla::property_tree& config, std::promise<results_t>& promise) {
   // lambda to do the current job
   auto costing = create_costing();
   valhalla::baldr::GraphReader reader(config.get_child("mjolnir"));
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
   size_t batch, isolated, radius;
   bool extrema = false;
   std::vector<std::string> input_files;
-  property_tree config;
+  valhalla::property_tree config;
 
   try {
     // clang-format off

@@ -12,13 +12,31 @@ protected:
 
   config_singleton_t() = delete;
 
-  config_singleton_t(const std::string& config_inline) {
-    if (config_inline.empty()) {
+  config_singleton_t(const std::string& config_file_or_inline) {
+    if (config_file_or_inline.empty()) {
       throw std::runtime_error("Config singleton was not initialized before usage");
     }
 
-    auto inline_config = std::stringstream(config_inline);
+#if !defined __EMSCRIPTEN__
+    try {
+      if (std::filesystem::is_regular_file(config_file_or_inline)) {
+        rapidjson::read_json(config_file_or_inline, config_);
+      } else {
+        auto inline_config = std::stringstream(config_file_or_inline);
+        rapidjson::read_json(inline_config, config_);
+      }
+    } catch (const std::filesystem::filesystem_error& e) {
+      if (e.code() == std::errc::filename_too_long) {
+        auto inline_config = std::stringstream(config_file_or_inline);
+        rapidjson::read_json(inline_config, config_);
+      } else {
+        throw e;
+      }
+    }
+#else
+    auto inline_config = std::stringstream(config_file_or_inline);
     rapidjson::read_json(inline_config, config_);
+#endif
   }
 
 public:
@@ -30,8 +48,8 @@ public:
 
 namespace valhalla {
 
-const property_tree& config(const std::string& config_inline) {
-  static config_singleton_t instance(config_inline);
+const property_tree& config(const std::string& config_file_or_inline) {
+  static config_singleton_t instance(config_file_or_inline);
   return instance.config_;
 }
 
