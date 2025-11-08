@@ -1335,7 +1335,8 @@ std::string CostMatrix::RecostFormPath(GraphReader& graphreader,
                                        const baldr::TimeInfo& time_info,
                                        const bool invariant) {
   // no need to look at source == target or missing connectivity
-  if ((!has_time_ && request.options().shape_format() == ShapeFormat::no_shape && !request.options().verbose()) ||
+  if ((!has_time_ && request.options().shape_format() == ShapeFormat::no_shape &&
+       !request.options().verbose()) ||
       connection.cost.secs == 0.f || connection.distance == kMaxCost) {
     return "";
   }
@@ -1485,7 +1486,9 @@ std::string CostMatrix::RecostFormPath(GraphReader& graphreader,
   }
 
   // encode to 6 precision for geojson as well, which the serializer expects
-  return encode<decltype(points)>(points, request.options().shape_format() != ShapeFormat::polyline5 ? 1e6 : 1e5);
+  return encode<decltype(points)>(points, request.options().shape_format() != ShapeFormat::polyline5
+                                              ? 1e6
+                                              : 1e5);
 }
 
 template <const MatrixExpansionType expansion_direction, const bool FORWARD>

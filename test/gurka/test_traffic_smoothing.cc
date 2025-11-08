@@ -2,7 +2,6 @@
 #include "gurka.h"
 #include "test.h"
 
-
 using namespace valhalla;
 namespace dt = valhalla::baldr::DateTime;
 namespace sc = std::chrono;
@@ -223,10 +222,14 @@ std::string make_route_request(const gurka::map& map,
       "prioritize_bidirectional":%s,
       "date_time": { "type": "%d", "value": "%s" }
     })";
-  return midgard::logging::sprintf(query_pattern_with_speeds.c_str(), std::to_string(map.nodes.at(from).lat()).c_str(),
-          std::to_string(map.nodes.at(from).lng()).c_str(), std::to_string(map.nodes.at(to).lat()).c_str(),
-          std::to_string(map.nodes.at(to).lng()).c_str(), speed_types.c_str(),
-          std::to_string(prioritize_bidirectional).c_str(), date_time_type, date_time_value.c_str());
+  return midgard::logging::sprintf(query_pattern_with_speeds.c_str(),
+                                   std::to_string(map.nodes.at(from).lat()).c_str(),
+                                   std::to_string(map.nodes.at(from).lng()).c_str(),
+                                   std::to_string(map.nodes.at(to).lat()).c_str(),
+                                   std::to_string(map.nodes.at(to).lng()).c_str(),
+                                   speed_types.c_str(),
+                                   std::to_string(prioritize_bidirectional).c_str(), date_time_type,
+                                   date_time_value.c_str());
 }
 
 class RouteWithTraffic : public ::testing::Test {
@@ -530,9 +533,12 @@ std::string make_mapmatch_request(const gurka::map& map,
       "costing_options":{"auto":{"speed_types":[%s]}},
       "date_time":{"value":"%s","type":"1"}
     })";
-  return midgard::logging::sprintf(query_pattern_with_speeds.c_str(), std::to_string(map.nodes.at(from).lat()).c_str(),
-          std::to_string(map.nodes.at(from).lng()).c_str(), std::to_string(map.nodes.at(to).lat()).c_str(),
-          std::to_string(map.nodes.at(to).lng()).c_str(), speed_types.c_str(), date_time_value.c_str());
+  return midgard::logging::sprintf(query_pattern_with_speeds.c_str(),
+                                   std::to_string(map.nodes.at(from).lat()).c_str(),
+                                   std::to_string(map.nodes.at(from).lng()).c_str(),
+                                   std::to_string(map.nodes.at(to).lat()).c_str(),
+                                   std::to_string(map.nodes.at(to).lng()).c_str(),
+                                   speed_types.c_str(), date_time_value.c_str());
 }
 
 class MapMatchWithTraffic : public ::testing::Test {

@@ -78,7 +78,7 @@ void serialize_edges(const AttributesController& controller,
   };
 
   // Loop over edges to add attributes
-  for (int i = 1; i < (int) trip_path.node().size(); i++) {
+  for (int i = 1; i < (int)trip_path.node().size(); i++) {
     if (trip_path.node(i - 1).has_edge()) {
       const auto& edge = trip_path.node(i - 1).edge();
 
@@ -160,7 +160,8 @@ void serialize_edges(const AttributesController& controller,
       if (controller(kEdgeVehicleType) && edge.travel_mode() == valhalla::TravelMode::kDrive) {
         writer("vehicle_type", _to_string(edge.vehicle_type()));
       }
-      if (controller(kEdgePedestrianType) && edge.travel_mode() == valhalla::TravelMode::kPedestrian) {
+      if (controller(kEdgePedestrianType) &&
+          edge.travel_mode() == valhalla::TravelMode::kPedestrian) {
         writer("pedestrian_type", _to_string(edge.pedestrian_type()));
       }
       if (controller(kEdgeBicycleType) && edge.travel_mode() == valhalla::TravelMode::kBicycle) {
@@ -217,8 +218,7 @@ void serialize_edges(const AttributesController& controller,
       if (controller(kEdgeSpeedType)) {
         writer("speed_type", to_string(static_cast<baldr::SpeedType>(edge.speed_type())));
       }
-      if (controller(kEdgeSpeedsFaded) &&
-          options.date_time_type() == Options_DateTimeType_current &&
+      if (controller(kEdgeSpeedsFaded) && options.date_time_type() == Options_DateTimeType_current &&
           edge.has_speeds_faded_case()) {
         serialize_speeds(edge, true, serialize_speed, writer);
       }

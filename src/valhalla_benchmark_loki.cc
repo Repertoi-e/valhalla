@@ -5,6 +5,7 @@
 #include "sif/costfactory.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <cxxopts.hpp>
 
 #include <algorithm>

@@ -2,7 +2,6 @@
 #define VALHALLA_MJOLNIR_ELEVATIONBUILDER_H
 
 #include <valhalla/baldr/graphid.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <deque>
@@ -21,8 +20,7 @@ public:
    * param[in] tile_ids Sequence of valhalla tile ids to build elevation tiles for.
    * @attention It is considered that tiles are from the directory specified in config file.
    */
-  static void Build(const property_tree& config,
-                    std::deque<baldr::GraphId> tile_ids = {});
+  static void Build(const property_tree& config, std::deque<baldr::GraphId> tile_ids = {});
 };
 
 } // namespace mjolnir

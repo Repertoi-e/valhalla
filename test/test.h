@@ -11,6 +11,7 @@
 #include "midgard/polyline2.h"
 
 #include <valhalla/property_tree/ptree_fwd.hpp>
+
 #include <gmock/gmock-matchers.h>
 #include <gtest/gtest-assertion-result.h>
 
@@ -45,7 +46,7 @@ MATCHER_P2(IsBetween,
   return a <= arg && arg <= b;
 }
 
-template <typename pbf_message_t> bool pbf_equals(const pbf_message_t& a, const pbf_message_t& b) { 
+template <typename pbf_message_t> bool pbf_equals(const pbf_message_t& a, const pbf_message_t& b) {
   std::string as, bs;
   a.SerializeToString(&as);
   b.SerializeToString(&bs);

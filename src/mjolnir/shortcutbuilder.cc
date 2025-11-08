@@ -748,7 +748,7 @@ std::pair<uint32_t, uint32_t> FormShortcuts(GraphReader& reader, const TileLevel
     // Store the new tile
     tilebuilder.StoreTileData();
     LOG_DEBUG((logging::sprintf("ShortcutBuilder created tile %x: %d bytes", tile.get(),
-               tilebuilder.header_builder().end_offset())));
+                                tilebuilder.header_builder().end_offset())));
 
     // Check if we need to clear the tile cache.
     if (reader.OverCommitted()) {

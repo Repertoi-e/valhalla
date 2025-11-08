@@ -5,9 +5,9 @@
 #include "tyr/serializers.h"
 
 #include <cmath>
+#include <iostream>
 #include <sstream>
 #include <utility>
-#include <iostream>
 
 #ifdef ENABLE_GDAL
 #include <gdal_priv.h>
@@ -359,7 +359,8 @@ std::string serializeIsochronePbf(Api& request,
     const auto& interval = intervals[isoline_index];
 
     auto* interval_pbf = isochrone.mutable_intervals()->Add();
-    interval_pbf->set_metric(std::get<2>(interval) == "time" ? valhalla::Isochrone::time : valhalla::Isochrone::distance);
+    interval_pbf->set_metric(std::get<2>(interval) == "time" ? valhalla::Isochrone::time
+                                                             : valhalla::Isochrone::distance);
 
     interval_pbf->set_metric_value(std::get<1>(interval));
 

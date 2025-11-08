@@ -196,7 +196,7 @@ void route_summary(json::MapPtr& route, const valhalla::Api& api, bool imperial,
     distance += leg.summary().length();
     duration += leg.summary().time();
     weight += leg_itr->node().rbegin()->cost().elapsed_cost().cost();
-    for (int i = 0; i < (int) leg_itr->node().rbegin()->recosts_size(); ++i) {
+    for (int i = 0; i < (int)leg_itr->node().rbegin()->recosts_size(); ++i) {
       const auto& recost = leg_itr->node().rbegin()->recosts(i);
       if (!recost.has_elapsed_cost() || recosts[i].first < 0) {
         recosts[i].first = -1;
@@ -215,9 +215,9 @@ void route_summary(json::MapPtr& route, const valhalla::Api& api, bool imperial,
   route->emplace("duration", json::fixed_t{duration, 3});
 
   route->emplace("weight", json::fixed_t{weight, 3});
-  assert(api.options().costings().find((int) api.options().costing_type())->second.has_name_case());
+  assert(api.options().costings().find((int)api.options().costing_type())->second.has_name_case());
   route->emplace("weight_name",
-                 api.options().costings().find((int) api.options().costing_type())->second.name());
+                 api.options().costings().find((int)api.options().costing_type())->second.name());
 
   auto recosting_itr = api.options().recostings().begin();
   for (const auto& recost : recosts) {
@@ -696,8 +696,7 @@ valhalla::baldr::json::RawJSON serializeIncident(const TripLeg::Incident& incide
 }
 
 // Serializes incidents and adds to json-document
-void serializeIncidents(const std::vector<TripLeg::Incident>& incidents,
-                        json::Jmap& doc) {
+void serializeIncidents(const std::vector<TripLeg::Incident>& incidents, json::Jmap& doc) {
   if (incidents.size() == 0) {
     // No incidents, nothing to do
     return;
@@ -707,7 +706,8 @@ void serializeIncidents(const std::vector<TripLeg::Incident>& incidents,
     // Bring up any already existing array
     auto existing = doc.find("incidents");
     if (existing != doc.end()) {
-      if (auto* ptr = std::get_if<std::shared_ptr<valhalla::baldr::json::Jarray>>(&existing->second)) {
+      if (auto* ptr =
+              std::get_if<std::shared_ptr<valhalla::baldr::json::Jarray>>(&existing->second)) {
         serialized_incidents = *ptr;
       } else {
         throw std::logic_error("Invalid state: stored ptr should not be null");
@@ -738,9 +738,8 @@ void serializeClosures(const valhalla::TripLeg& leg, json::Jmap& doc) {
 
 // Compile and return the refs of the specified list
 // TODO we could enhance by limiting results by using consecutive count
-std::string get_sign_element_refs(
-    const std::vector<::valhalla::TripSignElement>& sign_elements,
-    const std::string& delimiter = kSignElementDelimiter) {
+std::string get_sign_element_refs(const std::vector<::valhalla::TripSignElement>& sign_elements,
+                                  const std::string& delimiter = kSignElementDelimiter) {
   std::string refs;
   for (const auto& sign_element : sign_elements) {
     // Only process refs
@@ -758,9 +757,8 @@ std::string get_sign_element_refs(
 
 // Compile and return the nonrefs of the specified list
 // TODO we could enhance by limiting results by using consecutive count
-std::string get_sign_element_nonrefs(
-    const std::vector<::valhalla::TripSignElement>& sign_elements,
-    const std::string& delimiter = kSignElementDelimiter) {
+std::string get_sign_element_nonrefs(const std::vector<::valhalla::TripSignElement>& sign_elements,
+                                     const std::string& delimiter = kSignElementDelimiter) {
   std::string nonrefs;
   for (const auto& sign_element : sign_elements) {
     // Only process nonrefs
@@ -778,9 +776,8 @@ std::string get_sign_element_nonrefs(
 
 // Compile and return the sign elements of the specified list
 // TODO we could enhance by limiting results by using consecutive count
-std::string get_sign_elements(
-    const std::vector<::valhalla::TripSignElement>& sign_elements,
-    const std::string& delimiter = kSignElementDelimiter) {
+std::string get_sign_elements(const std::vector<::valhalla::TripSignElement>& sign_elements,
+                              const std::string& delimiter = kSignElementDelimiter) {
   std::string sign_elements_string;
   for (const auto& sign_element : sign_elements) {
     // If the sign_elements_string is not empty, append specified delimiter
@@ -1743,7 +1740,7 @@ json::ArrayPtr serialize_legs(const std::vector<valhalla::DirectionsLeg>& legs,
       auto step = json::map({});
       step->reserve(15); // lots of conditional stuff here
       bool depart_maneuver = (maneuver_index == 0);
-      bool arrive_maneuver = (maneuver_index == (int) leg->maneuver_size() - 1);
+      bool arrive_maneuver = (maneuver_index == (int)leg->maneuver_size() - 1);
 
       // TODO - iterate through TripLeg from prior maneuver end to
       // end of this maneuver - perhaps insert OSRM specific steps such as
@@ -2023,7 +2020,7 @@ summarize_route_legs(const std::vector<DirectionsRoute>& routes) {
   // Find the simplest summary for every leg of every route. Important note:
   // each route should have the same number of legs. Hence, we only need to make
   // unique the same leg (leg_idx) between all routes.
-  for (int route_i = 0; route_i < (int) routes.size(); route_i++) {
+  for (int route_i = 0; route_i < (int)routes.size(); route_i++) {
 
     size_t num_legs_i = routes[route_i].legs_size();
     std::vector<std::string> leg_summaries;
@@ -2039,7 +2036,7 @@ summarize_route_legs(const std::vector<DirectionsRoute>& routes) {
       // Compare every jth route/leg summary vs the current ith route/leg summary.
       // We desire to compute num_named_segs_needed, which is the number of named
       // segments needed to uniquely identify the ith's summary.
-      for (int route_j = 0; route_j < (int) routes.size(); route_j++) {
+      for (int route_j = 0; route_j < (int)routes.size(); route_j++) {
 
         // avoid self
         if (route_i == route_j)
@@ -2131,7 +2128,7 @@ std::string serialize(valhalla::Api& api) {
       summarize_route_legs(api.directions().routes());
 
   // For each route...
-  for (int i = 0; i < (int) api.trip().routes_size(); ++i) {
+  for (int i = 0; i < (int)api.trip().routes_size(); ++i) {
     // Create a route to add to the array
     auto route = json::map({});
     route->reserve(10); // some of the things are conditional so we take a swag here
@@ -2152,8 +2149,7 @@ std::string serialize(valhalla::Api& api) {
     // Serialize route legs
     auto legs = api.mutable_trip()->mutable_routes(i)->mutable_legs();
     route->emplace("legs", serialize_legs(api.directions().routes(i).legs(), route_leg_summaries[i],
-                                          legs,
-                                          imperial, options, controller));
+                                          legs, imperial, options, controller));
 
     // Add voice instructions if the user requested them
     if (options.voice_instructions()) {

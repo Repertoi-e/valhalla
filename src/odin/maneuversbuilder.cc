@@ -76,8 +76,7 @@ bool is_pair(const std::vector<std::string>& tokens) {
   return (tokens.size() == 2);
 }
 
-bool has_level_changes(
-    const ::std::vector<valhalla::TripLeg_Edge_Level>& levels) {
+bool has_level_changes(const ::std::vector<valhalla::TripLeg_Edge_Level>& levels) {
   return levels.size() == 1 ? levels[0].start() != levels[0].end() : levels.size() != 0;
 }
 
@@ -193,10 +192,11 @@ std::list<Maneuver> ManeuversBuilder::Build() {
                               : trip_path_->GetCurrEdge(last_node_index)->name(0).value();
   std::string units = options_.units() == valhalla::Options::kilometers ? "kilometers" : "miles";
   LOG_DEBUG((logging::sprintf("ROUTE_REQUEST|-j "
-                           "'{\"locations\":[{\"lat\":%1$.6f,\"lon\":%2$.6f,\"street\":\"%3%\"},{"
-                           "\"lat\":%4$.6f,\"lon\":%5$.6f,\"street\":\"%6%\"}],\"costing\":"
-                           "\"auto\",\"units\":\"%7%\"}'", orig.ll().lat(), orig.ll().lng(), first_name,
-             dest.ll().lat(), dest.ll().lng(), last_name, units)));
+                              "'{\"locations\":[{\"lat\":%1$.6f,\"lon\":%2$.6f,\"street\":\"%3%\"},{"
+                              "\"lat\":%4$.6f,\"lon\":%5$.6f,\"street\":\"%6%\"}],\"costing\":"
+                              "\"auto\",\"units\":\"%7%\"}'",
+                              orig.ll().lat(), orig.ll().lng(), first_name, dest.ll().lat(),
+                              dest.ll().lng(), last_name, units)));
 #endif
 
   return maneuvers;
@@ -2643,7 +2643,8 @@ bool ManeuversBuilder::IsFork(int node_index,
            !curr_edge->IsRailFerryUse() &&
            node->HasRoadForkTraversableIntersectingEdge(prev_edge->end_heading(),
                                                         prev_edge->travel_mode(),
-                                                        ((prev_edge->road_class() == RoadClass::kServiceOther) ||
+                                                        ((prev_edge->road_class() ==
+                                                          RoadClass::kServiceOther) ||
                                                          (curr_edge->road_class() ==
                                                           RoadClass::kServiceOther)))) {
     return true;

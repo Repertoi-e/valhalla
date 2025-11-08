@@ -2,13 +2,12 @@
 #include "baldr/verbal_text_formatter.h"
 #include "exceptions.h"
 #include "midgard/constants.h"
+#include "midgard/string_utils.h"
 #include "odin/enhancedtrippath.h"
 #include "odin/maneuver.h"
 #include "odin/markup_formatter.h"
 #include "odin/narrative_dictionary.h"
 #include "odin/util.h"
-
-#include "midgard/string_utils.h"
 
 #include <cmath>
 #include <iomanip>
@@ -562,8 +561,8 @@ std::string NarrativeBuilder::FormVerbalAlertApproachInstruction(float distance,
 
   // Replace phrase tags with values
   replace_all(instruction, kLengthTag,
-                     FormLength(distance, dictionary_.approach_verbal_alert_subset.metric_lengths,
-                                dictionary_.approach_verbal_alert_subset.us_customary_lengths));
+              FormLength(distance, dictionary_.approach_verbal_alert_subset.metric_lengths,
+                         dictionary_.approach_verbal_alert_subset.us_customary_lengths));
   replace_all(instruction, kCurrentVerbalCueTag, verbal_cue);
 
   // If enabled, form articulated prepositions
@@ -593,7 +592,7 @@ std::string NarrativeBuilder::FormStartInstruction(Maneuver& maneuver) {
 
   // Set cardinal_direction value
   std::string cardinal_direction =
-      dictionary_.start_subset.cardinal_directions.at((int) maneuver.begin_cardinal_direction());
+      dictionary_.start_subset.cardinal_directions.at((int)maneuver.begin_cardinal_direction());
 
   // Set street_names value
   std::string street_names =
@@ -666,8 +665,8 @@ std::string NarrativeBuilder::FormVerbalStartInstruction(Maneuver& maneuver,
   instruction.reserve(kInstructionInitialCapacity);
 
   // Set cardinal_direction value
-  std::string cardinal_direction =
-      dictionary_.start_verbal_subset.cardinal_directions.at((int) maneuver.begin_cardinal_direction());
+  std::string cardinal_direction = dictionary_.start_verbal_subset.cardinal_directions.at(
+      (int)maneuver.begin_cardinal_direction());
 
   // Set street_names value
   std::string street_names =
@@ -717,8 +716,8 @@ std::string NarrativeBuilder::FormVerbalStartInstruction(Maneuver& maneuver,
   replace_all(instruction, kStreetNamesTag, street_names);
   replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
   replace_all(instruction, kLengthTag,
-                     FormLength(maneuver, dictionary_.start_verbal_subset.metric_lengths,
-                                dictionary_.start_verbal_subset.us_customary_lengths));
+              FormLength(maneuver, dictionary_.start_verbal_subset.metric_lengths,
+                         dictionary_.start_verbal_subset.us_customary_lengths));
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -767,8 +766,8 @@ std::string NarrativeBuilder::FormDestinationInstruction(Maneuver& maneuver) {
 
   if (phrase_id > 0) {
     // Replace phrase tags with values
-  replace_all(instruction, kRelativeDirectionTag, relative_direction);
-  replace_all(instruction, kDestinationTag, destination);
+    replace_all(instruction, kRelativeDirectionTag, relative_direction);
+    replace_all(instruction, kDestinationTag, destination);
   }
 
   // If enabled, form articulated prepositions
@@ -823,8 +822,8 @@ std::string NarrativeBuilder::FormVerbalAlertDestinationInstruction(Maneuver& ma
 
   if (phrase_id > 0) {
     // Replace phrase tags with values
-  replace_all(instruction, kRelativeDirectionTag, relative_direction);
-  replace_all(instruction, kDestinationTag, destination);
+    replace_all(instruction, kRelativeDirectionTag, relative_direction);
+    replace_all(instruction, kDestinationTag, destination);
   }
 
   // If enabled, form articulated prepositions
@@ -879,8 +878,8 @@ std::string NarrativeBuilder::FormVerbalDestinationInstruction(Maneuver& maneuve
 
   if (phrase_id > 0) {
     // Replace phrase tags with values
-  replace_all(instruction, kRelativeDirectionTag, relative_direction);
-  replace_all(instruction, kDestinationTag, destination);
+    replace_all(instruction, kRelativeDirectionTag, relative_direction);
+    replace_all(instruction, kDestinationTag, destination);
   }
 
   // If enabled, form articulated prepositions
@@ -1116,8 +1115,8 @@ std::string NarrativeBuilder::FormVerbalContinueInstruction(Maneuver& maneuver,
 
   // Replace phrase tags with values
   replace_all(instruction, kLengthTag,
-                     FormLength(maneuver, dictionary_.continue_verbal_subset.metric_lengths,
-                                dictionary_.continue_verbal_subset.us_customary_lengths));
+              FormLength(maneuver, dictionary_.continue_verbal_subset.metric_lengths,
+                         dictionary_.continue_verbal_subset.us_customary_lengths));
   replace_all(instruction, kStreetNamesTag, street_names);
   replace_all(instruction, kJunctionNameTag, junction_name);
   replace_all(instruction, kTowardSignTag, guide_sign);
@@ -1201,7 +1200,7 @@ std::string NarrativeBuilder::FormTurnInstruction(Maneuver& maneuver,
 
   // Replace phrase tags with values
   replace_all(instruction, kRelativeDirectionTag,
-                     FormRelativeTwoDirection(maneuver.type(), subset->relative_directions));
+              FormRelativeTwoDirection(maneuver.type(), subset->relative_directions));
   replace_all(instruction, kStreetNamesTag, street_names);
   replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
   replace_all(instruction, kJunctionNameTag, junction_name);
@@ -1309,7 +1308,7 @@ std::string NarrativeBuilder::FormVerbalTurnInstruction(Maneuver& maneuver,
 
   // Replace phrase tags with values
   replace_all(instruction, kRelativeDirectionTag,
-                     FormRelativeTwoDirection(maneuver.type(), subset->relative_directions));
+              FormRelativeTwoDirection(maneuver.type(), subset->relative_directions));
   replace_all(instruction, kStreetNamesTag, street_names);
   replace_all(instruction, kBeginStreetNamesTag, begin_street_names);
   replace_all(instruction, kJunctionNameTag, junction_name);
@@ -1379,8 +1378,8 @@ std::string NarrativeBuilder::FormUturnInstruction(Maneuver& maneuver,
 
   // Replace phrase tags with values
   replace_all(instruction, kRelativeDirectionTag,
-                     FormRelativeTwoDirection(maneuver.type(),
-                                              dictionary_.uturn_subset.relative_directions));
+              FormRelativeTwoDirection(maneuver.type(),
+                                       dictionary_.uturn_subset.relative_directions));
   replace_all(instruction, kStreetNamesTag, street_names);
   replace_all(instruction, kCrossStreetNamesTag, cross_street_names);
   replace_all(instruction, kJunctionNameTag, junction_name);
@@ -1767,8 +1766,7 @@ std::string NarrativeBuilder::FormRampInstruction(Maneuver& maneuver,
 
   // Replace phrase tags with values
   replace_all(instruction, kRelativeDirectionTag,
-                     FormRelativeTwoDirection(maneuver.type(),
-                                              dictionary_.ramp_subset.relative_directions));
+              FormRelativeTwoDirection(maneuver.type(), dictionary_.ramp_subset.relative_directions));
   replace_all(instruction, kBranchSignTag, exit_branch_sign);
   replace_all(instruction, kTowardSignTag, exit_toward_sign);
   replace_all(instruction, kNameSignTag, exit_name_sign);
@@ -2012,8 +2010,7 @@ std::string NarrativeBuilder::FormExitInstruction(Maneuver& maneuver,
 
   // Replace phrase tags with values
   replace_all(instruction, kRelativeDirectionTag,
-                     FormRelativeTwoDirection(maneuver.type(),
-                                              dictionary_.exit_subset.relative_directions));
+              FormRelativeTwoDirection(maneuver.type(), dictionary_.exit_subset.relative_directions));
   replace_all(instruction, kNumberSignTag, exit_number_sign);
   replace_all(instruction, kBranchSignTag, exit_branch_sign);
   replace_all(instruction, kTowardSignTag, exit_toward_sign);
@@ -2272,8 +2269,8 @@ std::string NarrativeBuilder::FormKeepInstruction(Maneuver& maneuver,
 
   // Replace phrase tags with values
   replace_all(instruction, kRelativeDirectionTag,
-                     FormRelativeThreeDirection(maneuver.type(),
-                                                dictionary_.keep_subset.relative_directions));
+              FormRelativeThreeDirection(maneuver.type(),
+                                         dictionary_.keep_subset.relative_directions));
   replace_all(instruction, kNumberSignTag, exit_number_sign);
   replace_all(instruction, kStreetNamesTag, street_names);
   replace_all(instruction, kTowardSignTag, toward_sign);
@@ -2522,8 +2519,8 @@ std::string NarrativeBuilder::FormKeepToStayOnInstruction(Maneuver& maneuver,
 
   // Replace phrase tags with values
   replace_all(instruction, kRelativeDirectionTag,
-                     FormRelativeThreeDirection(maneuver.type(), dictionary_.keep_to_stay_on_subset
-                                                                     .relative_directions));
+              FormRelativeThreeDirection(maneuver.type(),
+                                         dictionary_.keep_to_stay_on_subset.relative_directions));
   replace_all(instruction, kStreetNamesTag, street_names);
   replace_all(instruction, kNumberSignTag, exit_number_sign);
   replace_all(instruction, kTowardSignTag, toward_sign);
@@ -2880,8 +2877,7 @@ std::string NarrativeBuilder::FormEnterRoundaboutInstruction(Maneuver& maneuver,
   replace_all(instruction, kStreetNamesTag, street_names);
   replace_all(instruction, kTowardSignTag, guide_sign);
   replace_all(instruction, kRoundaboutExitStreetNamesTag, roundabout_exit_street_names);
-  replace_all(instruction, kRoundaboutExitBeginStreetNamesTag,
-                     roundabout_exit_begin_street_names);
+  replace_all(instruction, kRoundaboutExitBeginStreetNamesTag, roundabout_exit_begin_street_names);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3032,8 +3028,7 @@ std::string NarrativeBuilder::FormVerbalEnterRoundaboutInstruction(Maneuver& man
   replace_all(instruction, kStreetNamesTag, street_names);
   replace_all(instruction, kTowardSignTag, guide_sign);
   replace_all(instruction, kRoundaboutExitStreetNamesTag, roundabout_exit_street_names);
-  replace_all(instruction, kRoundaboutExitBeginStreetNamesTag,
-                     roundabout_exit_begin_street_names);
+  replace_all(instruction, kRoundaboutExitBeginStreetNamesTag, roundabout_exit_begin_street_names);
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3535,7 +3530,7 @@ std::string NarrativeBuilder::FormDepartInstruction(Maneuver& maneuver) {
   // Replace phrase tags with values
   replace_all(instruction, kTransitPlatformTag, transit_stop_name);
   replace_all(instruction, kTimeTag,
-                     get_localized_time(maneuver.GetTransitDepartureTime(), dictionary_.GetLocale()));
+              get_localized_time(maneuver.GetTransitDepartureTime(), dictionary_.GetLocale()));
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3564,7 +3559,7 @@ std::string NarrativeBuilder::FormVerbalDepartInstruction(Maneuver& maneuver) {
   // Replace phrase tags with values
   replace_all(instruction, kTransitPlatformTag, transit_stop_name);
   replace_all(instruction, kTimeTag,
-                     get_localized_time(maneuver.GetTransitDepartureTime(), dictionary_.GetLocale()));
+              get_localized_time(maneuver.GetTransitDepartureTime(), dictionary_.GetLocale()));
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3593,7 +3588,7 @@ std::string NarrativeBuilder::FormArriveInstruction(Maneuver& maneuver) {
   // Replace phrase tags with values
   replace_all(instruction, kTransitPlatformTag, transit_stop_name);
   replace_all(instruction, kTimeTag,
-                     get_localized_time(maneuver.GetTransitArrivalTime(), dictionary_.GetLocale()));
+              get_localized_time(maneuver.GetTransitArrivalTime(), dictionary_.GetLocale()));
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3622,7 +3617,7 @@ std::string NarrativeBuilder::FormVerbalArriveInstruction(Maneuver& maneuver) {
   // Replace phrase tags with values
   replace_all(instruction, kTransitPlatformTag, transit_stop_name);
   replace_all(instruction, kTimeTag,
-                     get_localized_time(maneuver.GetTransitArrivalTime(), dictionary_.GetLocale()));
+              get_localized_time(maneuver.GetTransitArrivalTime(), dictionary_.GetLocale()));
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -3654,10 +3649,10 @@ std::string NarrativeBuilder::FormTransitInstruction(Maneuver& maneuver) {
 
   // Replace phrase tags with values
   replace_all(instruction, kTransitNameTag,
-                     FormTransitName(maneuver, dictionary_.transit_subset.empty_transit_name_labels));
+              FormTransitName(maneuver, dictionary_.transit_subset.empty_transit_name_labels));
   replace_all(instruction, kTransitHeadSignTag, transit_headsign);
   replace_all(instruction, kTransitPlatformCountTag,
-                     std::to_string(stop_count)); // TODO: locale specific numerals
+              std::to_string(stop_count)); // TODO: locale specific numerals
   replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
 
   // If enabled, form articulated prepositions
@@ -3686,8 +3681,7 @@ std::string NarrativeBuilder::FormVerbalTransitInstruction(Maneuver& maneuver) {
 
   // Replace phrase tags with values
   replace_all(instruction, kTransitNameTag,
-                     FormTransitName(maneuver,
-                                     dictionary_.transit_verbal_subset.empty_transit_name_labels));
+              FormTransitName(maneuver, dictionary_.transit_verbal_subset.empty_transit_name_labels));
   replace_all(instruction, kTransitHeadSignTag, transit_headsign);
 
   // If enabled, form articulated prepositions
@@ -3721,11 +3715,11 @@ std::string NarrativeBuilder::FormTransitRemainOnInstruction(Maneuver& maneuver)
 
   // Replace phrase tags with values
   replace_all(instruction, kTransitNameTag,
-                     FormTransitName(maneuver,
-                                     dictionary_.transit_remain_on_subset.empty_transit_name_labels));
+              FormTransitName(maneuver,
+                              dictionary_.transit_remain_on_subset.empty_transit_name_labels));
   replace_all(instruction, kTransitHeadSignTag, transit_headsign);
   replace_all(instruction, kTransitPlatformCountTag,
-                     std::to_string(stop_count)); // TODO: locale specific numerals
+              std::to_string(stop_count)); // TODO: locale specific numerals
   replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
 
   // If enabled, form articulated prepositions
@@ -3754,8 +3748,8 @@ std::string NarrativeBuilder::FormVerbalTransitRemainOnInstruction(Maneuver& man
 
   // Replace phrase tags with values
   replace_all(instruction, kTransitNameTag,
-                     FormTransitName(maneuver, dictionary_.transit_remain_on_verbal_subset
-                                                   .empty_transit_name_labels));
+              FormTransitName(maneuver,
+                              dictionary_.transit_remain_on_verbal_subset.empty_transit_name_labels));
   replace_all(instruction, kTransitHeadSignTag, transit_headsign);
 
   // If enabled, form articulated prepositions
@@ -3789,11 +3783,11 @@ std::string NarrativeBuilder::FormTransitTransferInstruction(Maneuver& maneuver)
 
   // Replace phrase tags with values
   replace_all(instruction, kTransitNameTag,
-                     FormTransitName(maneuver,
-                                     dictionary_.transit_transfer_subset.empty_transit_name_labels));
+              FormTransitName(maneuver,
+                              dictionary_.transit_transfer_subset.empty_transit_name_labels));
   replace_all(instruction, kTransitHeadSignTag, transit_headsign);
   replace_all(instruction, kTransitPlatformCountTag,
-                     std::to_string(stop_count)); // TODO: locale specific numerals
+              std::to_string(stop_count)); // TODO: locale specific numerals
   replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
 
   // If enabled, form articulated prepositions
@@ -3822,8 +3816,8 @@ std::string NarrativeBuilder::FormVerbalTransitTransferInstruction(Maneuver& man
 
   // Replace phrase tags with values
   replace_all(instruction, kTransitNameTag,
-                     FormTransitName(maneuver, dictionary_.transit_transfer_verbal_subset
-                                                   .empty_transit_name_labels));
+              FormTransitName(maneuver,
+                              dictionary_.transit_transfer_verbal_subset.empty_transit_name_labels));
   replace_all(instruction, kTransitHeadSignTag, transit_headsign);
 
   // If enabled, form articulated prepositions
@@ -3870,8 +3864,8 @@ std::string NarrativeBuilder::FormVerbalPostTransitionInstruction(Maneuver& mane
 
   // Replace phrase tags with values
   replace_all(instruction, kLengthTag,
-                     FormLength(maneuver, dictionary_.post_transition_verbal_subset.metric_lengths,
-                                dictionary_.post_transition_verbal_subset.us_customary_lengths));
+              FormLength(maneuver, dictionary_.post_transition_verbal_subset.metric_lengths,
+                         dictionary_.post_transition_verbal_subset.us_customary_lengths));
   replace_all(instruction, kStreetNamesTag, street_names);
 
   // If enabled, form articulated prepositions
@@ -3899,7 +3893,7 @@ std::string NarrativeBuilder::FormVerbalPostTransitionTransitInstruction(Maneuve
 
   // Replace phrase tags with values
   replace_all(instruction, kTransitPlatformCountTag,
-                     std::to_string(stop_count)); // TODO: locale specific numerals
+              std::to_string(stop_count)); // TODO: locale specific numerals
   replace_all(instruction, kTransitPlatformCountLabelTag, stop_count_label);
 
   // If enabled, form articulated prepositions
@@ -3924,8 +3918,8 @@ std::string NarrativeBuilder::FormVerbalSuccinctStartTransitionInstruction(Maneu
   instruction.reserve(kInstructionInitialCapacity);
 
   // Set cardinal_direction value
-  std::string cardinal_direction =
-      dictionary_.start_verbal_subset.cardinal_directions.at((int) maneuver.begin_cardinal_direction());
+  std::string cardinal_direction = dictionary_.start_verbal_subset.cardinal_directions.at(
+      (int)maneuver.begin_cardinal_direction());
 
   // Determine which phrase to use
   uint8_t phrase_id = 0;
@@ -3950,8 +3944,8 @@ std::string NarrativeBuilder::FormVerbalSuccinctStartTransitionInstruction(Maneu
   // Replace phrase tags with values
   replace_all(instruction, kCardinalDirectionTag, cardinal_direction);
   replace_all(instruction, kLengthTag,
-                     FormLength(maneuver, dictionary_.start_verbal_subset.metric_lengths,
-                                dictionary_.start_verbal_subset.us_customary_lengths));
+              FormLength(maneuver, dictionary_.start_verbal_subset.metric_lengths,
+                         dictionary_.start_verbal_subset.us_customary_lengths));
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {
@@ -4015,7 +4009,7 @@ NarrativeBuilder::FormVerbalSuccinctTurnTransitionInstruction(Maneuver& maneuver
 
   // Replace phrase tags with values
   replace_all(instruction, kRelativeDirectionTag,
-                     FormRelativeTwoDirection(maneuver.type(), subset->relative_directions));
+              FormRelativeTwoDirection(maneuver.type(), subset->relative_directions));
   replace_all(instruction, kJunctionNameTag, junction_name);
   replace_all(instruction, kTowardSignTag, guide_sign);
 
@@ -4061,8 +4055,8 @@ NarrativeBuilder::FormVerbalSuccinctUturnTransitionInstruction(Maneuver& maneuve
 
   // Replace phrase tags with values
   replace_all(instruction, kRelativeDirectionTag,
-                     FormRelativeTwoDirection(maneuver.type(),
-                                              dictionary_.uturn_verbal_subset.relative_directions));
+              FormRelativeTwoDirection(maneuver.type(),
+                                       dictionary_.uturn_verbal_subset.relative_directions));
   replace_all(instruction, kJunctionNameTag, junction_name);
   replace_all(instruction, kTowardSignTag, guide_sign);
 
@@ -4641,7 +4635,7 @@ NarrativeBuilder::FormTransitName(const Maneuver& maneuver,
   } else if (!maneuver.transit_info().long_name.empty()) {
     return (maneuver.transit_info().long_name);
   }
-  return empty_transit_name_labels.at((int) maneuver.transit_type());
+  return empty_transit_name_labels.at((int)maneuver.transit_type());
 }
 
 // NOTE: Tried to use 'contains' instead of 'ends_with'
@@ -4839,8 +4833,8 @@ std::string NarrativeBuilder::FormVerbalMultiCue(Maneuver& maneuver,
   replace_all(instruction, kCurrentVerbalCueTag, first_verbal_cue);
   replace_all(instruction, kNextVerbalCueTag, second_verbal_cue);
   replace_all(instruction, kLengthTag,
-                     FormLength(maneuver, dictionary_.post_transition_verbal_subset.metric_lengths,
-                                dictionary_.post_transition_verbal_subset.us_customary_lengths));
+              FormLength(maneuver, dictionary_.post_transition_verbal_subset.metric_lengths,
+                         dictionary_.post_transition_verbal_subset.us_customary_lengths));
 
   // If enabled, form articulated prepositions
   if (articulated_preposition_enabled_) {

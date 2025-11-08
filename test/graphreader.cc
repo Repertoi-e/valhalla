@@ -3,6 +3,7 @@
 #include "baldr/tilehierarchy.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <fcntl.h>
 #include <gtest/gtest.h>
 

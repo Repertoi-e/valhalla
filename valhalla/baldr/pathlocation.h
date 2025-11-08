@@ -252,9 +252,8 @@ public:
    * locations
    * @return
    */
-  static std::vector<Location>
-  fromPBF(const std::vector<valhalla::Location>& locations,
-          bool route_reach = false) {
+  static std::vector<Location> fromPBF(const std::vector<valhalla::Location>& locations,
+                                       bool route_reach = false) {
     std::vector<Location> pls;
     for (const auto& l : locations) {
       pls.emplace_back(fromPBF(l));

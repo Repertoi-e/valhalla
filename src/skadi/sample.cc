@@ -531,12 +531,12 @@ bool sample::fetch(uint16_t index) {
     return false;
   }
 
-  #if !defined __EMSCRIPTEN__
+#if !defined __EMSCRIPTEN__
   if (!store(elev, result.data_, result.size_)) {
     LOG_WARN("Fail to save data loaded from remote server address: " + uri);
     return false;
   }
-  #endif
+#endif
 
   LOG_INFO("Data loaded from remote server address: " + uri);
   return true;

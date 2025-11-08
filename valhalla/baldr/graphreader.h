@@ -6,7 +6,6 @@
 #include <valhalla/baldr/tilehierarchy.h>
 #include <valhalla/midgard/aabb2.h>
 #include <valhalla/midgard/pointll.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <cstdint>

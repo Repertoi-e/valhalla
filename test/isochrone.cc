@@ -2,10 +2,9 @@
 #include "baldr/rapidjson_utils.h"
 #include "gurka/gurka.h"
 #include "loki/worker.h"
+#include "midgard/util.h"
 #include "test.h"
 #include "thor/worker.h"
-
-#include "midgard/util.h"
 
 #include <iostream>
 #include <string>

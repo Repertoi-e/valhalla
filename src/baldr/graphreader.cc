@@ -104,8 +104,7 @@ tile_gone_error_t::tile_gone_error_t(std::string prefix, baldr::GraphId edgeid)
                          std::to_string(edgeid.Tile_Base())) {
 }
 
-GraphReader::tile_extract_t::tile_extract_t(const property_tree& pt,
-                                            bool traffic_readonly) {
+GraphReader::tile_extract_t::tile_extract_t(const property_tree& pt, bool traffic_readonly) {
   // A lambda for loading the contents of a graph tile tar from an index file
   bool traffic_from_index = false;
   auto index_loader = [this, &traffic_from_index](const std::string& filename,

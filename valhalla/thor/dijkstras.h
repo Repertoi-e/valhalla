@@ -5,14 +5,13 @@
 #include <valhalla/baldr/graphid.h>
 #include <valhalla/baldr/graphreader.h>
 #include <valhalla/baldr/time_info.h>
+#include <valhalla/property_tree/ptree.hpp>
 #include <valhalla/proto/api.pb.h>
 #include <valhalla/proto/common.pb.h>
 #include <valhalla/sif/dynamiccost.h>
 #include <valhalla/sif/edgelabel.h>
 #include <valhalla/thor/edgestatus.h>
 #include <valhalla/thor/pathalgorithm.h>
-
-#include <valhalla/property_tree/ptree.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -105,12 +104,11 @@ protected:
    * @param  mode_costing List of costing objects
    * @param  mode         Travel mode
    */
-  virtual void
-  ComputeMultiModal(std::vector<valhalla::Location>& origin_locations,
-                    baldr::GraphReader& graphreader,
-                    const sif::mode_costing_t& mode_costing,
-                    const sif::TravelMode mode,
-                    const valhalla::Options& options);
+  virtual void ComputeMultiModal(std::vector<valhalla::Location>& origin_locations,
+                                 baldr::GraphReader& graphreader,
+                                 const sif::mode_costing_t& mode_costing,
+                                 const sif::TravelMode mode,
+                                 const valhalla::Options& options);
 
   // A child-class must implement this to learn about what nodes were expanded
   virtual void ExpandingNode(baldr::GraphReader&,
@@ -191,9 +189,8 @@ protected:
    * @param reader             the reader for looking up timezone information
    * @returns                  time info for each location
    */
-  std::vector<baldr::TimeInfo>
-  SetTime(std::vector<valhalla::Location>& locations,
-          baldr::GraphReader& reader);
+  std::vector<baldr::TimeInfo> SetTime(std::vector<valhalla::Location>& locations,
+                                       baldr::GraphReader& reader);
 
   /**
    * Expand from the node along the search path for non-multimodal expansion
@@ -253,10 +250,9 @@ protected:
    * @param  origin_locations  Location information for origins.
    * @param  costing           Dynamic costing.
    */
-  void SetOriginLocationsMultiModal(
-      baldr::GraphReader& graphreader,
-      std::vector<valhalla::Location>& origin_locations,
-      const sif::cost_ptr_t& costing);
+  void SetOriginLocationsMultiModal(baldr::GraphReader& graphreader,
+                                    std::vector<valhalla::Location>& origin_locations,
+                                    const sif::cost_ptr_t& costing);
 
   /**
    * Add edge(s) at each destination location to the adjacency list.

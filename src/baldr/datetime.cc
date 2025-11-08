@@ -435,18 +435,16 @@ const std::string check_tz_map(const date::tzdb& db) {
 
   std::string result;
   if (new_zones_msg.size()) {
-    result +=
-        "\nNew timezones to be manually resolved: \n" +
-        [&new_zones_msg]() {
-          std::string joined;
-          for (auto it = new_zones_msg.begin(); it != new_zones_msg.end(); ++it) {
-            if (it != new_zones_msg.begin()) {
-              joined += '\n';
-            }
-            joined += *it;
-          }
-          return joined;
-        }();
+    result += "\nNew timezones to be manually resolved: \n" + [&new_zones_msg]() {
+      std::string joined;
+      for (auto it = new_zones_msg.begin(); it != new_zones_msg.end(); ++it) {
+        if (it != new_zones_msg.begin()) {
+          joined += '\n';
+        }
+        joined += *it;
+      }
+      return joined;
+    }();
   }
 
   return result;

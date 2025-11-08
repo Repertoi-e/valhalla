@@ -9,6 +9,7 @@
 #include "mjolnir/graphvalidator.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <gtest/gtest.h>
 
 #include <cstdint>

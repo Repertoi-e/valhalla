@@ -49,12 +49,11 @@ private:
   const std::vector<char> memory_;
 };
 
-graph_tile_ptr GraphTile::DecompressTile(const GraphId& graphid,
-                                         const char *compressed, size_t compressed_size) {
+graph_tile_ptr
+GraphTile::DecompressTile(const GraphId& graphid, const char* compressed, size_t compressed_size) {
   // for setting where to read compressed data from
   auto src_func = [&compressed, compressed_size](z_stream& s) -> void {
-    s.next_in =
-        const_cast<Byte*>(static_cast<const Byte*>(static_cast<const void*>(compressed)));
+    s.next_in = const_cast<Byte*>(static_cast<const Byte*>(static_cast<const void*>(compressed)));
     s.avail_in = static_cast<unsigned int>(compressed_size);
   };
 

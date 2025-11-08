@@ -6,8 +6,7 @@ using namespace valhalla::baldr;
 
 namespace {
 
-void check_distance(const std::vector<valhalla::Location>& locations,
-                    float max_iso_distance) {
+void check_distance(const std::vector<valhalla::Location>& locations, float max_iso_distance) {
   // see if any locations pairs are unreachable or too far apart
   for (auto source = locations.begin(); source != locations.end() - 1; ++source) {
     for (auto target = source + 1; target != locations.end(); ++target) {

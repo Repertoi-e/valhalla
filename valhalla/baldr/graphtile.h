@@ -953,7 +953,8 @@ protected:
    * @return a pointer to a graphtile if it  has been successfully initialized with
    *         the uncompressed data, or nullptr
    */
-  static graph_tile_ptr DecompressTile(const GraphId& graphid, const char* compressed, size_t compressed_size);
+  static graph_tile_ptr
+  DecompressTile(const GraphId& graphid, const char* compressed, size_t compressed_size);
 };
 
 } // namespace baldr

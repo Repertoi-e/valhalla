@@ -7,6 +7,7 @@
 #include "thor/worker.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <prime_server/http_protocol.hpp>
 #include <prime_server/prime_server.hpp>
 
@@ -363,19 +364,19 @@ std::list<std::pair<std::string, std::string>>
     };
 
 property_tree make_config(const std::vector<std::string>& whitelist = {
-                                            "locate",
-                                            "route",
-                                            "height",
-                                            "sources_to_targets",
-                                            "optimized_route",
-                                            "isochrone",
-                                            "trace_route",
-                                            "trace_attributes",
-                                            "transit_available",
-                                            "expansion",
-                                            "centroid",
-                                            "status",
-                                        }) {
+                              "locate",
+                              "route",
+                              "height",
+                              "sources_to_targets",
+                              "optimized_route",
+                              "isochrone",
+                              "trace_route",
+                              "trace_attributes",
+                              "transit_available",
+                              "expansion",
+                              "centroid",
+                              "status",
+                          }) {
   std::filesystem::path run_dir{VALHALLA_BUILD_DIR "test"};
   run_dir.append("loki_service_tmp");
   if (!std::filesystem::is_directory(run_dir) && !std::filesystem::create_directories(run_dir))

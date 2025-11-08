@@ -1,7 +1,6 @@
 #pragma once
 
 #include <valhalla/baldr/landmark.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <memory>
@@ -81,8 +80,7 @@ protected:
  * @param input_files A vector of file paths to the PBF input files.
  * @return True if landmarks were successfully built and inserted into the database, false otherwise.
  */
-bool BuildLandmarkFromPBF(const property_tree& pt,
-                          const std::vector<std::string>& input_files);
+bool BuildLandmarkFromPBF(const property_tree& pt, const std::vector<std::string>& input_files);
 
 /**
  * Add landmarks from the landmark database to graph tiles.

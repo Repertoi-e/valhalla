@@ -6,6 +6,7 @@
 #include "valhalla/proto/transit.pb.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <cxxopts.hpp>
 
 #include <cstdint>
@@ -31,7 +32,8 @@ valhalla::Transit read_pbf(const std::string& file_name) {
 }
 
 // Get PBF transit data given a GraphId / tile
-valhalla::Transit read_pbf(const GraphId& id, const std::string& transit_dir, std::string& file_name) {
+valhalla::Transit
+read_pbf(const GraphId& id, const std::string& transit_dir, std::string& file_name) {
   std::string fname = GraphTile::FileSuffix(id);
   fname = fname.substr(0, fname.size() - 3) + "pbf";
   std::filesystem::path file_path{transit_dir};

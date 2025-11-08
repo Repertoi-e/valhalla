@@ -1,9 +1,9 @@
 #ifndef VALHALLA_MJOLNIR_RESTRICTIONBUILDER_H
 #define VALHALLA_MJOLNIR_RESTRICTIONBUILDER_H
 
-#include <string>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
+
+#include <string>
 
 namespace valhalla {
 namespace mjolnir {

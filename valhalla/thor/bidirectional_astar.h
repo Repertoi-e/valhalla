@@ -3,12 +3,11 @@
 
 #include <valhalla/baldr/double_bucket_queue.h>
 #include <valhalla/baldr/time_info.h>
+#include <valhalla/property_tree/ptree.hpp>
 #include <valhalla/sif/edgelabel.h>
 #include <valhalla/thor/astarheuristic.h>
 #include <valhalla/thor/edgestatus.h>
 #include <valhalla/thor/pathalgorithm.h>
-
-#include <valhalla/property_tree/ptree.hpp>
 
 #include <cstdint>
 #include <memory>

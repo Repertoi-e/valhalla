@@ -242,9 +242,8 @@ protected:
    * @param reader             the reader for looking up timezone information
    * @returns                  time info for each location
    */
-  std::vector<baldr::TimeInfo>
-  SetTime(std::vector<valhalla::Location>& origins,
-          baldr::GraphReader& reader) {
+  std::vector<baldr::TimeInfo> SetTime(std::vector<valhalla::Location>& origins,
+                                       baldr::GraphReader& reader) {
     // loop over all locations setting the date time with timezone
     std::vector<baldr::TimeInfo> infos;
     infos.reserve(origins.size());

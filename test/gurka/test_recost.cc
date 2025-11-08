@@ -102,10 +102,8 @@ TEST(recosting, forward_vs_reverse_internal_turn) {
     EXPECT_EQ(forward.trip().routes(0).legs(0).node_size(),
               reverse.trip().routes(0).legs(0).node_size());
     int node_count = forward.trip().routes(0).legs(0).node_size();
-    auto forward_cost =
-        forward.trip().routes(0).legs(0).node()[node_count - 1].cost().elapsed_cost();
-    auto reverse_cost =
-        reverse.trip().routes(0).legs(0).node()[node_count - 1].cost().elapsed_cost();
+    auto forward_cost = forward.trip().routes(0).legs(0).node()[node_count - 1].cost().elapsed_cost();
+    auto reverse_cost = reverse.trip().routes(0).legs(0).node()[node_count - 1].cost().elapsed_cost();
     // if assert is triggered - check if uturn on internal edges is detected correctly
     EXPECT_NEAR(forward_cost.cost(), reverse_cost.cost(), 0.1);
   }

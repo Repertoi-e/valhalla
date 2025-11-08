@@ -2,7 +2,6 @@
 #define VALHALLA_MJOLNIR_PBFGRAPHPARSER_H
 
 #include <valhalla/mjolnir/osmdata.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <string>

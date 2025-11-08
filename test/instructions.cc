@@ -481,8 +481,8 @@ TEST(Instructions, validate_roundabout_unnamed_cycleway_instructions) {
       expected_routes_size, expected_legs_size, expected_maneuvers_size, maneuver_index,
       "Exit the roundabout onto the cycleway.",
       "Exit the roundabout. Then, in 200 feet, You will arrive at your destination.", "",
-      "Exit the roundabout onto the cycleway. Then, in 200 feet, You will arrive at your destination.",
-      "Continue for 200 feet.");
+      "Exit the roundabout onto the cycleway. Then, in 200 feet, You will arrive at your
+destination.", "Continue for 200 feet.");
 }
 
 TEST(Instructions, validate_turn_at_instructions) {

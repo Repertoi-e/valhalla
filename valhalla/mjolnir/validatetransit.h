@@ -2,7 +2,6 @@
 #define VALHALLA_MJOLNIR_VALIDATETRANSIT_H
 
 #include <valhalla/baldr/graphid.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <unordered_set>

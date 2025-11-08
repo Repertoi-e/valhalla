@@ -1,10 +1,9 @@
 #ifndef __VALHALLA_WORKER_H__
 #define __VALHALLA_WORKER_H__
 #include <valhalla/exceptions.h>
+#include <valhalla/property_tree/ptree_fwd.hpp>
 #include <valhalla/proto/api.pb.h>
 #include <valhalla/sif/dynamiccost.h>
-
-#include <valhalla/property_tree/ptree_fwd.hpp>
 
 #ifdef ENABLE_SERVICES
 #include <prime_server/http_protocol.hpp>
@@ -40,10 +39,9 @@ void ParseApi(const std::string& json_request, Options::Action action, Api& api)
  * @param hierarchy      name of the algorithm to parse from the right config section
  * @param uses_dist      if true, also parses values for 'expansion within distance'
  */
-hierarchy_limits_config_t
-parse_hierarchy_limits_from_config(const property_tree& config,
-                                   const std::string& path,
-                                   const bool uses_dist);
+hierarchy_limits_config_t parse_hierarchy_limits_from_config(const property_tree& config,
+                                                             const std::string& path,
+                                                             const bool uses_dist);
 
 /**
  * See if the user supplied custom hierarchy limits and possible override with defaults or clamp

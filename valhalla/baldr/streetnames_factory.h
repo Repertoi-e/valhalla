@@ -18,9 +18,8 @@ public:
   static std::unique_ptr<StreetNames> Create(const std::string& country_code,
                                              const std::vector<std::pair<std::string, bool>>& names);
 
-  static std::unique_ptr<StreetNames>
-  Create(const std::string& country_code,
-         const std::vector<valhalla::StreetName>& names);
+  static std::unique_ptr<StreetNames> Create(const std::string& country_code,
+                                             const std::vector<valhalla::StreetName>& names);
 };
 
 } // namespace baldr

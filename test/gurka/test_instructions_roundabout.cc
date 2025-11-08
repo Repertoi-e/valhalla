@@ -184,13 +184,11 @@ TEST_F(InstructionsRoundabout, RoundaboutToward) {
 TEST_F(InstructionsRoundabout, RoundaboutExitSuppressed) {
   auto from = "A";
   auto to = "I";
-  const std::string& request =
-      midgard::logging::sprintf(
-           R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","roundabout_exits":false})",
-           std::to_string(map.nodes.at(from).lat()).c_str(),
-           std::to_string(map.nodes.at(from).lng()).c_str(),
-           std::to_string(map.nodes.at(to).lat()).c_str(),
-           std::to_string(map.nodes.at(to).lng()).c_str());
+  const std::string& request = midgard::logging::sprintf(
+      R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto","roundabout_exits":false})",
+      std::to_string(map.nodes.at(from).lat()).c_str(),
+      std::to_string(map.nodes.at(from).lng()).c_str(),
+      std::to_string(map.nodes.at(to).lat()).c_str(), std::to_string(map.nodes.at(to).lng()).c_str());
   auto result = gurka::do_action(valhalla::Options::route, map, request);
 
   gurka::assert::raw::expect_maneuvers(result, {DirectionsLeg_Maneuver_Type_kStart,
@@ -260,12 +258,12 @@ TEST(InstructionsRoundaboutRegression, TurnChannelRoundaboutExitRegression) {
 
   auto from = "1";
   auto to = "2";
-  const std::string& request =
-       midgard::logging::sprintf(R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto"})",
-       std::to_string(map.nodes.at(from).lat()).c_str(),
-       std::to_string(map.nodes.at(from).lng()).c_str(),
-       std::to_string(map.nodes.at(to).lat()).c_str(),
-       std::to_string(map.nodes.at(to).lng()).c_str());
+  const std::string& request = midgard::logging::
+      sprintf(R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"auto"})",
+              std::to_string(map.nodes.at(from).lat()).c_str(),
+              std::to_string(map.nodes.at(from).lng()).c_str(),
+              std::to_string(map.nodes.at(to).lat()).c_str(),
+              std::to_string(map.nodes.at(to).lng()).c_str());
 
   auto result = gurka::do_action(valhalla::Options::route, map, request);
   gurka::assert::raw::expect_maneuvers(result, {DirectionsLeg_Maneuver_Type_kStart,

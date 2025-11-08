@@ -352,7 +352,7 @@ void thor_worker_t::path_arrive_by(Api& api, const std::string& costing) {
   std::vector<std::string> algorithms;
   const Options& options = api.options();
   const Costing_Options& costing_options =
-      options.costings().find((int) options.costing_type())->second.options();
+      options.costings().find((int)options.costing_type())->second.options();
   valhalla::Trip& trip = *api.mutable_trip();
   trip.mutable_routes()->Reserve(options.alternates() + 1);
 
@@ -578,7 +578,7 @@ void thor_worker_t::path_depart_at(Api& api, const std::string& costing) {
   std::vector<std::string> algorithms;
   const Options& options = api.options();
   const Costing_Options& costing_options =
-      options.costings().find((int) options.costing_type())->second.options();
+      options.costings().find((int)options.costing_type())->second.options();
   valhalla::Trip& trip = *api.mutable_trip();
   trip.mutable_routes()->Reserve(options.alternates() + 1);
 

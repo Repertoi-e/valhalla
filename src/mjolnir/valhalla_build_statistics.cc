@@ -11,6 +11,7 @@
 #include "statistics.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <cxxopts.hpp>
 
 #include <cstdint>

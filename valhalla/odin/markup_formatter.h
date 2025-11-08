@@ -2,7 +2,6 @@
 
 #include <valhalla/baldr/streetname.h>
 #include <valhalla/odin/sign.h>
-
 #include <valhalla/property_tree/ptree.hpp>
 
 #include <optional>

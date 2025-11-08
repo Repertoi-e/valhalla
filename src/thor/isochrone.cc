@@ -46,8 +46,7 @@ namespace valhalla {
 namespace thor {
 
 // Default constructor
-Isochrone::Isochrone(const property_tree& config)
-    : Dijkstras(config), shape_interval_(50.0f) {
+Isochrone::Isochrone(const property_tree& config) : Dijkstras(config), shape_interval_(50.0f) {
 }
 
 // Construct the isotile. Use a fixed grid size. Convert time in minutes to

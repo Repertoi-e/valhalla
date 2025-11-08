@@ -266,7 +266,7 @@ void SetShapeAttributes(const AttributesController& controller,
   // sort the start and ends of the incidents along this edge
   for (auto incident_location_index = incidents.start_index;
        incident_location_index != incidents.end_index; ++incident_location_index) {
-    if (incident_location_index >= (int) incidents.tile->locations_size()) {
+    if (incident_location_index >= (int)incidents.tile->locations_size()) {
       throw std::logic_error(
           "invalid incident_location_index: " + std::to_string(incident_location_index) + " vs " +
           std::to_string(incidents.tile->locations_size()));
@@ -1095,10 +1095,10 @@ TripLeg_Edge* AddTripEdge(const AttributesController& controller,
   // Add names to edge if requested
   if (controller(kEdgeNames)) {
     auto names_and_types = edgeinfo.GetNamesAndTypes(true);
-    /*printf("Edge names and types size for wayid %llu: %zu\n", edgeinfo.wayid(), names_and_types.size());
-    for (const auto& name_and_type : names_and_types) {
-      printf("  Name: %s, IsRouteNumber: %d, Type: %d\n", std::get<0>(name_and_type).c_str(),
-             std::get<1>(name_and_type) ? 1 : 0, std::get<2>(name_and_type));
+    /*printf("Edge names and types size for wayid %llu: %zu\n", edgeinfo.wayid(),
+    names_and_types.size()); for (const auto& name_and_type : names_and_types) { printf("  Name: %s,
+    IsRouteNumber: %d, Type: %d\n", std::get<0>(name_and_type).c_str(), std::get<1>(name_and_type) ? 1
+    : 0, std::get<2>(name_and_type));
     }*/
     if (blind_instructions)
       FilterUnneededStreetNumbers(names_and_types);
@@ -1747,7 +1747,7 @@ void AccumulateRecostingInfoForward(const valhalla::Options& options,
     catch (...) {
       int should_have = leg.node(0).recosts_size();
       for (auto& node : leg.mutable_node()) {
-        if ((int) node.recosts_size() == should_have) {
+        if ((int)node.recosts_size() == should_have) {
           node.mutable_recosts()->RemoveLast();
         }
         node.mutable_recosts()->Add();
@@ -1824,8 +1824,7 @@ void TripLegBuilder::Build(
 
   // Partial edge at the start and side of street (sos)
   float start_pct = 0.;
-  valhalla::Location::SideOfStreet start_sos =
-      Location_SideOfStreet_kNone;
+  valhalla::Location::SideOfStreet start_sos = Location_SideOfStreet_kNone;
   PointLL start_vrt;
   for (const auto& e : origin.correlation().edges()) {
     if (e.graph_id() == path_begin->edgeid) {

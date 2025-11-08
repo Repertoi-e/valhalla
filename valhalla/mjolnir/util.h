@@ -6,7 +6,6 @@
 #include <valhalla/baldr/graphtileptr.h>
 #include <valhalla/baldr/nodeinfo.h>
 #include <valhalla/midgard/pointll.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <list>

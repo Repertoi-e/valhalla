@@ -13,7 +13,8 @@ protected:
 public:
   virtual ~GraphMemory() = default;
 
-  GraphMemory(char* data_ptr, size_t data_size) : data(data_ptr), size(data_size) {}
+  GraphMemory(char* data_ptr, size_t data_size) : data(data_ptr), size(data_size) {
+  }
 
   GraphMemory(const GraphMemory&) = delete;
   GraphMemory& operator=(const GraphMemory&) = delete;

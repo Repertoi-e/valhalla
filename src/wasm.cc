@@ -12,7 +12,7 @@
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
 
-// Include last cuz unf it defines some weir shi 
+// Include last cuz unf it defines some weir shi
 #include "arche/arche.h"
 
 namespace valhalla {

@@ -10,8 +10,8 @@
 #include <ostream>
 #include <string>
 #include <unordered_map>
-#include <vector>
 #include <variant>
+#include <vector>
 
 namespace valhalla {
 namespace baldr {

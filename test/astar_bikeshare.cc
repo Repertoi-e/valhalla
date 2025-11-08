@@ -91,8 +91,7 @@ void test_request(const std::string& request,
     for (const auto& m : d.maneuver()) {
       auto it = expected_bss_maneuver.find(++idx);
       if (it == expected_bss_maneuver.end()) {
-        EXPECT_EQ(m.bss_maneuver_type(),
-                  DirectionsLeg_Maneuver_BssManeuverType_kNoneAction)
+        EXPECT_EQ(m.bss_maneuver_type(), DirectionsLeg_Maneuver_BssManeuverType_kNoneAction)
             << "BSS maneuver type at " + std::to_string(idx) + " is incorrect";
 
       } else {
@@ -104,7 +103,7 @@ void test_request(const std::string& request,
         EXPECT_EQ(m.bss_info().ref(), search->second)
             << "bss_info.osm_node_id at " + std::to_string(idx) + " is incorrect";
       }
-      travel_modes.push_back((int) m.travel_mode());
+      travel_modes.push_back((int)m.travel_mode());
       std::string name;
       for (const auto& n : m.street_name()) {
         name += n.value() + " ";

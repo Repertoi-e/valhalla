@@ -26,7 +26,8 @@ void CheckLuaFuncExists(lua_State* state, const std::string& func_name) {
 
   if (!lua_isfunction(state, -1)) {
     throw std::runtime_error(
-        (valhalla::midgard::logging::sprintf("Lua script does not contain a function %s.", func_name.c_str())));
+        (valhalla::midgard::logging::sprintf("Lua script does not contain a function %s.",
+                                             func_name.c_str())));
   }
   lua_pop(state, 1);
 }
@@ -92,9 +93,10 @@ Tags LuaTagTransform::Transform(OSMType type, uint64_t osmid, const osmium::TagL
       // running out of memory, then this indicates a programming logic error
       // and the program should stop with as informative an error message as
       // it's possible to give.
-      throw std::runtime_error((valhalla::midgard::logging::sprintf("Failed to execute lua function "
-                                              "for basic tag processing in %s %llu: %s",
-                                to_string(type).c_str(), osmid, lua_error_message)));
+      throw std::runtime_error(
+          (valhalla::midgard::logging::sprintf("Failed to execute lua function "
+                                               "for basic tag processing in %s %llu: %s",
+                                               to_string(type).c_str(), osmid, lua_error_message)));
     }
 
     // TODO:  if we dont care about it we stop looking.  Look for filter = 1
@@ -117,7 +119,8 @@ Tags LuaTagTransform::Transform(OSMType type, uint64_t osmid, const osmium::TagL
       }
       const char* value = lua_tostring(state_, -1);
       if (value == nullptr) {
-        LOG_ERROR((midgard::logging::sprintf("Invalid value in Lua function: %s.", lua_func.c_str())));
+        LOG_ERROR(
+            (midgard::logging::sprintf("Invalid value in Lua function: %s.", lua_func.c_str())));
         break;
       }
       result[key] = value;
@@ -132,9 +135,11 @@ Tags LuaTagTransform::Transform(OSMType type, uint64_t osmid, const osmium::TagL
       result.clear();
     }
   } catch (std::exception& e) {
-    LOG_ERROR((midgard::logging::sprintf("Exception in Lua function: %s: %s", lua_func.c_str(), e.what())));
+    LOG_ERROR(
+        (midgard::logging::sprintf("Exception in Lua function: %s: %s", lua_func.c_str(), e.what())));
   } catch (...) {
-    LOG_ERROR((midgard::logging::sprintf("Unknown exception in Lua function: %s.", lua_func.c_str())));
+    LOG_ERROR(
+        (midgard::logging::sprintf("Unknown exception in Lua function: %s.", lua_func.c_str())));
   }
 
   return result;

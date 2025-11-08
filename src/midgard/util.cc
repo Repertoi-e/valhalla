@@ -6,9 +6,8 @@
 #include "midgard/polyline2.h"
 #include "midgard/vector2.h"
 
-#include <sys/stat.h>
-
 #include <assert.h>
+#include <sys/stat.h>
 
 #include <algorithm>
 #include <array>
@@ -112,7 +111,8 @@ template void adjust_delta<valhalla::midgard::PointLL>(int8_t&,
 
 constexpr double kSegmentIntersectionEpsilon = 1e-12;
 
-template <class coord_t> double orientation_value(const coord_t& a, const coord_t& b, const coord_t& c) {
+template <class coord_t>
+double orientation_value(const coord_t& a, const coord_t& b, const coord_t& c) {
   return (static_cast<double>(b.first) - static_cast<double>(a.first)) *
              (static_cast<double>(c.second) - static_cast<double>(a.second)) -
          (static_cast<double>(b.second) - static_cast<double>(a.second)) *
@@ -690,8 +690,8 @@ template bool point_in_poly<valhalla::midgard::PointLL, std::list<valhalla::midg
     const valhalla::midgard::PointLL&,
     const std::list<valhalla::midgard::PointLL>&);
 template bool point_in_poly<valhalla::midgard::PointLL, std::vector<valhalla::midgard::PointLL>>(
-  const valhalla::midgard::PointLL&,
-  const std::vector<valhalla::midgard::PointLL>&);
+    const valhalla::midgard::PointLL&,
+    const std::vector<valhalla::midgard::PointLL>&);
 
 template <class container_t>
 typename container_t::value_type::first_type polygon_area(const container_t& polygon) {
@@ -785,8 +785,9 @@ bool ring_intersects_polyline(const ring_container_t& ring, const polyline_conta
   return false;
 }
 
-template bool ring_intersects_polyline<std::vector<PointLL>, std::vector<PointLL>>(const std::vector<PointLL>&,
-                                                                                   const std::vector<PointLL>&);
+template bool
+ring_intersects_polyline<std::vector<PointLL>, std::vector<PointLL>>(const std::vector<PointLL>&,
+                                                                     const std::vector<PointLL>&);
 
 std::vector<midgard::PointLL> simulate_gps(const std::vector<gps_segment_t>& segments,
                                            std::vector<float>& accuracies,
@@ -959,8 +960,7 @@ constexpr char PADDING_ENCODED = '=';
 
 namespace {
 
-constexpr char BASE64_ALPHABET[] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+constexpr char BASE64_ALPHABET[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 constexpr uint8_t BASE64_INVALID = 0xFF;
 
 inline uint8_t decode_base64_char(char c) {
@@ -1011,8 +1011,8 @@ std::string encode64(const std::string& text) {
     encoded.push_back(PADDING_ENCODED);
     encoded.push_back(PADDING_ENCODED);
   } else if (remainder == 2) {
-    uint32_t triple = (static_cast<uint32_t>(bytes[i]) << 16) |
-                      (static_cast<uint32_t>(bytes[i + 1]) << 8);
+    uint32_t triple =
+        (static_cast<uint32_t>(bytes[i]) << 16) | (static_cast<uint32_t>(bytes[i + 1]) << 8);
     encoded.push_back(BASE64_ALPHABET[(triple >> 18) & 0x3F]);
     encoded.push_back(BASE64_ALPHABET[(triple >> 12) & 0x3F]);
     encoded.push_back(BASE64_ALPHABET[(triple >> 6) & 0x3F]);
@@ -1061,8 +1061,7 @@ std::string decode64(const std::string& encoded) {
 
     uint32_t triple = (static_cast<uint32_t>(values[0]) << 18) |
                       (static_cast<uint32_t>(values[1]) << 12) |
-                      (static_cast<uint32_t>(values[2]) << 6) |
-                      static_cast<uint32_t>(values[3]);
+                      (static_cast<uint32_t>(values[2]) << 6) | static_cast<uint32_t>(values[3]);
 
     decoded.push_back(static_cast<char>((triple >> 16) & 0xFF));
     if (cleaned[i + 2] != PADDING_ENCODED) {

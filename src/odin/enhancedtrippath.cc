@@ -423,7 +423,7 @@ std::vector<std::string> EnhancedTripLeg_Edge::GetLevelRef() const {
 
   // try to get level_refs, else create some from levels as fallback
   if (!tagged_value().empty()) {
-    for (int t = 0; t < (int) tagged_value().size(); ++t) {
+    for (int t = 0; t < (int)tagged_value().size(); ++t) {
       if (tagged_value()[t].type() == TaggedValue_Type_kLevelRef) {
         level_refs.emplace_back(tagged_value()[t].value());
       } else if (tagged_value()[t].type() == TaggedValue_Type_kLevels) {
@@ -1508,7 +1508,7 @@ bool EnhancedTripLeg_Node::HasForwardTraversableSignificantRoadClassXEdge(
     // and is a significant road class as compared to the path road class
     if (is_forward(GetTurnDegree(from_heading, intersecting_edge(i).begin_heading())) &&
         xedge->IsTraversableOutbound(travel_mode) &&
-        (((int) xedge->road_class() - (int) path_road_class) <= kSignificantRoadClassThreshold)) {
+        (((int)xedge->road_class() - (int)path_road_class) <= kSignificantRoadClassThreshold)) {
       return true;
     }
   }
@@ -1547,7 +1547,7 @@ bool EnhancedTripLeg_Node::HasSimilarStraightSignificantRoadClassXEdge(uint32_t 
     if (is_relative_straight(path_turn_degree) && is_relative_straight(xedge_turn_degree) &&
         xedge->IsTraversableOutbound(travel_mode) &&
         (path_xedge_turn_degree_delta <= kSimilarStraightThreshold) &&
-        (((int) xedge->road_class() - (int) path_road_class) <= kSignificantRoadClassThreshold)) {
+        (((int)xedge->road_class() - (int)path_road_class) <= kSignificantRoadClassThreshold)) {
       return true;
     }
   }

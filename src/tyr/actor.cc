@@ -55,9 +55,7 @@ struct actor_t::pimpl_t {
 actor_t::actor_t(const property_tree& config, bool auto_cleanup)
     : pimpl(new pimpl_t(config)), auto_cleanup(auto_cleanup) {
 }
-actor_t::actor_t(const property_tree& config,
-                 baldr::GraphReader& reader,
-                 bool auto_cleanup)
+actor_t::actor_t(const property_tree& config, baldr::GraphReader& reader, bool auto_cleanup)
     : pimpl(new pimpl_t(config, reader)), auto_cleanup(auto_cleanup) {
 }
 
@@ -111,8 +109,7 @@ actor_t::route(const std::string& request_str, const std::function<void()>* inte
   return route(*api, interrupt);
 }
 
-std::string
-actor_t::route(Api& api, const std::function<void()>* interrupt) {
+std::string actor_t::route(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
@@ -140,8 +137,7 @@ actor_t::locate(const std::string& request_str, const std::function<void()>* int
   return locate(*api, interrupt);
 }
 
-std::string
-actor_t::locate(Api& api, const std::function<void()>* interrupt) {
+std::string actor_t::locate(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
@@ -165,8 +161,7 @@ actor_t::matrix(const std::string& request_str, const std::function<void()>* int
   return matrix(*api, interrupt);
 }
 
-std::string 
-actor_t::matrix(Api& api, const std::function<void()>* interrupt) {
+std::string actor_t::matrix(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
@@ -193,8 +188,7 @@ std::string actor_t::optimized_route(const std::string& request_str,
   return optimized_route(*api, interrupt);
 }
 
-std::string
-actor_t::optimized_route(Api& api, const std::function<void()>* interrupt) {
+std::string actor_t::optimized_route(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
@@ -222,8 +216,7 @@ actor_t::isochrone(const std::string& request_str, const std::function<void()>* 
   return isochrone(*api, interrupt);
 }
 
-std::string
-actor_t::isochrone(Api& api, const std::function<void()>* interrupt) {
+std::string actor_t::isochrone(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
@@ -251,19 +244,19 @@ std::string actor_t::trace_route(const std::string& request_str,
 }
 
 std::string actor_t::trace_route(Api& api, const std::function<void()>* interrupt) {
-    auto scoped_cleaner = make_finally([this]() {
-        if (auto_cleanup)
-        cleanup();
-    });
-    // set the interrupts
-    pimpl->set_interrupts(interrupt);
-    // check the request and locate the locations in the graph
-    pimpl->loki_worker.trace(api);
-    // route between the locations in the graph to find the best path
-    pimpl->thor_worker.trace_route(api);
-    // get some directions back from them
-    auto bytes = pimpl->odin_worker.narrate(api);
-    return bytes;
+  auto scoped_cleaner = make_finally([this]() {
+    if (auto_cleanup)
+      cleanup();
+  });
+  // set the interrupts
+  pimpl->set_interrupts(interrupt);
+  // check the request and locate the locations in the graph
+  pimpl->loki_worker.trace(api);
+  // route between the locations in the graph to find the best path
+  pimpl->thor_worker.trace_route(api);
+  // get some directions back from them
+  auto bytes = pimpl->odin_worker.narrate(api);
+  return bytes;
 }
 
 std::string actor_t::trace_attributes(const std::string& request_str,
@@ -305,8 +298,7 @@ actor_t::height(const std::string& request_str, const std::function<void()>* int
   return height(*api, interrupt);
 }
 
-std::string
-actor_t::height(Api& api, const std::function<void()>* interrupt) {
+std::string actor_t::height(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
@@ -355,11 +347,10 @@ actor_t::expansion(const std::string& request_str, const std::function<void()>* 
   return expansion(*api, interrupt);
 }
 
-std::string
-actor_t::expansion(Api& api, const std::function<void()>* interrupt) {
+std::string actor_t::expansion(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
-        cleanup();
+      cleanup();
   });
   // set the interrupts
   pimpl->set_interrupts(interrupt);
@@ -387,8 +378,7 @@ actor_t::centroid(const std::string& request_str, const std::function<void()>* i
   return centroid(*api, interrupt);
 }
 
-std::string 
-actor_t::centroid(Api& api, const std::function<void()>* interrupt) {
+std::string actor_t::centroid(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();
@@ -416,8 +406,7 @@ actor_t::status(const std::string& request_str, const std::function<void()>* int
   return status(*api, interrupt);
 }
 
-std::string
-actor_t::status(Api& api, const std::function<void()>* interrupt) {
+std::string actor_t::status(Api& api, const std::function<void()>* interrupt) {
   auto scoped_cleaner = make_finally([this]() {
     if (auto_cleanup)
       cleanup();

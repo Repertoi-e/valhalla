@@ -342,14 +342,12 @@ void NarrativeDictionary::Load(const valhalla::property_tree& narrative_pt) {
   Load(level_change_subset, narrative_pt.get_child(kLevelChangeKey));
 }
 
-void NarrativeDictionary::Load(PhraseSet& phrase_handle,
-                               const property_tree& phrase_pt) {
+void NarrativeDictionary::Load(PhraseSet& phrase_handle, const property_tree& phrase_pt) {
 
   phrase_handle.phrases = as_unordered_map<std::string, std::string>(phrase_pt, kPhrasesKey);
 }
 
-void NarrativeDictionary::Load(StartSubset& start_handle,
-                               const property_tree& start_subset_pt) {
+void NarrativeDictionary::Load(StartSubset& start_handle, const property_tree& start_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(start_handle), start_subset_pt);
@@ -414,8 +412,7 @@ void NarrativeDictionary::Load(ContinueVerbalSubset& continue_verbal_handle,
       as_vector<std::string>(continue_verbal_subset_pt, kUsCustomaryLengthsKey);
 }
 
-void NarrativeDictionary::Load(TurnSubset& turn_handle,
-                               const property_tree& turn_subset_pt) {
+void NarrativeDictionary::Load(TurnSubset& turn_handle, const property_tree& turn_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(turn_handle), turn_subset_pt);
@@ -428,8 +425,7 @@ void NarrativeDictionary::Load(TurnSubset& turn_handle,
       as_vector<std::string>(turn_subset_pt, kEmptyStreetNameLabelsKey);
 }
 
-void NarrativeDictionary::Load(RampSubset& ramp_handle,
-                               const property_tree& ramp_subset_pt) {
+void NarrativeDictionary::Load(RampSubset& ramp_handle, const property_tree& ramp_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(ramp_handle), ramp_subset_pt);
@@ -438,8 +434,7 @@ void NarrativeDictionary::Load(RampSubset& ramp_handle,
   ramp_handle.relative_directions = as_vector<std::string>(ramp_subset_pt, kRelativeDirectionsKey);
 }
 
-void NarrativeDictionary::Load(KeepSubset& keep_handle,
-                               const property_tree& keep_subset_pt) {
+void NarrativeDictionary::Load(KeepSubset& keep_handle, const property_tree& keep_subset_pt) {
 
   // Populate ramp_subset items
   Load(static_cast<RampSubset&>(keep_handle), keep_subset_pt);
@@ -574,8 +569,7 @@ void NarrativeDictionary::Load(ApproachVerbalAlertSubset& approach_verbal_alert_
       as_vector<std::string>(approach_verbal_alert_subset_pt, kUsCustomaryLengthsKey);
 }
 
-void NarrativeDictionary::Load(PassSubset& pass_handle,
-                               const property_tree& pass_subset_pt) {
+void NarrativeDictionary::Load(PassSubset& pass_handle, const property_tree& pass_subset_pt) {
 
   // Populate phrases
   Load(static_cast<PhraseSet&>(pass_handle), pass_subset_pt);

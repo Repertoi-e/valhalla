@@ -1,7 +1,7 @@
 #include "odin/markup_formatter.h"
+#include "midgard/string_utils.h"
 #include "proto/common.pb.h"
 
-#include "midgard/string_utils.h"
 #include <valhalla/property_tree/ptree.hpp>
 
 #include <optional>

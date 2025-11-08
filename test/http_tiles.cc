@@ -5,6 +5,7 @@
 #include "valhalla/tile_server.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <prime_server/zmq_helpers.hpp>
 
 #include <filesystem>
@@ -26,8 +27,7 @@ std::string get_tile_url() {
   return oss.str();
 }
 
-property_tree
-make_conf(const std::string& tile_dir, bool tile_url_gz, size_t curler_count) {
+property_tree make_conf(const std::string& tile_dir, bool tile_url_gz, size_t curler_count) {
   auto conf = test::make_config(tile_dir, {{"mjolnir.user_agent", "MapboxNavigationNative"}});
 
   conf.put("mjolnir.tile_url", get_tile_url());

@@ -2,9 +2,8 @@
 #define VALHALLA_TYR_ACTOR_H_
 
 #include <valhalla/baldr/graphreader.h>
-#include <valhalla/proto/api.pb.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
+#include <valhalla/proto/api.pb.h>
 
 #include <memory>
 
@@ -26,9 +25,7 @@ public:
    * @param reader         preconstructed graphreader to share with the workers
    * @param auto_cleanup   whether or not to auto clean workers after each action call
    */
-  actor_t(const property_tree& config,
-          baldr::GraphReader& reader,
-          bool auto_cleanup = false);
+  actor_t(const property_tree& config, baldr::GraphReader& reader, bool auto_cleanup = false);
 
   /**
    * Manually clean the underlying workers

@@ -1,7 +1,6 @@
 #include "meili/transition_cost_model.h"
 #include "meili/routing.h"
 
-
 namespace valhalla {
 namespace meili {
 

@@ -49,7 +49,7 @@ constexpr ranged_default_t<float> kUseTransfersRange{0, kDefaultUseTransfers, 1.
 constexpr ranged_default_t<float> kTransferCostRange{0, kDefaultTransferCost, kMaxPenalty};
 constexpr ranged_default_t<float> kTransferPenaltyRange{0, kDefaultTransferPenalty, kMaxPenalty};
 
-} // namespace
+} // namespace transitcost_internal
 
 /**
  * Derived class providing dynamic edge costing for transit parts
@@ -647,14 +647,18 @@ void ParseTransitCostOptions(const rapidjson::Document& doc,
 
   // TODO: no base costing parsing because transit doesnt care about any of those options?
 
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kModeFactorRange, json, "/mode_factor", mode_factor);
+  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kModeFactorRange, json, "/mode_factor",
+                          mode_factor);
   JSON_PBF_DEFAULT_V2(co, false, json, "/wheelchair", wheelchair);
   JSON_PBF_DEFAULT_V2(co, false, json, "/bicycle", bicycle);
   JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kUseBusRange, json, "/use_bus", use_bus);
   JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kUseRailRange, json, "/use_rail", use_rail);
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kUseTransfersRange, json, "/use_transfers", use_transfers);
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kTransferCostRange, json, "/transfer_cost", transfer_cost);
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kTransferPenaltyRange, json, "/transfer_penalty", transfer_penalty);
+  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kUseTransfersRange, json, "/use_transfers",
+                          use_transfers);
+  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kTransferCostRange, json, "/transfer_cost",
+                          transfer_cost);
+  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kTransferPenaltyRange, json, "/transfer_penalty",
+                          transfer_penalty);
 
   // filter_stop_action
   auto filter_stop_action_str = rapidjson::get_optional<std::string>(json, "/filters/stops/action");
@@ -731,7 +735,7 @@ TransitCost* make_transitcost_from_json(const std::string& property, float testV
      << "}}}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return new TransitCost(request.options().costings().find((int) Costing::transit)->second);
+  return new TransitCost(request.options().costings().find((int)Costing::transit)->second);
 }
 
 std::uniform_real_distribution<float>*

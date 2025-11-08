@@ -242,19 +242,19 @@ Centroid::FormPaths(const ExpansionType& expansion_type,
   return paths;
 }
 
-template std::vector<std::vector<PathInfo>> Centroid::FormPaths<decltype(Dijkstras::bdedgelabels_)>(
-    const ExpansionType&,
-    const std::vector<valhalla::Location>&,
-    const decltype(Dijkstras::bdedgelabels_)&,
-    baldr::GraphReader&,
-    valhalla::Location&) const;
+template std::vector<std::vector<PathInfo>>
+Centroid::FormPaths<decltype(Dijkstras::bdedgelabels_)>(const ExpansionType&,
+                                                        const std::vector<valhalla::Location>&,
+                                                        const decltype(Dijkstras::bdedgelabels_)&,
+                                                        baldr::GraphReader&,
+                                                        valhalla::Location&) const;
 
-template std::vector<std::vector<PathInfo>> Centroid::FormPaths<decltype(Dijkstras::mmedgelabels_)>(
-    const ExpansionType&,
-    const std::vector<valhalla::Location>&,
-    const decltype(Dijkstras::mmedgelabels_)&,
-    baldr::GraphReader&,
-    valhalla::Location&) const;
+template std::vector<std::vector<PathInfo>>
+Centroid::FormPaths<decltype(Dijkstras::mmedgelabels_)>(const ExpansionType&,
+                                                        const std::vector<valhalla::Location>&,
+                                                        const decltype(Dijkstras::mmedgelabels_)&,
+                                                        baldr::GraphReader&,
+                                                        valhalla::Location&) const;
 
 } // namespace thor
 } // namespace valhalla

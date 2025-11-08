@@ -159,12 +159,11 @@ protected:
    * @return The list of paths, one for each location, to the centroid
    */
   template <typename label_container_t>
-  std::vector<std::vector<PathInfo>>
-  FormPaths(const ExpansionType& expansion_type,
-            const std::vector<valhalla::Location>& locations,
-            const label_container_t& labels,
-            baldr::GraphReader& reader,
-            valhalla::Location& centroid) const;
+  std::vector<std::vector<PathInfo>> FormPaths(const ExpansionType& expansion_type,
+                                               const std::vector<valhalla::Location>& locations,
+                                               const label_container_t& labels,
+                                               baldr::GraphReader& reader,
+                                               valhalla::Location& centroid) const;
 
   // the key is the edge id and the value is the label indices for each location
   // we store both directions of the edge to avoid strange uturns at the centroid

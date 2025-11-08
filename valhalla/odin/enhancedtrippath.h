@@ -466,15 +466,14 @@ public:
 protected:
   TripLeg_Edge* mutable_edge_;
 
-  std::string StreetNamesToString(
-      const ::std::vector<::valhalla::StreetName>& street_names) const;
+  std::string StreetNamesToString(const ::std::vector<::valhalla::StreetName>& street_names) const;
 
-  std::string SignElementsToString(
-      const ::std::vector<::valhalla::TripSignElement>& sign_elements) const;
+  std::string
+  SignElementsToString(const ::std::vector<::valhalla::TripSignElement>& sign_elements) const;
 
 #ifdef LOGGING_LEVEL_TRACE
-  std::string StreetNamesToParameterString(
-      const ::std::vector<::valhalla::StreetName>& street_names) const;
+  std::string
+  StreetNamesToParameterString(const ::std::vector<::valhalla::StreetName>& street_names) const;
 
   std::string SignElementsToParameterString(
       const ::std::vector<::valhalla::TripSignElement>& sign_elements) const;
@@ -619,8 +618,7 @@ public:
     return mutable_node_->mutable_intersecting_edge(index);
   }
 
-  const ::std::vector<::valhalla::TripLeg_IntersectingEdge>&
-  intersecting_edge() const {
+  const ::std::vector<::valhalla::TripLeg_IntersectingEdge>& intersecting_edge() const {
     return mutable_node_->intersecting_edge();
   }
 

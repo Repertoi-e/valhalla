@@ -6,8 +6,8 @@
 #include "baldr/traffictile.h"
 #include "microtar.h"
 #include "midgard/sequence.h"
-#include "mjolnir/graphtilebuilder.h"
 #include "midgard/string_utils.h"
+#include "mjolnir/graphtilebuilder.h"
 
 #include <valhalla/property_tree/ptree.hpp>
 
@@ -168,8 +168,8 @@ valhalla::property_tree json_to_pt(const std::string& json) {
 }
 
 valhalla::property_tree make_config(const std::string& path_prefix,
-                                        const std::unordered_map<std::string, std::string>& overrides,
-                                        const std::unordered_set<std::string>& removes) {
+                                    const std::unordered_map<std::string, std::string>& overrides,
+                                    const std::unordered_set<std::string>& removes) {
 
   std::string defaults = R"(
     {
@@ -539,8 +539,7 @@ typedef struct {
 // To actually customize the traffic data, use `customize_live_traffic_data`
 //
 /*************************************************************/
-void build_live_traffic_data(const valhalla::property_tree& config,
-                             uint32_t traffic_tile_version) {
+void build_live_traffic_data(const valhalla::property_tree& config, uint32_t traffic_tile_version) {
 
   std::string tile_dir = config.get<std::string>("mjolnir.tile_dir");
   std::string traffic_extract = config.get<std::string>("mjolnir.traffic_extract");

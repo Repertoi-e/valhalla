@@ -15,8 +15,7 @@ namespace thor {
 constexpr uint32_t kMaxIterationsWithoutConvergenceUniDirAStar = 1800000;
 
 template <const ExpansionType expansion_direction, const bool FORWARD>
-UnidirectionalAStar<expansion_direction, FORWARD>::UnidirectionalAStar(
-    const property_tree& config)
+UnidirectionalAStar<expansion_direction, FORWARD>::UnidirectionalAStar(const property_tree& config)
     : PathAlgorithm(config.get<uint32_t>("max_reserved_labels_count_astar",
                                          kInitialEdgeLabelCountAstar),
                     config.get<bool>("clear_reserved_memory", false)),

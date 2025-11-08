@@ -227,8 +227,8 @@ TEST(Matrix, test_matrix) {
   GraphReader reader(cfg.get_child("mjolnir"));
 
   sif::mode_costing_t mode_costing;
-  mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
+  mode_costing[0] = CreateSimpleCost(
+      request.options().costings().find((int)request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
   CostMatrix cost_matrix;
   cost_matrix.SourceToTarget(request, reader, mode_costing, sif::TravelMode::kDrive, 400000.0);
@@ -312,8 +312,8 @@ TEST(Matrix, test_timedistancematrix_forward) {
   GraphReader reader(cfg.get_child("mjolnir"));
 
   sif::mode_costing_t mode_costing;
-  mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
+  mode_costing[0] = CreateSimpleCost(
+      request.options().costings().find((int)request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
 
   TimeDistanceMatrix timedist_matrix;
@@ -363,8 +363,8 @@ TEST(Matrix, test_timedistancematrix_reverse) {
   GraphReader reader(cfg.get_child("mjolnir"));
 
   sif::mode_costing_t mode_costing;
-  mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
+  mode_costing[0] = CreateSimpleCost(
+      request.options().costings().find((int)request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
 
   TimeDistanceMatrix timedist_matrix;
@@ -400,8 +400,8 @@ TEST(Matrix, test_matrix_osrm) {
   GraphReader reader(cfg.get_child("mjolnir"));
 
   sif::mode_costing_t mode_costing;
-  mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
+  mode_costing[0] = CreateSimpleCost(
+      request.options().costings().find((int)request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
 
   CostMatrix cost_matrix;
@@ -442,8 +442,8 @@ TEST(Matrix, partial_matrix) {
   GraphReader reader(cfg.get_child("mjolnir"));
 
   sif::mode_costing_t mode_costing;
-  mode_costing[0] =
-      CreateSimpleCost(request.options().costings().find((int) request.options().costing_type())->second);
+  mode_costing[0] = CreateSimpleCost(
+      request.options().costings().find((int)request.options().costing_type())->second);
   set_hierarchy_limits(mode_costing[0]);
 
   TimeDistanceMatrix timedist_matrix;

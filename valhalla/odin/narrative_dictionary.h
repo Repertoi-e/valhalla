@@ -274,8 +274,7 @@ struct ExitBuildingSubset : PhraseSet {
  */
 class NarrativeDictionary {
 public:
-  NarrativeDictionary(const std::string& language_tag,
-                      const property_tree& narrative_pt);
+  NarrativeDictionary(const std::string& language_tag, const property_tree& narrative_pt);
 
   // Start
   StartSubset start_subset;
@@ -463,8 +462,7 @@ protected:
    * @param  start_verbal_handle  The 'start verbal' structure to populate.
    * @param  start_verbal_subset_pt  The 'start verbal' property tree.
    */
-  void Load(StartVerbalSubset& start_verbal_handle,
-            const property_tree& start_verbal_subset_pt);
+  void Load(StartVerbalSubset& start_verbal_handle, const property_tree& start_verbal_subset_pt);
 
   /**
    * Loads the specified 'destination' instruction subset with the localized
@@ -473,8 +471,7 @@ protected:
    * @param  destination_handle  The 'destination' structure to populate.
    * @param  destination_subset_pt  The 'destination' property tree.
    */
-  void Load(DestinationSubset& destination_handle,
-            const property_tree& destination_subset_pt);
+  void Load(DestinationSubset& destination_handle, const property_tree& destination_subset_pt);
 
   /**
    * Loads the specified 'continue' instruction subset with the localized
@@ -539,8 +536,7 @@ protected:
    * @param  enter_ferry_handle  The 'enter_ferry' structure to populate.
    * @param  enter_ferry_subset_pt  The 'enter_ferry' property tree.
    */
-  void Load(EnterFerrySubset& enter_ferry_handle,
-            const property_tree& enter_ferry_subset_pt);
+  void Load(EnterFerrySubset& enter_ferry_handle, const property_tree& enter_ferry_subset_pt);
 
   /**
    * Loads the specified 'transit_connection' instruction subset with the localized
@@ -568,8 +564,7 @@ protected:
    * @param  transit_stop_handle  The 'transit_stop' structure to populate.
    * @param  transit_stop_subset_pt  The 'transit_stop' property tree.
    */
-  void Load(TransitStopSubset& transit_stop_handle,
-            const property_tree& transit_stop_subset_pt);
+  void Load(TransitStopSubset& transit_stop_handle, const property_tree& transit_stop_subset_pt);
 
   /**
    * Loads the specified 'post transition verbal' instruction subset with the
@@ -641,8 +636,7 @@ protected:
    * @param  exit_building_handle  The 'exit_building' structure to populate.
    * @param  exit_building_subset_pt  The 'exit_building' property tree.
    */
-  void Load(ExitBuildingSubset& exit_building_handle,
-            const property_tree& exit_building_subset_pt);
+  void Load(ExitBuildingSubset& exit_building_handle, const property_tree& exit_building_subset_pt);
 
   // Locale
   std::locale locale;

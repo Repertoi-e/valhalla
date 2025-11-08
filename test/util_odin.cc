@@ -3,6 +3,7 @@
 #include "odin/util.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <gtest/gtest.h>
 
 #include <locale>

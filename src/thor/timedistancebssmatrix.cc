@@ -168,9 +168,9 @@ bool TimeDistanceBSSMatrix::ComputeMatrix(Api& request,
 
   // Run a series of one to many calls and concatenate the results.
   auto origins = FORWARD ? request.mutable_options()->mutable_sources()
-                          : request.mutable_options()->mutable_targets();
+                         : request.mutable_options()->mutable_targets();
   auto destinations = FORWARD ? request.mutable_options()->mutable_targets()
-                               : request.mutable_options()->mutable_sources();
+                              : request.mutable_options()->mutable_sources();
 
   // Construct adjacency list, edge status, and done set. Set bucket size and
   // cost range based on DynamicCost.
@@ -183,7 +183,7 @@ bool TimeDistanceBSSMatrix::ComputeMatrix(Api& request,
   reserve_pbf_arrays(*request.mutable_matrix(), origins.size() * destinations.size(),
                      request.options().verbose());
 
-  for (int origin_index = 0; origin_index < (int) origins.size(); ++origin_index) {
+  for (int origin_index = 0; origin_index < (int)origins.size(); ++origin_index) {
     edgelabels_.reserve(max_reserved_labels_count_);
     const auto& origin = origins.Get(origin_index);
 

@@ -67,14 +67,12 @@ public:
   }
 
   friend void intrusive_ptr_add_ref(const T* ptr) noexcept {
-    auto* self = const_cast<intrusive_ref_counter*>(
-        static_cast<const intrusive_ref_counter*>(ptr));
+    auto* self = const_cast<intrusive_ref_counter*>(static_cast<const intrusive_ref_counter*>(ptr));
     CounterPolicy::increment(self->ref_count_);
   }
 
   friend void intrusive_ptr_release(const T* ptr) noexcept {
-    auto* self = const_cast<intrusive_ref_counter*>(
-        static_cast<const intrusive_ref_counter*>(ptr));
+    auto* self = const_cast<intrusive_ref_counter*>(static_cast<const intrusive_ref_counter*>(ptr));
     if (CounterPolicy::decrement(self->ref_count_) == 0) {
       delete const_cast<T*>(static_cast<const T*>(ptr));
     }
@@ -200,18 +198,15 @@ template <class T> inline bool operator!=(std::nullptr_t, const intrusive_ptr<T>
   return static_cast<bool>(rhs);
 }
 
-template <class T, class U>
-intrusive_ptr<T> static_pointer_cast(const intrusive_ptr<U>& p) {
+template <class T, class U> intrusive_ptr<T> static_pointer_cast(const intrusive_ptr<U>& p) {
   return intrusive_ptr<T>(static_cast<T*>(p.get()));
 }
 
-template <class T, class U>
-intrusive_ptr<T> const_pointer_cast(const intrusive_ptr<U>& p) {
+template <class T, class U> intrusive_ptr<T> const_pointer_cast(const intrusive_ptr<U>& p) {
   return intrusive_ptr<T>(const_cast<T*>(p.get()));
 }
 
-template <class T, class U>
-intrusive_ptr<T> dynamic_pointer_cast(const intrusive_ptr<U>& p) {
+template <class T, class U> intrusive_ptr<T> dynamic_pointer_cast(const intrusive_ptr<U>& p) {
   if (auto* casted = dynamic_cast<T*>(p.get())) {
     return intrusive_ptr<T>(casted);
   }

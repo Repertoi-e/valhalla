@@ -1,9 +1,9 @@
 #ifndef VALHALLA_MJOLNIR_HIERARCHYBUILDER_H
 #define VALHALLA_MJOLNIR_HIERARCHYBUILDER_H
 
-#include <string>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
+
+#include <string>
 
 namespace valhalla {
 namespace mjolnir {

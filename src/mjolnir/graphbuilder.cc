@@ -6,9 +6,9 @@
 #include "baldr/signinfo.h"
 #include "baldr/tilehierarchy.h"
 #include "midgard/logging.h"
-#include "midgard/string_utils.h"
 #include "midgard/pointll.h"
 #include "midgard/sequence.h"
+#include "midgard/string_utils.h"
 #include "midgard/tiles.h"
 #include "midgard/util.h"
 #include "mjolnir/admin.h"
@@ -1294,7 +1294,7 @@ void BuildTileSet(const std::string& ways_file,
 
       // Made a tile
       LOG_DEBUG((logging::sprintf("Wrote tile %llu: %lu bytes", tile.first.value,
-                 graphtile.header_builder().end_offset())));
+                                  graphtile.header_builder().end_offset())));
     } // Whatever happens in Vegas..
     catch (std::exception& e) {
       // ..gets sent back to the main thread
@@ -2112,7 +2112,7 @@ bool GraphBuilder::CreateSignInfoList(
 
         tmp = exit_to;
 
-  to_lower_in_place(tmp);
+        to_lower_in_place(tmp);
 
         // remove the "To" For example:  US 11;To I 81;Carlisle;Harrisburg
         if (tmp.starts_with("to ")) {
