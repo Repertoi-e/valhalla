@@ -4,7 +4,7 @@
 set -o errexit -o pipefail -o nounset
 
 readonly base=$(git merge-base refs/remotes/origin/master HEAD)
-readonly concurrency=${1:-$(nproc)}
+readonly concurrency=${1:-$(if [[ "$OSTYPE" == "darwin"* ]]; then sysctl -n hw.ncpu; else nproc; fi)}
 readonly build_dir=${2:-build}
 
 source scripts/bash_utils.sh
@@ -28,7 +28,7 @@ do
     modified_filepaths+=("$absolute_filepath")
   fi
 
-done < <(git diff-tree --no-commit-id --diff-filter=d --name-only -r "$base" HEAD)
+done < <(git diff-tree --no-commit-id --diff-filter=d --name-only -r "$base" HEAD | grep -v '^third_party/')
 
 if [ ${#modified_filepaths[@]} = 0 ]; then
   echo "No paths modified"
