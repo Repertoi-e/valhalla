@@ -8,7 +8,7 @@
 int main(int argc, char** argv) {
   const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
-  property_tree config;
+  valhalla::property_tree config;
 
   try {
     // clang-format off

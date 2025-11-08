@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  property_tree config;
+  valhalla::property_tree config;
   rapidjson::read_json(argv[1], config);
   const std::string modename = config.get<std::string>("meili.mode");
   valhalla::Costing::Type costing;
