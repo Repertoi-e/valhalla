@@ -1,4 +1,5 @@
 #include "baldr/graphtile.h"
+#include "baldr/compression_utils.h"
 #include "baldr/curl_tilegetter.h"
 #include "baldr/sign.h"
 #include "baldr/tilehierarchy.h"
@@ -21,6 +22,7 @@ using namespace valhalla::midgard;
 
 namespace {
 const AABB2<PointLL> world_box(PointLL(-180, -90), PointLL(180, 90));
+constexpr float COMPRESSION_HINT = 3.5f;
 
 // the point of this function is to avoid race conditions for writing a tile between threads
 // so the easiest thing to do is just use the thread id to differentiate
@@ -47,17 +49,42 @@ private:
   const std::vector<char> memory_;
 };
 
-class WasmGraphMemory final : public GraphMemory {
-public:
-    WasmGraphMemory(char *data, size_t size) 
-    {
-        this->data = data;
-        this->size = size;
-    }
+graph_tile_ptr GraphTile::DecompressTile(const GraphId& graphid,
+                                         const char *compressed, size_t compressed_size) {
+  // for setting where to read compressed data from
+  auto src_func = [&compressed, compressed_size](z_stream& s) -> void {
+    s.next_in =
+        const_cast<Byte*>(static_cast<const Byte*>(static_cast<const void*>(compressed)));
+    s.avail_in = static_cast<unsigned int>(compressed_size);
+  };
 
-    WasmGraphMemory(const WasmGraphMemory&) = delete;
-    WasmGraphMemory& operator=(const WasmGraphMemory&) = delete;
-};
+  // for setting where to write the uncompressed data to
+  std::vector<char> data;
+  auto dst_func = [&data, &compressed_size](z_stream& s) -> int {
+    // if the whole buffer wasn't used we are done
+    auto size = data.size();
+    if (s.total_out < size)
+      data.resize(s.total_out);
+    // we need more space
+    else {
+      // assume we need 3.5x the space
+      data.resize(size + (compressed_size * COMPRESSION_HINT));
+      // set the pointer to the next spot
+      s.next_out = static_cast<Byte*>(static_cast<void*>(data.data() + size));
+      s.avail_out = compressed_size * COMPRESSION_HINT;
+    }
+    return Z_NO_FLUSH;
+  };
+
+  // Decompress tile into memory
+  if (!baldr::inflate(src_func, dst_func)) {
+    LOG_ERROR("Failed to gunzip " + GraphTile::FileSuffix(graphid, SUFFIX_COMPRESSED));
+    return nullptr;
+  }
+
+  return graph_tile_ptr{
+      new GraphTile(graphid, std::make_unique<const VectorGraphMemory>(std::move(data)))};
+}
 
 // Constructor given a filename. Reads the graph data into memory.
 graph_tile_ptr GraphTile::Create(const std::string& tile_dir,
@@ -95,6 +122,19 @@ graph_tile_ptr GraphTile::Create(const std::string& tile_dir,
     return graph_tile_ptr{new GraphTile(graphid,
                                         std::make_unique<const VectorGraphMemory>(std::move(data)),
                                         std::move(traffic_memory))};
+  }
+
+  // Try to load a gzipped tile
+  std::ifstream gz_file(file_location.replace_extension(SUFFIX_COMPRESSED),
+                        std::ios::in | std::ios::binary | std::ios::ate);
+  if (gz_file.is_open()) {
+    // Read the compressed file into memory
+    size_t filesize = gz_file.tellg();
+    gz_file.seekg(0, std::ios::beg);
+    std::vector<char> compressed(filesize);
+    gz_file.read(&compressed[0], filesize);
+    gz_file.close();
+    return DecompressTile(graphid, compressed.data(), compressed.size());
   }
 
   // Nothing to load anywhere
@@ -213,12 +253,11 @@ graph_tile_ptr GraphTile::CacheTileURL(const std::string& tile_url,
 
   // turn the memory into a tile
   if (tile_getter->gzipped()) {
-    LOG_ERROR("Received gzipped tile bytes but gzip support is disabled; tile fetch aborted");
-    return nullptr;
+    return DecompressTile(graphid, result.data_, result.size_);
   }
 
   return graph_tile_ptr{
-      new GraphTile(graphid, std::make_unique<const WasmGraphMemory>(result.data_, result.size_))};
+      new GraphTile(graphid, std::make_unique<GraphMemory>(result.data_, result.size_))};
 }
 
 GraphTile::~GraphTile() = default;

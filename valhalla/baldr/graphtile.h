@@ -946,6 +946,14 @@ protected:
    */
   void AssociateOneStopIds(const GraphId& graphid);
 
+  /** Decrompresses tile bytes into the internal graphtile byte buffer
+   * @param  graphid     the id of the tile to be decompressed
+   * @param  compressed      pointer to the compressed tile data
+   * @param  compressed_size size of the compressed tile data
+   * @return a pointer to a graphtile if it  has been successfully initialized with
+   *         the uncompressed data, or nullptr
+   */
+  static graph_tile_ptr DecompressTile(const GraphId& graphid, const char* compressed, size_t compressed_size);
 };
 
 } // namespace baldr
