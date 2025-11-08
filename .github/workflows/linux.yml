@@ -212,12 +212,12 @@ jobs:
           sudo make -C build install
           make -C build package
 
-      - uses: codecov/codecov-action@v5
-        name: Upload codecov report
-        with:
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
-          verbose: true
+      #- uses: codecov/codecov-action@v5
+      #  name: Upload codecov report
+      #  with:
+      #    fail_ci_if_error: true
+      #    token: ${{ secrets.CODECOV_TOKEN }}
+      #    verbose: true
       
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
