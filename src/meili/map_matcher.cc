@@ -90,8 +90,8 @@ inline MatchResult CreateMatchResult(const Measurement& measurement, const Inter
           measurement.epoch_time(),
           StateId(),
           measurement.is_break_point(),
-         false,
-         false};
+          false,
+          false};
 }
 
 // Find the interpolation along the route where the transition cost +

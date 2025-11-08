@@ -5,6 +5,7 @@
 #include "graph_lua_proc.h"
 #include "midgard/logging.h"
 #include "midgard/sequence.h"
+#include "midgard/string_utils.h"
 #include "mjolnir/luatagtransform.h"
 #include "mjolnir/osmaccess.h"
 #include "mjolnir/osmlinguistic.h"
@@ -15,8 +16,8 @@
 #include "proto/common.pb.h"
 #include "scoped_timer.h"
 
-#include "midgard/string_utils.h"
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <osmium/io/pbf_input.hpp>
 
 #include <thread>
@@ -1442,7 +1443,7 @@ struct graph_parser {
     };
     tag_handlers_["sac_scale"] = [this]() {
       std::string value = tag_.second;
-  to_lower_in_place(value);
+      to_lower_in_place(value);
 
       if (value.find("difficult_alpine_hiking") != std::string::npos) {
         way_.set_sac_scale(SacScale::kDifficultAlpineHiking);
@@ -1468,7 +1469,7 @@ struct graph_parser {
     };
     tag_handlers_["surface"] = [this]() {
       std::string value = tag_.second;
-  to_lower_in_place(value);
+      to_lower_in_place(value);
 
       // Find unpaved before paved since they have common string
       if (value.find("unpaved") != std::string::npos) {
@@ -2605,7 +2606,7 @@ struct graph_parser {
 
         std::vector<std::string> tokens = GetTagTokens(tag_.second, '@');
         std::string tmp = tokens.at(0);
-  trim_in_place(tmp);
+        trim_in_place(tmp);
 
         AccessType type = AccessType::kTimedDenied;
         if (tmp == "no") {
@@ -3995,7 +3996,7 @@ struct graph_parser {
     bool special_network = false;
     if (net.size() == 3) {
       std::string value = net.at(2);
-  to_lower_in_place(value);
+      to_lower_in_place(value);
 
       if (value == "turnpike" || value == "tp" || value == "fm" || value == "rm" || value == "loop" ||
           value == "spur" || value == "truck" || value == "business" || value == "bypass" ||

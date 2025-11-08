@@ -189,7 +189,7 @@ TEST(Actor, SupportedFormats) {
 
   tyr::actor_t actor(conf);
   for (const auto& t : tests) {
-    for (int format = (int) Options::Format_MIN; format <= (int) Options::Format_MAX; format += 1) {
+    for (int format = (int)Options::Format_MIN; format <= (int)Options::Format_MAX; format += 1) {
       ASSERT_TRUE(Options_Format_IsValid(static_cast<Options::Format>(format)));
 
       valhalla::Api api;

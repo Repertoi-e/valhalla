@@ -124,7 +124,7 @@ BaseCostingOptionsConfig GetBaseCostOptsConfig() {
 
 const BaseCostingOptionsConfig kBaseCostOptsConfig = GetBaseCostOptsConfig();
 
-} // namespace
+} // namespace autocost_internal
 
 /**
  * Derived class providing dynamic edge costing for "direct" auto routes. This
@@ -517,10 +517,11 @@ Cost AutoCost::EdgeCost(const baldr::DirectedEdge* edge,
       break;
   }
 
-  factor += highway_factor_ * autocost_internal::kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
-            surface_factor_ * autocost_internal::kSurfaceFactor[static_cast<uint32_t>(edge->surface())] +
-            SpeedPenalty(edge, tile, time_info, flow_sources, edge_speed) +
-            edge->toll() * toll_factor_;
+  factor +=
+      highway_factor_ *
+          autocost_internal::kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
+      surface_factor_ * autocost_internal::kSurfaceFactor[static_cast<uint32_t>(edge->surface())] +
+      SpeedPenalty(edge, tile, time_info, flow_sources, edge_speed) + edge->toll() * toll_factor_;
 
   switch (edge->use()) {
     case Use::kAlley:
@@ -574,8 +575,9 @@ Cost AutoCost::TransitionCost(const baldr::DirectedEdge* edge,
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
       turn_cost = autocost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? autocost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : autocost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right())
+                      ? autocost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                      : autocost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred.use() == Use::kRamp) ||
@@ -646,8 +648,9 @@ Cost AutoCost::TransitionCostReverse(const uint32_t idx,
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
       turn_cost = autocost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? autocost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : autocost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right())
+                      ? autocost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                      : autocost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred->use() == Use::kRamp) ||
@@ -702,10 +705,13 @@ void ParseAutoCostOptions(const rapidjson::Document& doc,
   const auto& json = rapidjson::get_child(doc, costing_options_key.c_str(), dummy);
 
   ParseBaseCostOptions(json, c, autocost_internal::kBaseCostOptsConfig);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAlleyFactorRange, json, "/alley_factor", alley_factor);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseHighwaysRange, json, "/use_highways", use_highways);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAlleyFactorRange, json, "/alley_factor",
+                          alley_factor);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseHighwaysRange, json, "/use_highways",
+                          use_highways);
   JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseTollsRange, json, "/use_tolls", use_tolls);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseDistanceRange, json, "/use_distance", use_distance);
+  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseDistanceRange, json, "/use_distance",
+                          use_distance);
   JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAutoHeightRange, json, "/height", height);
   JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAutoWidthRange, json, "/width", width);
   JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kProbabilityRange, json, "/restriction_probability",
@@ -1101,7 +1107,8 @@ std::shared_ptr<TestAutoCost> make_autocost_from_json(const std::string& propert
      << "}}" << extra_json << "}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return std::make_shared<TestAutoCost>(request.options().costings().find((int) Costing::auto_)->second);
+  return std::make_shared<TestAutoCost>(
+      request.options().costings().find((int)Costing::auto_)->second);
 }
 
 std::uniform_real_distribution<float>
@@ -1139,7 +1146,8 @@ TEST(AutoCost, testAutoCostParams) {
   distributor = make_distributor_from_range(autocost_internal::kAlleyFactorRange);
   for (unsigned i = 0; i < testIterations; ++i) {
     tester = make_autocost_from_json("alley_factor", distributor(generator));
-    EXPECT_THAT(tester->alley_factor_, test::IsBetween(autocost_internal::kAlleyFactorRange.min, autocost_internal::kAlleyFactorRange.max));
+    EXPECT_THAT(tester->alley_factor_, test::IsBetween(autocost_internal::kAlleyFactorRange.min,
+                                                       autocost_internal::kAlleyFactorRange.max));
   }
 
   // destination_only_penalty_

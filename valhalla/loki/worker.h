@@ -5,12 +5,11 @@
 #include <valhalla/baldr/graphreader.h>
 #include <valhalla/exceptions.h>
 #include <valhalla/midgard/pointll.h>
+#include <valhalla/property_tree/ptree.hpp>
 #include <valhalla/proto/options.pb.h>
 #include <valhalla/sif/costfactory.h>
 #include <valhalla/skadi/sample.h>
 #include <valhalla/worker.h>
-
-#include <valhalla/property_tree/ptree.hpp>
 
 #include <vector>
 

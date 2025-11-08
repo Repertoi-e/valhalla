@@ -5,6 +5,7 @@
 #include "tyr/actor.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <napi.h>
 
 #include <functional>

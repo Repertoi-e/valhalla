@@ -1,7 +1,6 @@
 #pragma once
-#include <valhalla/valhalla.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
+#include <valhalla/valhalla.h>
 
 #include <string>
 

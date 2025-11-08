@@ -2,7 +2,6 @@
 #define VALHALLA_MJOLNIR_BSSBUILDER_H
 
 #include <valhalla/mjolnir/osmdata.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 namespace valhalla {
@@ -18,9 +17,8 @@ public:
    * @param pt   Property tree containing the hierarchy configuration
    *             and other configuration needed to build bss.
    */
-  static void Build(const property_tree& pt,
-                    const OSMData& osmdata,
-                    const std::string& bss_nodes_bin);
+  static void
+  Build(const property_tree& pt, const OSMData& osmdata, const std::string& bss_nodes_bin);
 };
 
 } // namespace mjolnir

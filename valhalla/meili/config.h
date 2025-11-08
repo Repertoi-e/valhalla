@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cstddef>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
+
+#include <cstddef>
 
 namespace valhalla {
 namespace meili {

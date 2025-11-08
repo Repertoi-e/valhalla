@@ -1,7 +1,6 @@
 #pragma once
 
 #include <valhalla/baldr/graphid.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <unordered_set>

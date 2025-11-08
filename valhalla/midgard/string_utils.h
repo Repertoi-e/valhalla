@@ -14,22 +14,19 @@ enum class SplitMode { KeepEmpty, SkipEmpty };
 
 inline std::string to_lower_copy(std::string_view input) {
   std::string result(input.begin(), input.end());
-  std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) {
-    return static_cast<char>(std::tolower(c));
-  });
+  std::transform(result.begin(), result.end(), result.begin(),
+                 [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
   return result;
 }
 
 inline void to_lower_in_place(std::string& value) {
-  std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-    return static_cast<char>(std::tolower(c));
-  });
+  std::transform(value.begin(), value.end(), value.begin(),
+                 [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 }
 
 inline void to_upper_in_place(std::string& value) {
-  std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-    return static_cast<char>(std::toupper(c));
-  });
+  std::transform(value.begin(), value.end(), value.begin(),
+                 [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
 }
 
 inline void trim_in_place(std::string& value) {
@@ -77,9 +74,8 @@ inline void remove_chars_in_place(std::string& value, std::string_view chars) {
               value.end());
 }
 
-inline std::vector<std::string> split(std::string_view input,
-                                      std::string_view delimiters,
-                                      SplitMode mode = SplitMode::KeepEmpty) {
+inline std::vector<std::string>
+split(std::string_view input, std::string_view delimiters, SplitMode mode = SplitMode::KeepEmpty) {
   std::vector<std::string> result;
   if (delimiters.empty()) {
     result.emplace_back(input);
@@ -101,9 +97,8 @@ inline std::vector<std::string> split(std::string_view input,
   return result;
 }
 
-inline std::vector<std::string> split(std::string_view input,
-                                      char delimiter,
-                                      SplitMode mode = SplitMode::KeepEmpty) {
+inline std::vector<std::string>
+split(std::string_view input, char delimiter, SplitMode mode = SplitMode::KeepEmpty) {
   const char delim[] = {delimiter, '\0'};
   return split(input, std::string_view(delim, 1), mode);
 }
@@ -152,7 +147,7 @@ inline std::string join(const std::vector<std::string>& parts, std::string_view 
       result.append(delimiter.data(), delimiter.size());
     }
     first = false;
-  result.append(part);
+    result.append(part);
   }
   return result;
 }

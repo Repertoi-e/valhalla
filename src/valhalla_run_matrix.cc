@@ -9,6 +9,7 @@
 #include "worker.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <cxxopts.hpp>
 
 #include <cmath>
@@ -215,8 +216,8 @@ int main(int argc, char* argv[]) {
   hierarchy_limits_config_t hl_config =
       parse_hierarchy_limits_from_config(config, "costmatrix", false);
   check_hierarchy_limits(mode_costing[int(mode)]->GetHierarchyLimits(), mode_costing[int(mode)],
-                         options.costings().find((int) options.costing_type())->second.options(), hl_config,
-                         true, mode_costing[int(mode)]->UseHierarchyLimits());
+                         options.costings().find((int)options.costing_type())->second.options(),
+                         hl_config, true, mode_costing[int(mode)]->UseHierarchyLimits());
   t0 = std::chrono::high_resolution_clock::now();
   for (uint32_t n = 0; n < iterations; n++) {
     request.clear_matrix();

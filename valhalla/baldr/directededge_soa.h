@@ -28,9 +28,7 @@ public:
 
   static DirectedEdgeWordLaneBlob Encode(const std::vector<DirectedEdge>& edges);
 
-  static bool Decode(const uint8_t* data,
-                     std::size_t size,
-                     std::vector<DirectedEdge>& edges_out);
+  static bool Decode(const uint8_t* data, std::size_t size, std::vector<DirectedEdge>& edges_out);
 };
 
 } // namespace baldr

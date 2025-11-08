@@ -11,6 +11,7 @@
 #include "proto/common.pb.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <gtest/gtest.h>
 
 #include <cstdint>
@@ -735,8 +736,6 @@ TEST(GraphParser, TestImportBssNode) {
       std::cout << std::hex << static_cast<int>(c) << " ";
     }
     std::cout << std::dec << std::endl;
-
-
 
     ASSERT_EQ(bss_station_info.ref(), "2");
     ASSERT_EQ(bss_station_info.network(), "Atac Bikesharing");

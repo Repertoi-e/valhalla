@@ -2,11 +2,10 @@
 #include "baldr/graphconstants.h"
 #include "baldr/timedomain.h"
 #include "midgard/logging.h"
-
 #include "midgard/string_utils.h"
 
-#include <ctime>
 #include <algorithm>
+#include <ctime>
 #include <regex>
 #include <sstream>
 

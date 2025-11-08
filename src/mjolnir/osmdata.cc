@@ -1,8 +1,7 @@
 #include "mjolnir/osmdata.h"
 #include "midgard/logging.h"
-#include "scoped_timer.h"
-
 #include "midgard/string_utils.h"
+#include "scoped_timer.h"
 
 #include <cctype>
 #include <cstdint>

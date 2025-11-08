@@ -2,7 +2,6 @@
 #define VALHALLA_MJOLNIR_GRAPHENHANCER_H
 
 #include <valhalla/mjolnir/osmdata.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 namespace valhalla {
@@ -19,9 +18,8 @@ public:
    * @param osmdata     OSM data used to enhance the turn lanes.
    * @param access_file where to store the access tags so they are not in memory
    */
-  static void Enhance(const property_tree& pt,
-                      const OSMData& osmdata,
-                      const std::string& access_file);
+  static void
+  Enhance(const property_tree& pt, const OSMData& osmdata, const std::string& access_file);
 };
 
 } // namespace mjolnir

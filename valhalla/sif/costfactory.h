@@ -63,7 +63,7 @@ public:
    */
   cost_ptr_t Create(const Options& options) const {
     // create the cost using the creation function
-    auto found = options.costings().find((int) options.costing_type());
+    auto found = options.costings().find((int)options.costing_type());
     if (found != options.costings().end()) {
       return Create(found->second);
     } // if we didnt have costing options we need to use some default ones
@@ -102,7 +102,7 @@ public:
     mode = TravelMode(TravelMode_ARRAYSIZE);
     // Set travel mode and construct costing(s) for this type
     for (const auto& costing : kCostingTypeMapping.at(options.costing_type())) {
-      valhalla::sif::cost_ptr_t cost = Create(options.costings().find((int) costing)->second);
+      valhalla::sif::cost_ptr_t cost = Create(options.costings().find((int)costing)->second);
       mode = cost->travel_mode();
       mode_costing[static_cast<uint32_t>(mode)] = cost;
     }

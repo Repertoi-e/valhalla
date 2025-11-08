@@ -6,10 +6,10 @@
 #include "mjolnir/sqlite3.h"
 
 #include <valhalla/property_tree/ptree.hpp>
-#include <geos_c.h>
-#include <sqlite3.h>
 
 #include <assert.h>
+#include <geos_c.h>
+#include <sqlite3.h>
 
 #include <algorithm>
 #include <array>
@@ -106,7 +106,7 @@ std::string multipolygon_to_wkt(const simple_multipolygon_t& multipolygon) {
     }
     ss << '(';
     bool first_ring = true;
-  auto append = [&](const simple_ring_t& ring) {
+    auto append = [&](const simple_ring_t& ring) {
       if (!first_ring) {
         ss << ',';
       }
@@ -124,7 +124,8 @@ std::string multipolygon_to_wkt(const simple_multipolygon_t& multipolygon) {
 }
 
 /**
- * a simple singleton to wrap geos setup and tear down as well as conversion to and from geometry types
+ * a simple singleton to wrap geos setup and tear down as well as conversion to and from geometry
+ * types
  */
 struct geos_helper_t {
   static const geos_helper_t& get() {
@@ -183,11 +184,11 @@ void buffer_ring(const simple_ring_t& ring,
                  std::vector<simple_ring_t>& inners) {
   // for collecting polygons
   auto add = [&](auto* geos_poly) {
-  rings.emplace_back(
-    geos_helper_t::to_striped_container<simple_ring_t>(GEOSGetExteriorRing(geos_poly)));
+    rings.emplace_back(
+        geos_helper_t::to_striped_container<simple_ring_t>(GEOSGetExteriorRing(geos_poly)));
     for (int i = 0; i < GEOSGetNumInteriorRings(geos_poly); ++i) {
       auto* inner = GEOSGetInteriorRingN(geos_poly, i);
-  inners.push_back(geos_helper_t::to_striped_container<simple_ring_t>(inner));
+      inners.push_back(geos_helper_t::to_striped_container<simple_ring_t>(inner));
     }
   };
 
@@ -225,10 +226,10 @@ void buffer_polygon(const simple_polygon_t& polygon, simple_multipolygon_t& mult
   // for collecting polygons
   auto add = [&](auto* geos_poly) {
     auto& poly = multipolygon.emplace_back();
-  poly.outer = geos_helper_t::to_striped_container<simple_ring_t>(GEOSGetExteriorRing(geos_poly));
+    poly.outer = geos_helper_t::to_striped_container<simple_ring_t>(GEOSGetExteriorRing(geos_poly));
     for (int i = 0; i < GEOSGetNumInteriorRings(geos_poly); ++i) {
       auto* inner = GEOSGetInteriorRingN(geos_poly, i);
-  poly.inners.push_back(geos_helper_t::to_striped_container<simple_ring_t>(inner));
+      poly.inners.push_back(geos_helper_t::to_striped_container<simple_ring_t>(inner));
     }
   };
 
@@ -243,9 +244,9 @@ void buffer_polygon(const simple_polygon_t& polygon, simple_multipolygon_t& mult
   for (const auto& inner : polygon.inners) {
     inner_rings.push_back(geos_helper_t::from_striped_container(inner));
   }
-  auto* geos_poly = GEOSGeom_createPolygon(outer_ring,
-                                           inner_rings.empty() ? nullptr : inner_rings.data(),
-                                           static_cast<int>(inner_rings.size()));
+  auto* geos_poly =
+      GEOSGeom_createPolygon(outer_ring, inner_rings.empty() ? nullptr : inner_rings.data(),
+                             static_cast<int>(inner_rings.size()));
   auto* buffered = GEOSBuffer(geos_poly, 0, 8);
   GEOSNormalize(buffered);
   auto geom_type = GEOSGeomTypeId(buffered);
@@ -306,7 +307,7 @@ bool to_segments(const OSMAdminData& admin_data,
     }
 
     // build the line geom
-  simple_ring_t coords;
+    simple_ring_t coords;
     for (const auto node_id : w_itr->second) {
       // although unlikely, we could have the way but not all the nodes
       auto n_itr = admin_data.shape_map.find(node_id);
@@ -347,7 +348,7 @@ void to_rings(const std::pair<std::string, uint64_t>& admin_info,
   // keep going while we have threads to pull
   while (!line_lookup.empty()) {
     // start connecting the first line we have to adjacent ones
-  simple_ring_t ring;
+    simple_ring_t ring;
     for (auto line_itr = line_lookup.begin(); line_itr != line_lookup.end();
          line_itr = line_lookup.find(ring.back())) {
       // grab the line segment to add
@@ -459,8 +460,7 @@ namespace mjolnir {
 /**
  * Build admins from protocol buffer input.
  */
-bool BuildAdminFromPBF(const property_tree& pt,
-                       const std::vector<std::string>& input_files) {
+bool BuildAdminFromPBF(const property_tree& pt, const std::vector<std::string>& input_files) {
 
   // Bail if bad path
   auto database = pt.get_optional<std::string>("admin");
@@ -609,7 +609,7 @@ bool BuildAdminFromPBF(const property_tree& pt,
     std::array<std::vector<simple_ring_t>, 2> outers_inners;
     for (bool outer : {true, false}) {
       // grab the ring segments and a lookup to find them when connecting them
-        std::vector<simple_ring_t> lines;
+      std::vector<simple_ring_t> lines;
       std::unordered_multimap<valhalla::midgard::PointLL, size_t> line_lookup;
       if (!to_segments(admin_data, admin, admin_info.first, outer, lines, line_lookup)) {
         complete = false;

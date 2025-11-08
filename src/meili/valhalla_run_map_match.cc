@@ -3,8 +3,9 @@
 #include "meili/map_matcher_factory.h"
 #include "meili/measurement.h"
 
-#include <iostream>
 #include <valhalla/property_tree/ptree.hpp>
+
+#include <iostream>
 
 using namespace valhalla::midgard;
 using namespace valhalla::meili;

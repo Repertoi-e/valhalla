@@ -1,5 +1,4 @@
 #include "baldr/directededge_soa.h"
-
 #include "baldr/directededge.h"
 
 #include <algorithm>
@@ -100,42 +99,78 @@ struct FieldDescriptor {
 };
 
 constexpr FieldDescriptor kFieldDescriptors[] = {
-    {FieldId::kEndnode, 0, 0, 46},         {FieldId::kRestrictions, 0, 46, 8},
-    {FieldId::kOppIndex, 0, 54, 7},        {FieldId::kForward, 0, 61, 1},
-    {FieldId::kLeavesTile, 0, 62, 1},      {FieldId::kCtryCrossing, 0, 63, 1},
-    {FieldId::kEdgeinfoOffset, 1, 0, 25},  {FieldId::kAccessRestriction, 1, 25, 12},
-    {FieldId::kStartRestriction, 1, 37, 12},{FieldId::kEndRestriction, 1, 49, 12},
-    {FieldId::kComplexRestriction, 1, 61, 1},{FieldId::kDestOnly, 1, 62, 1},
-    {FieldId::kNotThru, 1, 63, 1},         {FieldId::kSpeed, 2, 0, 8},
-    {FieldId::kFreeFlowSpeed, 2, 8, 8},    {FieldId::kConstrainedFlowSpeed, 2, 16, 8},
-    {FieldId::kTruckSpeed, 2, 24, 8},      {FieldId::kNameConsistency, 2, 32, 8},
-    {FieldId::kUse, 2, 40, 6},             {FieldId::kLanecount, 2, 46, 4},
-    {FieldId::kDensity, 2, 50, 4},         {FieldId::kClassification, 2, 54, 3},
-    {FieldId::kSurface, 2, 57, 3},         {FieldId::kToll, 2, 60, 1},
-    {FieldId::kRoundabout, 2, 61, 1},      {FieldId::kTruckRoute, 2, 62, 1},
-    {FieldId::kHasPredictedSpeed, 2, 63, 1},{FieldId::kForwardAccess, 3, 0, 12},
-    {FieldId::kReverseAccess, 3, 12, 12},  {FieldId::kMaxUpSlopeBits, 3, 24, 5},
-    {FieldId::kMaxDownSlopeBits, 3, 29, 5},{FieldId::kSacScale, 3, 34, 3},
-    {FieldId::kCycleLane, 3, 37, 2},       {FieldId::kBikeNetwork, 3, 39, 1},
-    {FieldId::kUseSidepath, 3, 40, 1},     {FieldId::kDismount, 3, 41, 1},
-    {FieldId::kSidewalkLeft, 3, 42, 1},    {FieldId::kSidewalkRight, 3, 43, 1},
-    {FieldId::kShoulder, 3, 44, 1},        {FieldId::kLaneConn, 3, 45, 1},
-    {FieldId::kTurnlanes, 3, 46, 1},       {FieldId::kSign, 3, 47, 1},
-    {FieldId::kInternal, 3, 48, 1},        {FieldId::kTunnel, 3, 49, 1},
-    {FieldId::kBridge, 3, 50, 1},          {FieldId::kTrafficSignal, 3, 51, 1},
-    {FieldId::kSpare1, 3, 52, 1},          {FieldId::kDeadend, 3, 53, 1},
-    {FieldId::kBssConnection, 3, 54, 1},   {FieldId::kStopSign, 3, 55, 1},
-    {FieldId::kYieldSign, 3, 56, 1},       {FieldId::kHovType, 3, 57, 1},
-    {FieldId::kIndoor, 3, 58, 1},          {FieldId::kLit, 3, 59, 1},
-    {FieldId::kDestOnlyHgv, 3, 60, 1},     {FieldId::kSpare4, 3, 61, 3},
-    {FieldId::kTurntypeBits, 4, 0, 24},    {FieldId::kEdgeToLeftBits, 4, 24, 8},
-    {FieldId::kLength, 4, 32, 24},         {FieldId::kWeightedGradeBits, 4, 56, 4},
-    {FieldId::kCurvature, 4, 60, 4},       {FieldId::kStopImpactBits, 5, 0, 24},
-    {FieldId::kEdgeToRightBits, 5, 24, 8}, {FieldId::kStopOrLine, 5, 0, 32},
-    {FieldId::kLocalEdgeIdx, 5, 32, 7},    {FieldId::kOppLocalIdx, 5, 39, 7},
-    {FieldId::kShortcut, 5, 46, 7},        {FieldId::kSuperseded, 5, 53, 7},
-    {FieldId::kIsShortcut, 5, 60, 1},      {FieldId::kSpeedType, 5, 61, 1},
-    {FieldId::kNamed, 5, 62, 1},           {FieldId::kLink, 5, 63, 1},
+    {FieldId::kEndnode, 0, 0, 46},
+    {FieldId::kRestrictions, 0, 46, 8},
+    {FieldId::kOppIndex, 0, 54, 7},
+    {FieldId::kForward, 0, 61, 1},
+    {FieldId::kLeavesTile, 0, 62, 1},
+    {FieldId::kCtryCrossing, 0, 63, 1},
+    {FieldId::kEdgeinfoOffset, 1, 0, 25},
+    {FieldId::kAccessRestriction, 1, 25, 12},
+    {FieldId::kStartRestriction, 1, 37, 12},
+    {FieldId::kEndRestriction, 1, 49, 12},
+    {FieldId::kComplexRestriction, 1, 61, 1},
+    {FieldId::kDestOnly, 1, 62, 1},
+    {FieldId::kNotThru, 1, 63, 1},
+    {FieldId::kSpeed, 2, 0, 8},
+    {FieldId::kFreeFlowSpeed, 2, 8, 8},
+    {FieldId::kConstrainedFlowSpeed, 2, 16, 8},
+    {FieldId::kTruckSpeed, 2, 24, 8},
+    {FieldId::kNameConsistency, 2, 32, 8},
+    {FieldId::kUse, 2, 40, 6},
+    {FieldId::kLanecount, 2, 46, 4},
+    {FieldId::kDensity, 2, 50, 4},
+    {FieldId::kClassification, 2, 54, 3},
+    {FieldId::kSurface, 2, 57, 3},
+    {FieldId::kToll, 2, 60, 1},
+    {FieldId::kRoundabout, 2, 61, 1},
+    {FieldId::kTruckRoute, 2, 62, 1},
+    {FieldId::kHasPredictedSpeed, 2, 63, 1},
+    {FieldId::kForwardAccess, 3, 0, 12},
+    {FieldId::kReverseAccess, 3, 12, 12},
+    {FieldId::kMaxUpSlopeBits, 3, 24, 5},
+    {FieldId::kMaxDownSlopeBits, 3, 29, 5},
+    {FieldId::kSacScale, 3, 34, 3},
+    {FieldId::kCycleLane, 3, 37, 2},
+    {FieldId::kBikeNetwork, 3, 39, 1},
+    {FieldId::kUseSidepath, 3, 40, 1},
+    {FieldId::kDismount, 3, 41, 1},
+    {FieldId::kSidewalkLeft, 3, 42, 1},
+    {FieldId::kSidewalkRight, 3, 43, 1},
+    {FieldId::kShoulder, 3, 44, 1},
+    {FieldId::kLaneConn, 3, 45, 1},
+    {FieldId::kTurnlanes, 3, 46, 1},
+    {FieldId::kSign, 3, 47, 1},
+    {FieldId::kInternal, 3, 48, 1},
+    {FieldId::kTunnel, 3, 49, 1},
+    {FieldId::kBridge, 3, 50, 1},
+    {FieldId::kTrafficSignal, 3, 51, 1},
+    {FieldId::kSpare1, 3, 52, 1},
+    {FieldId::kDeadend, 3, 53, 1},
+    {FieldId::kBssConnection, 3, 54, 1},
+    {FieldId::kStopSign, 3, 55, 1},
+    {FieldId::kYieldSign, 3, 56, 1},
+    {FieldId::kHovType, 3, 57, 1},
+    {FieldId::kIndoor, 3, 58, 1},
+    {FieldId::kLit, 3, 59, 1},
+    {FieldId::kDestOnlyHgv, 3, 60, 1},
+    {FieldId::kSpare4, 3, 61, 3},
+    {FieldId::kTurntypeBits, 4, 0, 24},
+    {FieldId::kEdgeToLeftBits, 4, 24, 8},
+    {FieldId::kLength, 4, 32, 24},
+    {FieldId::kWeightedGradeBits, 4, 56, 4},
+    {FieldId::kCurvature, 4, 60, 4},
+    {FieldId::kStopImpactBits, 5, 0, 24},
+    {FieldId::kEdgeToRightBits, 5, 24, 8},
+    {FieldId::kStopOrLine, 5, 0, 32},
+    {FieldId::kLocalEdgeIdx, 5, 32, 7},
+    {FieldId::kOppLocalIdx, 5, 39, 7},
+    {FieldId::kShortcut, 5, 46, 7},
+    {FieldId::kSuperseded, 5, 53, 7},
+    {FieldId::kIsShortcut, 5, 60, 1},
+    {FieldId::kSpeedType, 5, 61, 1},
+    {FieldId::kNamed, 5, 62, 1},
+    {FieldId::kLink, 5, 63, 1},
 };
 
 constexpr bool ValidateFieldDescriptors() {
@@ -147,8 +182,7 @@ constexpr bool ValidateFieldDescriptors() {
   return true;
 }
 
-static_assert(ValidateFieldDescriptors(),
-              "DirectedEdge field descriptor table order mismatch");
+static_assert(ValidateFieldDescriptors(), "DirectedEdge field descriptor table order mismatch");
 
 constexpr std::size_t kWordCount = 6;
 
@@ -167,8 +201,7 @@ constexpr uint64_t MaskForBits(uint32_t bits) {
 
 uint64_t ExtractField(const uint64_t* words, const FieldDescriptor& desc) {
   const uint64_t mask = MaskForBits(desc.bits);
-  return desc.bits == 64 ? words[desc.word]
-                         : ((words[desc.word] >> desc.offset) & mask);
+  return desc.bits == 64 ? words[desc.word] : ((words[desc.word] >> desc.offset) & mask);
 }
 
 void SetField(uint64_t* words, const FieldDescriptor& desc, uint64_t value) {
@@ -389,48 +422,56 @@ bool ShouldUseSparseBoolEncoding(std::size_t edge_count, uint32_t non_zero_count
     return false;
   }
   // Favor sparse list encoding when fewer than ~15% of values are set.
-  return static_cast<uint64_t>(non_zero_count) * 100ull <=
-         static_cast<uint64_t>(edge_count) * 15ull;
+  return static_cast<uint64_t>(non_zero_count) * 100ull <= static_cast<uint64_t>(edge_count) * 15ull;
 }
 
-constexpr std::array<FieldId, 8> kGroup0Fields{
-  FieldId::kSpeed,                FieldId::kFreeFlowSpeed,
-  FieldId::kConstrainedFlowSpeed, FieldId::kTruckSpeed,
-  FieldId::kNameConsistency,      FieldId::kOppIndex,
-  FieldId::kEdgeToLeftBits,       FieldId::kEdgeToRightBits};
+constexpr std::array<FieldId, 8> kGroup0Fields{FieldId::kSpeed,
+                                               FieldId::kFreeFlowSpeed,
+                                               FieldId::kConstrainedFlowSpeed,
+                                               FieldId::kTruckSpeed,
+                                               FieldId::kNameConsistency,
+                                               FieldId::kOppIndex,
+                                               FieldId::kEdgeToLeftBits,
+                                               FieldId::kEdgeToRightBits};
 
-constexpr std::array<FieldId, 3> kGroup1Fields{
-    FieldId::kEndnode, FieldId::kEdgeinfoOffset, FieldId::kLength};
+constexpr std::array<FieldId, 3> kGroup1Fields{FieldId::kEndnode, FieldId::kEdgeinfoOffset,
+                                               FieldId::kLength};
 
-constexpr std::array<FieldId, 2> kGroup2Fields{
-    FieldId::kForwardAccess, FieldId::kReverseAccess};
+constexpr std::array<FieldId, 2> kGroup2Fields{FieldId::kForwardAccess, FieldId::kReverseAccess};
 
-constexpr std::array<FieldId, 7> kGroup4Fields{
-    FieldId::kRestrictions,      FieldId::kAccessRestriction, FieldId::kStartRestriction,
-    FieldId::kEndRestriction,    FieldId::kComplexRestriction, FieldId::kDestOnly,
-    FieldId::kNotThru};
+constexpr std::array<FieldId, 7> kGroup4Fields{FieldId::kRestrictions,
+                                               FieldId::kAccessRestriction,
+                                               FieldId::kStartRestriction,
+                                               FieldId::kEndRestriction,
+                                               FieldId::kComplexRestriction,
+                                               FieldId::kDestOnly,
+                                               FieldId::kNotThru};
 
-constexpr std::array<FieldId, 32> kGroup5Fields{
-    FieldId::kToll,            FieldId::kRoundabout,    FieldId::kTruckRoute,
-    FieldId::kHasPredictedSpeed, FieldId::kCycleLane,   FieldId::kBikeNetwork,
-    FieldId::kUseSidepath,     FieldId::kDismount,      FieldId::kSidewalkLeft,
-    FieldId::kSidewalkRight,   FieldId::kShoulder,      FieldId::kLaneConn,
-    FieldId::kTurnlanes,       FieldId::kSign,          FieldId::kInternal,
-    FieldId::kTunnel,          FieldId::kBridge,        FieldId::kTrafficSignal,
-    FieldId::kSpare1,          FieldId::kDeadend,       FieldId::kBssConnection,
-    FieldId::kStopSign,        FieldId::kYieldSign,     FieldId::kHovType,
-    FieldId::kIndoor,          FieldId::kLit,           FieldId::kDestOnlyHgv,
-    FieldId::kSpare4,          FieldId::kIsShortcut,    FieldId::kNamed,
-    FieldId::kLink,            FieldId::kSpeedType};
+constexpr std::array<FieldId, 32> kGroup5Fields{FieldId::kToll,          FieldId::kRoundabout,
+                                                FieldId::kTruckRoute,    FieldId::kHasPredictedSpeed,
+                                                FieldId::kCycleLane,     FieldId::kBikeNetwork,
+                                                FieldId::kUseSidepath,   FieldId::kDismount,
+                                                FieldId::kSidewalkLeft,  FieldId::kSidewalkRight,
+                                                FieldId::kShoulder,      FieldId::kLaneConn,
+                                                FieldId::kTurnlanes,     FieldId::kSign,
+                                                FieldId::kInternal,      FieldId::kTunnel,
+                                                FieldId::kBridge,        FieldId::kTrafficSignal,
+                                                FieldId::kSpare1,        FieldId::kDeadend,
+                                                FieldId::kBssConnection, FieldId::kStopSign,
+                                                FieldId::kYieldSign,     FieldId::kHovType,
+                                                FieldId::kIndoor,        FieldId::kLit,
+                                                FieldId::kDestOnlyHgv,   FieldId::kSpare4,
+                                                FieldId::kIsShortcut,    FieldId::kNamed,
+                                                FieldId::kLink,          FieldId::kSpeedType};
 
-constexpr std::array<FieldId, 19> kGroup6Fields{
-    FieldId::kTurntypeBits,   FieldId::kStopOrLine,   FieldId::kUse,
-    FieldId::kLanecount,      FieldId::kDensity,      FieldId::kClassification,
-    FieldId::kSurface,        FieldId::kCurvature,    FieldId::kWeightedGradeBits,
-    FieldId::kMaxUpSlopeBits, FieldId::kMaxDownSlopeBits,
-    FieldId::kSacScale,       FieldId::kLocalEdgeIdx, FieldId::kOppLocalIdx,
-    FieldId::kShortcut,       FieldId::kSuperseded,   FieldId::kForward,
-    FieldId::kLeavesTile,     FieldId::kCtryCrossing};
+constexpr std::array<FieldId, 19>
+    kGroup6Fields{FieldId::kTurntypeBits,   FieldId::kStopOrLine,       FieldId::kUse,
+                  FieldId::kLanecount,      FieldId::kDensity,          FieldId::kClassification,
+                  FieldId::kSurface,        FieldId::kCurvature,        FieldId::kWeightedGradeBits,
+                  FieldId::kMaxUpSlopeBits, FieldId::kMaxDownSlopeBits, FieldId::kSacScale,
+                  FieldId::kLocalEdgeIdx,   FieldId::kOppLocalIdx,      FieldId::kShortcut,
+                  FieldId::kSuperseded,     FieldId::kForward,          FieldId::kLeavesTile,
+                  FieldId::kCtryCrossing};
 
 constexpr std::size_t kGroupCount = 7;
 
@@ -626,12 +667,12 @@ std::vector<uint8_t> EncodeGroup5(const std::vector<EdgeWords>& words) {
     AppendLE<uint8_t>(data, static_cast<uint8_t>(plan.encoding));
     std::vector<uint8_t> payload;
     switch (plan.encoding) {
-    case Group5Encoding::kBitpack:
-      payload = EncodeBitpackField(words, *plan.desc);
-      break;
-    case Group5Encoding::kSparseList:
-      payload = EncodeSparseBoolField(words, *plan.desc, plan.non_zero);
-      break;
+      case Group5Encoding::kBitpack:
+        payload = EncodeBitpackField(words, *plan.desc);
+        break;
+      case Group5Encoding::kSparseList:
+        payload = EncodeSparseBoolField(words, *plan.desc, plan.non_zero);
+        break;
     }
     AppendLE<uint32_t>(data, static_cast<uint32_t>(payload.size()));
     data.insert(data.end(), payload.begin(), payload.end());
@@ -715,9 +756,7 @@ void DecodeGroup5SparseList(const uint8_t*& data,
   }
 }
 
-void DecodeGroup0(const uint8_t*& data,
-                  std::size_t& remaining,
-                  std::vector<EdgeWords>& words) {
+void DecodeGroup0(const uint8_t*& data, std::size_t& remaining, std::vector<EdgeWords>& words) {
   const auto field_count = static_cast<uint16_t>(ReadLE(data, remaining, sizeof(uint16_t)));
   for (uint16_t f = 0; f < field_count; ++f) {
     const auto field_id = static_cast<FieldId>(ReadLE(data, remaining, sizeof(uint16_t)));
@@ -729,9 +768,7 @@ void DecodeGroup0(const uint8_t*& data,
   }
 }
 
-void DecodeGroup1(const uint8_t*& data,
-                  std::size_t& remaining,
-                  std::vector<EdgeWords>& words) {
+void DecodeGroup1(const uint8_t*& data, std::size_t& remaining, std::vector<EdgeWords>& words) {
   const auto field_count = static_cast<uint16_t>(ReadLE(data, remaining, sizeof(uint16_t)));
   const std::size_t edge_count = words.size();
   for (uint16_t f = 0; f < field_count; ++f) {
@@ -760,9 +797,7 @@ void DecodeGroup1(const uint8_t*& data,
   }
 }
 
-void DecodeGroup2(const uint8_t*& data,
-                  std::size_t& remaining,
-                  std::vector<EdgeWords>& words) {
+void DecodeGroup2(const uint8_t*& data, std::size_t& remaining, std::vector<EdgeWords>& words) {
   const auto field_count = static_cast<uint16_t>(ReadLE(data, remaining, sizeof(uint16_t)));
   for (uint16_t f = 0; f < field_count; ++f) {
     const auto field_id = static_cast<FieldId>(ReadLE(data, remaining, sizeof(uint16_t)));
@@ -775,9 +810,7 @@ void DecodeGroup2(const uint8_t*& data,
   }
 }
 
-void DecodeGroup4(const uint8_t*& data,
-                  std::size_t& remaining,
-                  std::vector<EdgeWords>& words) {
+void DecodeGroup4(const uint8_t*& data, std::size_t& remaining, std::vector<EdgeWords>& words) {
   const auto field_count = static_cast<uint16_t>(ReadLE(data, remaining, sizeof(uint16_t)));
   const std::size_t edge_count = words.size();
   for (uint16_t f = 0; f < field_count; ++f) {
@@ -815,9 +848,7 @@ void DecodeGroup4(const uint8_t*& data,
   }
 }
 
-void DecodeGroup5(const uint8_t*& data,
-                  std::size_t& remaining,
-                  std::vector<EdgeWords>& words) {
+void DecodeGroup5(const uint8_t*& data, std::size_t& remaining, std::vector<EdgeWords>& words) {
   const auto field_count = static_cast<uint16_t>(ReadLE(data, remaining, sizeof(uint16_t)));
   for (uint16_t f = 0; f < field_count; ++f) {
     const auto field_id = static_cast<FieldId>(ReadLE(data, remaining, sizeof(uint16_t)));
@@ -832,14 +863,14 @@ void DecodeGroup5(const uint8_t*& data,
     remaining -= payload_size;
     const auto& desc = GetDescriptor(field_id);
     switch (encoding) {
-    case Group5Encoding::kBitpack:
-      DecodeGroup5Bitpack(payload, payload_remaining, desc, words);
-      break;
-    case Group5Encoding::kSparseList:
-      DecodeGroup5SparseList(payload, payload_remaining, desc, words);
-      break;
-    default:
-      throw std::runtime_error("DirectedEdgeWordLanes unknown group5 encoding");
+      case Group5Encoding::kBitpack:
+        DecodeGroup5Bitpack(payload, payload_remaining, desc, words);
+        break;
+      case Group5Encoding::kSparseList:
+        DecodeGroup5SparseList(payload, payload_remaining, desc, words);
+        break;
+      default:
+        throw std::runtime_error("DirectedEdgeWordLanes unknown group5 encoding");
     }
     if (payload_remaining != 0) {
       throw std::runtime_error("DirectedEdgeWordLanes group5 payload under-consumed");
@@ -847,9 +878,7 @@ void DecodeGroup5(const uint8_t*& data,
   }
 }
 
-void DecodeGroup6(const uint8_t*& data,
-                  std::size_t& remaining,
-                  std::vector<EdgeWords>& words) {
+void DecodeGroup6(const uint8_t*& data, std::size_t& remaining, std::vector<EdgeWords>& words) {
   const auto field_count = static_cast<uint16_t>(ReadLE(data, remaining, sizeof(uint16_t)));
   for (uint16_t f = 0; f < field_count; ++f) {
     const auto field_id = static_cast<FieldId>(ReadLE(data, remaining, sizeof(uint16_t)));
@@ -962,28 +991,28 @@ bool DirectedEdgeWordLanes::Decode(const uint8_t* data,
     data += payload_size;
     remaining -= payload_size;
     switch (group_id) {
-    case GroupId::kGroup0:
-      DecodeGroup0(group_data, group_remaining, words);
-      break;
-    case GroupId::kGroup1:
-      DecodeGroup1(group_data, group_remaining, words);
-      break;
-    case GroupId::kGroup2:
-      DecodeGroup2(group_data, group_remaining, words);
-      break;
-    case GroupId::kGroup4:
-      DecodeGroup4(group_data, group_remaining, words);
-      break;
-    case GroupId::kGroup5:
-      DecodeGroup5(group_data, group_remaining, words);
-      break;
-    case GroupId::kGroup6:
-      DecodeGroup6(group_data, group_remaining, words);
-      break;
-    case GroupId::kGroup3:
-      break;
-    default:
-      return false;
+      case GroupId::kGroup0:
+        DecodeGroup0(group_data, group_remaining, words);
+        break;
+      case GroupId::kGroup1:
+        DecodeGroup1(group_data, group_remaining, words);
+        break;
+      case GroupId::kGroup2:
+        DecodeGroup2(group_data, group_remaining, words);
+        break;
+      case GroupId::kGroup4:
+        DecodeGroup4(group_data, group_remaining, words);
+        break;
+      case GroupId::kGroup5:
+        DecodeGroup5(group_data, group_remaining, words);
+        break;
+      case GroupId::kGroup6:
+        DecodeGroup6(group_data, group_remaining, words);
+        break;
+      case GroupId::kGroup3:
+        break;
+      default:
+        return false;
     }
     if (group_remaining != 0) {
       return false;

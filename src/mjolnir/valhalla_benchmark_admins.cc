@@ -8,6 +8,7 @@
 #include "mjolnir/sqlite3.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <cxxopts.hpp>
 #include <sqlite3.h>
 
@@ -102,7 +103,7 @@ GetAdminInfo(valhalla::mjolnir::Sqlite3& db,
         geom = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)));
       }
 
-  polys.emplace(index, geom);
+      polys.emplace(index, geom);
       drive_on_right.emplace(index, dor);
       index++;
 

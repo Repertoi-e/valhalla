@@ -211,14 +211,15 @@ uint32_t GetOpposingEdgeIndex(const GraphId& startnode,
 #ifdef LOGGING_LEVEL_ERROR
       PointLL ll = end_tile->get_node_ll(endnode);
       if (edge.is_shortcut()) {
-        LOG_ERROR(
-            (valhalla::midgard::logging::sprintf(
-                 "No opposing shortcut edge at LL=%f,%f Length = %u Startnode %llu EndNode %llu",
-                 ll.lat(), ll.lng(), edge.length(), startnode.value, edge.endnode().value)));
+        LOG_ERROR((valhalla::midgard::logging::sprintf(
+            "No opposing shortcut edge at LL=%f,%f Length = %u Startnode %llu EndNode %llu", ll.lat(),
+            ll.lng(), edge.length(), startnode.value, edge.endnode().value)));
       } else {
-        LOG_ERROR((valhalla::midgard::logging::sprintf("No opposing edge at LL=%f,%f Length = %u Startnode %llu "
-                                 "EndNode %llu WayID %llu EdgeInfoOffset %llu", ll.lat(), ll.lng(), edge.length(),
-                   startnode.value, edge.endnode().value, wayid, edge.edgeinfo_offset())));
+        LOG_ERROR((valhalla::midgard::logging::
+                       sprintf("No opposing edge at LL=%f,%f Length = %u Startnode %llu "
+                               "EndNode %llu WayID %llu EdgeInfoOffset %llu",
+                               ll.lat(), ll.lng(), edge.length(), startnode.value,
+                               edge.endnode().value, wayid, edge.edgeinfo_offset())));
       }
 #endif
 
@@ -226,8 +227,11 @@ uint32_t GetOpposingEdgeIndex(const GraphId& startnode,
       directededge = end_tile->directededge(nodeinfo->edge_index());
       for (uint32_t i = 0; i < nodeinfo->edge_count(); i++, directededge++) {
         if (edge.is_shortcut() == directededge->is_shortcut()) {
-          LOG_WARN((logging::sprintf("    Length = %u Endnode: %llu WayId = %llu EdgeInfoOffset = %llu", 
-                    directededge->length(), directededge->endnode().value, end_tile->edgeinfo(directededge).wayid(), directededge->edgeinfo_offset())));
+          LOG_WARN(
+              (logging::sprintf("    Length = %u Endnode: %llu WayId = %llu EdgeInfoOffset = %llu",
+                                directededge->length(), directededge->endnode().value,
+                                end_tile->edgeinfo(directededge).wayid(),
+                                directededge->edgeinfo_offset())));
           n++;
         }
       }
@@ -634,7 +638,8 @@ void GraphValidator::Validate(const property_tree& pt) {
   // print dupcount and find densities
   for (uint8_t level = 0; level < TileHierarchy::levels().size(); level++) {
     // Print duplicates info for level
-    LOG_WARN((logging::sprintf("Possible duplicates at level: %s = %u", std::to_string(level).c_str(), duplicates[level])));
+    LOG_WARN((logging::sprintf("Possible duplicates at level: %s = %u", std::to_string(level).c_str(),
+                               duplicates[level])));
     if (densities[level].empty()) {
       continue;
     }

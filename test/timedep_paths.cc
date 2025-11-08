@@ -89,8 +89,7 @@ TEST(TimeDepPaths, test_arrive_by_paths) {
 
 class TimeDepForwardTest : public thor::TimeDepForward {
 public:
-  explicit TimeDepForwardTest(const property_tree& config = {})
-      : TimeDepForward(config) {
+  explicit TimeDepForwardTest(const property_tree& config = {}) : TimeDepForward(config) {
   }
 
   void Clear() {
@@ -121,8 +120,7 @@ TEST(TimeDepPaths, test_forward_max_reserved_labels_count) {
 
 class TimeDepReverseTest : public thor::TimeDepReverse {
 public:
-  explicit TimeDepReverseTest(const property_tree& config = {})
-      : TimeDepReverse(config) {
+  explicit TimeDepReverseTest(const property_tree& config = {}) : TimeDepReverse(config) {
   }
 
   void Clear() {

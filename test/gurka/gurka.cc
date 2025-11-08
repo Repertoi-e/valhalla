@@ -14,6 +14,7 @@
 #include "valhalla/proto_conversions.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <gtest/gtest.h>
 #include <osmium/builder/attr.hpp>
 #include <osmium/io/output_iterator.hpp>
@@ -384,8 +385,7 @@ inline void build_pbf(const nodelayout& node_locations,
   writer.close();
 }
 
-std::string
-to_string(const ::std::vector<::valhalla::StreetName>& street_names) {
+std::string to_string(const ::std::vector<::valhalla::StreetName>& street_names) {
   std::string str;
 
   for (const auto& street_name : street_names) {

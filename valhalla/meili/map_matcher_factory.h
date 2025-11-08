@@ -6,9 +6,8 @@
 #include <valhalla/meili/candidate_search.h>
 #include <valhalla/meili/config.h>
 #include <valhalla/meili/map_matcher.h>
-#include <valhalla/sif/costfactory.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
+#include <valhalla/sif/costfactory.h>
 
 namespace valhalla {
 namespace meili {

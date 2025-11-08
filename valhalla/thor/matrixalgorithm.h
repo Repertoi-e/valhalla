@@ -4,11 +4,10 @@
 #include <valhalla/baldr/graphid.h>
 #include <valhalla/baldr/graphreader.h>
 #include <valhalla/exceptions.h>
+#include <valhalla/property_tree/ptree.hpp>
 #include <valhalla/proto/api.pb.h>
 #include <valhalla/proto/expansion.pb.h>
 #include <valhalla/sif/dynamiccost.h>
-
-#include <valhalla/property_tree/ptree.hpp>
 
 #include <functional>
 

@@ -2,7 +2,6 @@
 #define __VALHALLA_SAMPLE_H__
 
 #include <valhalla/baldr/tilegetter.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <mutex>

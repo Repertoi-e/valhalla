@@ -3,7 +3,6 @@
 #include "test.h"
 #include "valhalla/worker.h"
 
-
 using namespace valhalla;
 
 /*************************************************************/
@@ -221,7 +220,7 @@ TEST(AutoDataFix, deprecation) {
   ParseApi(request_str, Options::route, request);
 
   EXPECT_EQ(request.options().costing_type(), Costing::auto_);
-  const auto& co = request.options().costings().find((int) Costing::auto_)->second.options();
+  const auto& co = request.options().costings().find((int)Costing::auto_)->second.options();
   EXPECT_EQ(co.ignore_access(), true);
   EXPECT_EQ(co.ignore_closures(), true);
   EXPECT_EQ(co.ignore_oneways(), true);
@@ -328,8 +327,8 @@ uint32_t speed_from_edge(const valhalla::Api& api, bool compare_with_previous_ed
     if (!node.has_edge())
       break;
     auto km = node.edge().length_km();
-    auto h = (nodes[i + 1].cost().elapsed_cost().seconds() -
-              node.cost().elapsed_cost().seconds() - node.cost().transition_cost().seconds()) /
+    auto h = (nodes[i + 1].cost().elapsed_cost().seconds() - node.cost().elapsed_cost().seconds() -
+              node.cost().transition_cost().seconds()) /
              3600.0;
     auto new_kmh = static_cast<uint32_t>(km / h + .5);
     if (midgard::is_valid(kmh) && compare_with_previous_edge) {
@@ -859,15 +858,13 @@ TEST(AlgorithmTestDest, TestAlgoSwapAndDestOnly) {
   auto from = "7";
   auto mid = "8";
   auto to = "9";
-  const std::string& request =
-       midgard::logging::sprintf(
-           R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s},{"lat":%s,"lon":%s,"heading":180,"heading_tolerance":45}],"costing":"auto"})",
-           std::to_string(map.nodes.at(from).lat()).c_str(),
-           std::to_string(map.nodes.at(from).lng()).c_str(),
-           std::to_string(map.nodes.at(mid).lat()).c_str(),
-           std::to_string(map.nodes.at(mid).lng()).c_str(),
-           std::to_string(map.nodes.at(to).lat()).c_str(),
-           std::to_string(map.nodes.at(to).lng()).c_str());
+  const std::string& request = midgard::logging::sprintf(
+      R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s},{"lat":%s,"lon":%s,"heading":180,"heading_tolerance":45}],"costing":"auto"})",
+      std::to_string(map.nodes.at(from).lat()).c_str(),
+      std::to_string(map.nodes.at(from).lng()).c_str(),
+      std::to_string(map.nodes.at(mid).lat()).c_str(),
+      std::to_string(map.nodes.at(mid).lng()).c_str(), std::to_string(map.nodes.at(to).lat()).c_str(),
+      std::to_string(map.nodes.at(to).lng()).c_str());
 
   auto api = gurka::do_action(valhalla::Options::route, map, request);
 
@@ -940,16 +937,13 @@ TEST(AlgorithmTestDest, TestAlgoMultiOriginDestination) {
 
   auto check = [&](const char* from, const char* to, const std::vector<std::string>& expected_names) {
     for (int type = 1; type <= 2; type++) {
-      const std::string& request =
-           midgard::logging::sprintf(
-               R"({"locations":[{"lat":%s,"lon":%s,"radius":%s,"node_snap_tolerance":0},{"lat":%s,"lon":%s,"radius":%s,"node_snap_tolerance":0}],"costing":"auto","date_time":{"type":%s,"value":"2111-11-11T11:11"}})",
-               std::to_string(map.nodes.at(from).lat()).c_str(),
-               std::to_string(map.nodes.at(from).lng()).c_str(),
-               std::to_string(radius).c_str(),
-               std::to_string(map.nodes.at(to).lat()).c_str(),
-               std::to_string(map.nodes.at(to).lng()).c_str(),
-               std::to_string(radius).c_str(),
-               std::to_string(type).c_str());
+      const std::string& request = midgard::logging::sprintf(
+          R"({"locations":[{"lat":%s,"lon":%s,"radius":%s,"node_snap_tolerance":0},{"lat":%s,"lon":%s,"radius":%s,"node_snap_tolerance":0}],"costing":"auto","date_time":{"type":%s,"value":"2111-11-11T11:11"}})",
+          std::to_string(map.nodes.at(from).lat()).c_str(),
+          std::to_string(map.nodes.at(from).lng()).c_str(), std::to_string(radius).c_str(),
+          std::to_string(map.nodes.at(to).lat()).c_str(),
+          std::to_string(map.nodes.at(to).lng()).c_str(), std::to_string(radius).c_str(),
+          std::to_string(type).c_str());
 
       auto result = gurka::do_action(valhalla::Options::route, map, request);
 

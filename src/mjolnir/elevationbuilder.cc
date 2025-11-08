@@ -310,8 +310,7 @@ std::deque<GraphId> get_tile_ids(const valhalla::property_tree& pt) {
 namespace valhalla {
 namespace mjolnir {
 
-void ElevationBuilder::Build(const property_tree& pt,
-                             std::deque<baldr::GraphId> tile_ids) {
+void ElevationBuilder::Build(const property_tree& pt, std::deque<baldr::GraphId> tile_ids) {
 
   auto elevation = pt.get_optional<std::string>("additional_data.elevation");
   if (!elevation || !std::filesystem::exists(*elevation)) {

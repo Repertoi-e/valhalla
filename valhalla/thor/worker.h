@@ -6,6 +6,7 @@
 #include <valhalla/exceptions.h>
 #include <valhalla/meili/map_matcher_factory.h>
 #include <valhalla/meili/match_result.h>
+#include <valhalla/property_tree/ptree_fwd.hpp>
 #include <valhalla/proto/options.pb.h>
 #include <valhalla/proto/trip.pb.h>
 #include <valhalla/sif/costfactory.h>
@@ -19,8 +20,6 @@
 #include <valhalla/thor/timedistancematrix.h>
 #include <valhalla/thor/unidirectional_astar.h>
 #include <valhalla/worker.h>
-
-#include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <tuple>
 #include <vector>

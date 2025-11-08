@@ -24,7 +24,8 @@
 #include <intrin.h>
 #endif
 
-void stub_printf(const char*, ...) {}
+void stub_printf(const char*, ...) {
+}
 
 // #define DEBUG_PRINTF(...) printf(__VA_ARGS__)
 #define DEBUG_PRINTF(...) stub_printf(__VA_ARGS__)
@@ -52,9 +53,10 @@ void DebugPrintEdgeNames(uint64_t wayid,
     return;
   }
 
-  DEBUG_PRINTF("AddEdgeInfo debug: wayid %llu edgeindex %u nodea %u/%u/%u nodeb %u/%u/%u diff_names=%d\n",
-         static_cast<unsigned long long>(wayid), edgeindex, nodea.tileid(), nodea.level(),
-         nodea.id(), nodeb.tileid(), nodeb.level(), nodeb.id(), diff_names ? 1 : 0);
+  DEBUG_PRINTF(
+      "AddEdgeInfo debug: wayid %llu edgeindex %u nodea %u/%u/%u nodeb %u/%u/%u diff_names=%d\n",
+      static_cast<unsigned long long>(wayid), edgeindex, nodea.tileid(), nodea.level(), nodea.id(),
+      nodeb.tileid(), nodeb.level(), nodeb.id(), diff_names ? 1 : 0);
 
   DEBUG_PRINTF("  names (%zu):\n", names.size());
   size_t untagged_index = 0;
@@ -93,7 +95,8 @@ void DebugPrintSectionStats(const char* label, const void* data, size_t size) {
   }
   const double zero_pct =
       (size > 0) ? (static_cast<double>(zero) * 100.0 / static_cast<double>(size)) : 0.0;
-  DEBUG_PRINTF("%s: size=%zu zero=%zu (%.2f%%) non_zero=%zu\n", label, size, zero, zero_pct, size - zero);
+  DEBUG_PRINTF("%s: size=%zu zero=%zu (%.2f%%) non_zero=%zu\n", label, size, zero, zero_pct,
+               size - zero);
 }
 
 struct DirectedEdgeFieldStats {
@@ -294,9 +297,9 @@ void DebugPrintDirectedEdgeBitfieldStats(const std::vector<DirectedEdge>& edges)
     const double zero_pct =
         st.count ? static_cast<double>(st.zero_count) * 100.0 / static_cast<double>(st.count) : 0.0;
     DEBUG_PRINTF("  %-20s bits=%2u min=%llu max=%llu mean=%.4f zero=%llu (%.2f%%)\n", st.name.c_str(),
-           desc.bits, static_cast<unsigned long long>(min_value),
-           static_cast<unsigned long long>(max_value), mean,
-           static_cast<unsigned long long>(st.zero_count), zero_pct);
+                 desc.bits, static_cast<unsigned long long>(min_value),
+                 static_cast<unsigned long long>(max_value), mean,
+                 static_cast<unsigned long long>(st.zero_count), zero_pct);
     if (st.delta_count) {
       const double mean_delta =
           static_cast<double>(st.delta_sum / static_cast<long double>(st.delta_count));
@@ -304,9 +307,10 @@ void DebugPrintDirectedEdgeBitfieldStats(const std::vector<DirectedEdge>& edges)
           static_cast<double>(st.delta_abs_sum / static_cast<long double>(st.delta_count));
       const double avg_zigzag_bits =
           static_cast<double>(st.zigzag_bit_sum) / static_cast<double>(st.delta_count);
-      DEBUG_PRINTF("    delta: min=%lld max=%lld mean=%.4f mean_abs=%.4f zigzag_bits(avg=%.2f max=%u)\n",
-             static_cast<long long>(st.min_delta), static_cast<long long>(st.max_delta), mean_delta,
-             mean_abs_delta, avg_zigzag_bits, st.max_zigzag_bits);
+      DEBUG_PRINTF(
+          "    delta: min=%lld max=%lld mean=%.4f mean_abs=%.4f zigzag_bits(avg=%.2f max=%u)\n",
+          static_cast<long long>(st.min_delta), static_cast<long long>(st.max_delta), mean_delta,
+          mean_abs_delta, avg_zigzag_bits, st.max_zigzag_bits);
     } else {
       DEBUG_PRINTF("    delta: insufficient samples\n");
     }
@@ -329,14 +333,14 @@ void DebugPrintDirectedEdgeBitfieldStats(const std::vector<DirectedEdge>& edges)
             st.count ? (static_cast<double>(entry.second) * 100.0 / static_cast<double>(st.count))
                      : 0.0;
         DEBUG_PRINTF(" %llu->%llu (%.2f%%)", static_cast<unsigned long long>(entry.first),
-               static_cast<unsigned long long>(entry.second), pct);
+                     static_cast<unsigned long long>(entry.second), pct);
       }
       if (hist.size() > limit) {
         const uint64_t remaining = st.count - top_total;
         const double pct =
             st.count ? (static_cast<double>(remaining) * 100.0 / static_cast<double>(st.count)) : 0.0;
-        DEBUG_PRINTF(" others=%llu (%.2f%%) unique=%zu", static_cast<unsigned long long>(remaining), pct,
-               hist.size());
+        DEBUG_PRINTF(" others=%llu (%.2f%%) unique=%zu", static_cast<unsigned long long>(remaining),
+                     pct, hist.size());
       } else {
         DEBUG_PRINTF(" unique=%zu", hist.size());
       }
@@ -694,7 +698,8 @@ void GraphTileBuilder::StoreTileData() {
         total += cr.SizeOf();
       }
       DEBUG_PRINTF("ComplexRestrictionForward: entries=%zu size=%llu\n",
-             complex_restriction_forward_builder_.size(), static_cast<unsigned long long>(total));
+                   complex_restriction_forward_builder_.size(),
+                   static_cast<unsigned long long>(total));
     }
     for (auto& complex_restriction : complex_restriction_forward_builder_) {
       in_mem << complex_restriction;
@@ -711,7 +716,8 @@ void GraphTileBuilder::StoreTileData() {
         total += cr.SizeOf();
       }
       DEBUG_PRINTF("ComplexRestrictionReverse: entries=%zu size=%llu\n",
-             complex_restriction_reverse_builder_.size(), static_cast<unsigned long long>(total));
+                   complex_restriction_reverse_builder_.size(),
+                   static_cast<unsigned long long>(total));
     }
     for (auto& complex_restriction : complex_restriction_reverse_builder_) {
       in_mem << complex_restriction;
@@ -728,7 +734,7 @@ void GraphTileBuilder::StoreTileData() {
       total_edgeinfo_size += edgeinfo.SizeOf();
     }
     DEBUG_PRINTF("EdgeInfo entries=%zu size=%llu\n", edgeinfo_list_.size(),
-           static_cast<unsigned long long>(total_edgeinfo_size));
+                 static_cast<unsigned long long>(total_edgeinfo_size));
     int64_t edge_info_size = in_mem.tellp() - current_size;
 
     // Write the names
@@ -746,8 +752,8 @@ void GraphTileBuilder::StoreTileData() {
     } else {
       const double zero_pct =
           static_cast<double>(text_zero) * 100.0 / static_cast<double>(text_total);
-      DEBUG_PRINTF("TextList: size=%zu zero=%zu (%.2f%%) non_zero=%zu entries=%zu\n", text_total, text_zero,
-             zero_pct, text_total - text_zero, textlistbuilder_.size());
+      DEBUG_PRINTF("TextList: size=%zu zero=%zu (%.2f%%) non_zero=%zu entries=%zu\n", text_total,
+                   text_zero, zero_pct, text_total - text_zero, textlistbuilder_.size());
     }
 
     // Add padding (if needed) to align to 8-byte word.
@@ -1109,7 +1115,8 @@ uint32_t GraphTileBuilder::AddEdgeInfo(const uint32_t edgeindex,
 
     edgeinfo.set_name_info_list(name_info_list);
 
-    DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics, name_info_list, diff_names);
+    DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics,
+                        name_info_list, diff_names);
 
     // Add to the map
     edge_offset_map_.emplace(edge_tuple_item, edge_info_offset_);
@@ -1234,7 +1241,8 @@ uint32_t GraphTileBuilder::AddEdgeInfo(const uint32_t edgeindex,
     ProcessTaggedValues(edgeindex, linguistics, name_count, name_info_list);
     edgeinfo.set_name_info_list(name_info_list);
 
-    DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics, name_info_list, diff_names);
+    DebugPrintEdgeNames(wayid, edgeindex, nodea, nodeb, names, tagged_values, linguistics,
+                        name_info_list, diff_names);
 
     // Add to the map
     edge_offset_map_.emplace(edge_tuple_item, edge_info_offset_);

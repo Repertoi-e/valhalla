@@ -10,6 +10,7 @@
 #include "sif/nocost.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <osmium/io/pbf_input.hpp>
 #include <sqlite3.h>
 
@@ -258,8 +259,7 @@ std::vector<Landmark> LandmarkDatabase::get_landmarks_by_bbox(const double minln
   return landmarks;
 }
 
-bool BuildLandmarkFromPBF(const property_tree& pt,
-                          const std::vector<std::string>& input_files) {
+bool BuildLandmarkFromPBF(const property_tree& pt, const std::vector<std::string>& input_files) {
   // parse pbf to get landmark nodes
   const std::string db_name = pt.get<std::string>("landmarks", "");
   valhalla::mjolnir::LandmarkDatabase db(db_name, false);

@@ -14,6 +14,7 @@
 #include "worker.h"
 
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <cpp-statsd-client/StatsdClient.hpp>
 
 #include <sstream>
@@ -45,15 +46,19 @@ bool is_format_supported(Options::Action action, Options::Format format) {
       // json
       0xFFFF, // all actions support json
       // gpx
-      (1 << (int) Options::route) | (1 << (int) Options::optimized_route) | (1 << (int) Options::trace_route),
+      (1 << (int)Options::route) | (1 << (int)Options::optimized_route) |
+          (1 << (int)Options::trace_route),
       // osrm
-      (1 << (int) Options::route) | (1 << (int) Options::optimized_route) | (1 << (int) Options::trace_route) |
-          (1 << (int) Options::trace_attributes) | (1 << (int) Options::locate) | (1 << (int) Options::status) |
-          (1 << (int) Options::sources_to_targets) | (1 << (int) Options::expansion),
+      (1 << (int)Options::route) | (1 << (int)Options::optimized_route) |
+          (1 << (int)Options::trace_route) | (1 << (int)Options::trace_attributes) |
+          (1 << (int)Options::locate) | (1 << (int)Options::status) |
+          (1 << (int)Options::sources_to_targets) | (1 << (int)Options::expansion),
       // pbf
-      (1 << (int) Options::route) | (1 << (int) Options::optimized_route) | (1 << (int) Options::trace_route) |
-          (1 << (int) Options::centroid) | (1 << (int) Options::trace_attributes) | (1 << (int) Options::status) |
-          (1 << (int) Options::sources_to_targets) | (1 << (int) Options::isochrone) | (1 << (int) Options::expansion),
+      (1 << (int)Options::route) | (1 << (int)Options::optimized_route) |
+          (1 << (int)Options::trace_route) | (1 << (int)Options::centroid) |
+          (1 << (int)Options::trace_attributes) | (1 << (int)Options::status) |
+          (1 << (int)Options::sources_to_targets) | (1 << (int)Options::isochrone) |
+          (1 << (int)Options::expansion),
   // geotiff
 #ifdef ENABLE_GDAL
       (1 << Options::isochrone),
@@ -65,7 +70,7 @@ bool is_format_supported(Options::Action action, Options::Format format) {
                 "Please update format_action array to match Options::Action_ARRAYSIZE");
 
   if (Options_Action_IsValid(action) && Options_Format_IsValid(format)) {
-    return (kFormatActionSupport[(int) format] & (1 << (int) action)) != 0;
+    return (kFormatActionSupport[(int)format] & (1 << (int)action)) != 0;
   } else {
     return false;
   }
@@ -300,7 +305,8 @@ void parse_location(valhalla::Location* location,
       location->mutable_search_filter()->set_min_road_class(min_rc);
     }
     // search_filter.max_road_class
-    auto max_road_class = rapidjson::get<std::string>(*(*search_filter), "/max_road_class", "motorway");
+    auto max_road_class =
+        rapidjson::get<std::string>(*(*search_filter), "/max_road_class", "motorway");
     valhalla::RoadClass max_rc;
     if (RoadClass_Enum_Parse(max_road_class, &max_rc)) {
       location->mutable_search_filter()->set_max_road_class(max_rc);
@@ -622,7 +628,7 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
   if (language) {
     auto phrase_dictionary = odin::get_locales_ensure_narrative_dictionary(*language);
     if (phrase_dictionary) {
-        options.set_language(*language);
+      options.set_language(*language);
     }
   }
   if (!options.has_language_case()) {
@@ -705,13 +711,14 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
 
   // date_time
   auto date_time_type = rapidjson::get_optional<unsigned int>(doc, "/date_time/type");
-  if (date_time_type && Options_DateTimeType_IsValid((valhalla::Options_DateTimeType) (*date_time_type + 1))) {
+  if (date_time_type &&
+      Options_DateTimeType_IsValid((valhalla::Options_DateTimeType)(*date_time_type + 1))) {
     options.set_date_time_type(static_cast<Options::DateTimeType>(*date_time_type + 1));
   }
   if (options.date_time_type() != Options::no_time) {
     // check the type is in bounds
     auto v = options.date_time_type();
-    if ((int) v >= Options::DateTimeType_ARRAYSIZE)
+    if ((int)v >= Options::DateTimeType_ARRAYSIZE)
       throw valhalla_exception_t{163};
     // check the value exists for depart at and arrive by
     auto date_time_value =
@@ -769,7 +776,8 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
       throw valhalla_exception_t{164};
     }
   } else if (action == Options::sources_to_targets) {
-    options.set_shape_format(options.has_shape_format_case() ? options.shape_format() : ShapeFormat::no_shape);
+    options.set_shape_format(options.has_shape_format_case() ? options.shape_format()
+                                                             : ShapeFormat::no_shape);
   }
 
   // whether or not to output b64 encoded openlr
@@ -1228,10 +1236,9 @@ void ParseApi(const std::string& request, Options::Action action, valhalla::Api&
   from_json(document, action, api);
 }
 
-hierarchy_limits_config_t
-parse_hierarchy_limits_from_config(const property_tree& config,
-                                   const std::string& algorithm,
-                                   const bool uses_dist) {
+hierarchy_limits_config_t parse_hierarchy_limits_from_config(const property_tree& config,
+                                                             const std::string& algorithm,
+                                                             const bool uses_dist) {
   std::vector<HierarchyLimits> max_hierarchy_limits;
   std::vector<HierarchyLimits> default_hierarchy_limits;
   default_hierarchy_limits.reserve(baldr::TileHierarchy::levels().size());

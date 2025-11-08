@@ -46,7 +46,7 @@ TEST(pbf_api, pbf_in_out) {
   select_all.set_matrix(true);
   select_all.set_isochrone(true);
 
-  for (int action = (int) Options::no_action + 1; action <= (int) Options::Action_MAX; ++action) {
+  for (int action = (int)Options::no_action + 1; action <= (int)Options::Action_MAX; ++action) {
     // don't have convenient support of these in gurka yet
     if (action == Options::expansion)
       continue;

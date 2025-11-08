@@ -2,7 +2,6 @@
 #define VALHALLA_MJOLNIR_PBFADMINPARSER_H
 
 #include <valhalla/mjolnir/osmadmindata.h>
-
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
 #include <string>
@@ -19,8 +18,7 @@ public:
   /**
    * Loads given input files
    */
-  static OSMAdminData Parse(const property_tree& pt,
-                            const std::vector<std::string>& input_files);
+  static OSMAdminData Parse(const property_tree& pt, const std::vector<std::string>& input_files);
 };
 
 } // namespace mjolnir

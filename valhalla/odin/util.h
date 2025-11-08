@@ -93,7 +93,8 @@ const std::unordered_map<std::string, std::string>& get_locales_json();
  * @param locale_string  The locale string to get the NarrativeDictionary for
  * @return               The NarrativeDictionary for the specified locale string
  */
-std::shared_ptr<NarrativeDictionary> get_locales_ensure_narrative_dictionary(const std::string& locale_string);
+std::shared_ptr<NarrativeDictionary>
+get_locales_ensure_narrative_dictionary(const std::string& locale_string);
 
 Bcp47Locale parse_string_into_locale(const std::string& locale_string);
 

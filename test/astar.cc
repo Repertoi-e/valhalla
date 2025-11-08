@@ -7,8 +7,8 @@
 #include "loki/search.h"
 #include "loki/worker.h"
 #include "midgard/logging.h"
-#include "midgard/string_utils.h"
 #include "midgard/pointll.h"
+#include "midgard/string_utils.h"
 #include "mjolnir/graphtilebuilder.h"
 #include "mjolnir/util.h"
 #include "odin/worker.h"
@@ -480,9 +480,8 @@ TEST(Astar, test_oneway) {
   }
 
   auto correct_route = std::vector<std::string>{"Quay Street", ""};
-  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         string_utils::join(names, ", ") + ", expected: \n" +
-                                         string_utils::join(correct_route, ", ");
+  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" + string_utils::join(names, ", ") +
+                                         ", expected: \n" + string_utils::join(correct_route, ", ");
 }
 
 TEST(Astar, test_oneway_wrong_way) {
@@ -544,9 +543,8 @@ TEST(Astar, test_deadend) {
       std::vector<std::string>{"Bell Lane", "Small Street",
                                "Quay Street", // The u-turn on Quay Street is optimized away
                                "", ""};
-  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         string_utils::join(names, ", ") + ", expected: \n" +
-                                         string_utils::join(correct_route, ", ");
+  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" + string_utils::join(names, ", ") +
+                                         ", expected: \n" + string_utils::join(correct_route, ", ");
 
   EXPECT_EQ(uturn_street, "Quay Street") << "We did not find the expected u-turn";
 }
@@ -593,9 +591,8 @@ TEST(Astar, test_time_dep_forward_with_current_time) {
       std::vector<std::string>{"Bell Lane", "Small Street",
                                "Quay Street", // The u-turn on Quay Street is optimized away
                                "", ""};
-  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         string_utils::join(names, ", ") + ", expected: \n" +
-                                         string_utils::join(correct_route, ", ");
+  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" + string_utils::join(names, ", ") +
+                                         ", expected: \n" + string_utils::join(correct_route, ", ");
 }
 
 TEST(Astar, test_deadend_timedep_forward) {
@@ -645,9 +642,8 @@ TEST(Astar, test_deadend_timedep_forward) {
       std::vector<std::string>{"Bell Lane", "Small Street",
                                "Quay Street", // The u-turn on Quay Street is optimized away
                                "", ""};
-  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         string_utils::join(names, ", ") + ", expected: \n" +
-                                         string_utils::join(correct_route, ", ");
+  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" + string_utils::join(names, ", ") +
+                                         ", expected: \n" + string_utils::join(correct_route, ", ");
 
   EXPECT_EQ(uturn_street, "Quay Street") << "We did not find the expected u-turn";
 }
@@ -698,9 +694,8 @@ TEST(Astar, test_deadend_timedep_reverse) {
       std::vector<std::string>{"Bell Lane", "Small Street",
                                "Quay Street", // The u-turn on Quay Street is optimized away
                                "", ""};
-  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         string_utils::join(names, ", ") + ", expected: \n" +
-                                         string_utils::join(correct_route, ", ");
+  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" + string_utils::join(names, ", ") +
+                                         ", expected: \n" + string_utils::join(correct_route, ", ");
 
   EXPECT_EQ(uturn_street, "Quay Street") << "We did not find the expected u-turn";
 }
@@ -741,9 +736,8 @@ TEST(Astar, test_time_restricted_road_bidirectional) {
   }
 
   auto correct_route = std::vector<std::string>{"Via Goito", "Via Montebello", ""};
-  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" +
-                                         string_utils::join(names, ", ") + ", expected: \n" +
-                                         string_utils::join(correct_route, ", ");
+  EXPECT_EQ(names, correct_route) << "Incorrect route, got: \n" + string_utils::join(names, ", ") +
+                                         ", expected: \n" + string_utils::join(correct_route, ", ");
 
   EXPECT_TRUE(response.trip().routes(0).legs(0).node(1).edge().has_time_restrictions())
       << "Expected leg to have time_restriction";

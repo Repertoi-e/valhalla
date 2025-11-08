@@ -93,9 +93,8 @@ Dijkstras::Initialize<decltype(Dijkstras::mmedgelabels_)>(decltype(Dijkstras::mm
                                                           const uint32_t);
 
 // Initializes the time of the expansion if there is one
-std::vector<TimeInfo>
-Dijkstras::SetTime(std::vector<valhalla::Location>& locations,
-                   GraphReader& reader) {
+std::vector<TimeInfo> Dijkstras::SetTime(std::vector<valhalla::Location>& locations,
+                                         GraphReader& reader) {
   // loop over all locations setting the date time with timezone
   std::vector<TimeInfo> infos;
   for (auto& location : locations) {
@@ -308,12 +307,10 @@ void Dijkstras::Expand(const ExpansionType expansion_type,
   // compute the expansion
   switch (expansion_type) {
     case ExpansionType::forward:
-      Compute<ExpansionType::forward>(api.mutable_options()->locations_, reader, costings,
-                                      mode);
+      Compute<ExpansionType::forward>(api.mutable_options()->locations_, reader, costings, mode);
       break;
     case ExpansionType::reverse:
-      Compute<ExpansionType::reverse>(api.mutable_options()->locations_, reader, costings,
-                                      mode);
+      Compute<ExpansionType::reverse>(api.mutable_options()->locations_, reader, costings, mode);
       break;
     case ExpansionType::multimodal:
       ComputeMultiModal(api.mutable_options()->locations_, reader, costings, mode, api.options());
@@ -394,17 +391,15 @@ void Dijkstras::Compute(std::vector<valhalla::Location>& locations,
 /**
  * NOTE: there's no implementation of ExpansionType::multimodal yet!
  */
-template void Dijkstras::Compute<ExpansionType::forward>(
-    std::vector<valhalla::Location>& locations,
-    baldr::GraphReader& graphreader,
-    const sif::mode_costing_t& mode_costing,
-    const sif::travel_mode_t mode);
+template void Dijkstras::Compute<ExpansionType::forward>(std::vector<valhalla::Location>& locations,
+                                                         baldr::GraphReader& graphreader,
+                                                         const sif::mode_costing_t& mode_costing,
+                                                         const sif::travel_mode_t mode);
 
-template void Dijkstras::Compute<ExpansionType::reverse>(
-    std::vector<valhalla::Location>& locations,
-    baldr::GraphReader& graphreader,
-    const sif::mode_costing_t& mode_costing,
-    const sif::travel_mode_t mode);
+template void Dijkstras::Compute<ExpansionType::reverse>(std::vector<valhalla::Location>& locations,
+                                                         baldr::GraphReader& graphreader,
+                                                         const sif::mode_costing_t& mode_costing,
+                                                         const sif::travel_mode_t mode);
 
 // Expand from a node in forward direction using multimodal.
 void Dijkstras::ExpandForwardMultiModal(GraphReader& graphreader,
@@ -694,12 +689,11 @@ void Dijkstras::ExpandForwardMultiModal(GraphReader& graphreader,
 }
 
 // Compute the reverse graph traversal for multimodal
-void Dijkstras::ComputeMultiModal(
-    std::vector<valhalla::Location>& origin_locations,
-    GraphReader& graphreader,
-    const sif::mode_costing_t& mode_costing,
-    const travel_mode_t mode,
-    const Options& options) {
+void Dijkstras::ComputeMultiModal(std::vector<valhalla::Location>& origin_locations,
+                                  GraphReader& graphreader,
+                                  const sif::mode_costing_t& mode_costing,
+                                  const travel_mode_t mode,
+                                  const Options& options) {
 
   // For now the date_time must be set on the origin.
   if (origin_locations[0].date_time().empty()) {
@@ -718,8 +712,10 @@ void Dijkstras::ComputeMultiModal(
 
   // Get maximum transfer and walking distance
   max_transfer_distance_ = pc->GetMaxTransferDistanceMM();
-  max_walking_dist_ =
-      options.costings().find((int) Costing::pedestrian)->second.options().transit_start_end_max_distance();
+  max_walking_dist_ = options.costings()
+                          .find((int)Costing::pedestrian)
+                          ->second.options()
+                          .transit_start_end_max_distance();
 
   // Get the time information for all the origin locations
   auto time_infos = SetTime(origin_locations, graphreader);
@@ -858,11 +854,10 @@ void Dijkstras::SetOriginLocations(GraphReader& graphreader,
 }
 
 // Add destination edges to the reverse path adjacency list.
-void Dijkstras::SetDestinationLocations(
-    GraphReader& graphreader,
-    std::vector<valhalla::Location>& locations,
-    const std::vector<baldr::TimeInfo>& time_infos,
-    const cost_ptr_t& costing) {
+void Dijkstras::SetDestinationLocations(GraphReader& graphreader,
+                                        std::vector<valhalla::Location>& locations,
+                                        const std::vector<baldr::TimeInfo>& time_infos,
+                                        const cost_ptr_t& costing) {
   // Bail if you want to do a multipath expansion with more locations than edge label/status supports
   if (multipath_ && locations.size() > baldr::kMaxMultiPathId)
     throw std::runtime_error("Max number of locations exceeded");
@@ -956,10 +951,9 @@ void Dijkstras::SetDestinationLocations(
 }
 
 // Add edge(s) at each origin to the adjacency list
-void Dijkstras::SetOriginLocationsMultiModal(
-    GraphReader& graphreader,
-    std::vector<valhalla::Location>& origin_locations,
-    const cost_ptr_t& costing) {
+void Dijkstras::SetOriginLocationsMultiModal(GraphReader& graphreader,
+                                             std::vector<valhalla::Location>& origin_locations,
+                                             const cost_ptr_t& costing) {
   // Add edges for each location to the adjacency list
   for (auto& origin : origin_locations) {
     // Only skip inbound edges if we have other options

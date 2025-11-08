@@ -16,7 +16,7 @@ NarrativeBuilderFactory::Create(const Options& options,
   if (!options.has_language()) {
     throw std::runtime_error("Language tag not specified.");
   }
-  
+
   const auto phrase_dictionary = get_locales_ensure_narrative_dictionary(options.language());
   if (!phrase_dictionary) {
     throw std::runtime_error("Invalid language tag.");
@@ -39,8 +39,7 @@ NarrativeBuilderFactory::Create(const Options& options,
   }
 
   // otherwise just return pointer to NarrativeBuilder
-  return std::make_unique<NarrativeBuilder>(options, trip_path, *phrase_dictionary,
-                                            markup_formatter);
+  return std::make_unique<NarrativeBuilder>(options, trip_path, *phrase_dictionary, markup_formatter);
 }
 
 } // namespace odin

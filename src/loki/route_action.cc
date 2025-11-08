@@ -20,8 +20,8 @@ void check_distance(const std::vector<valhalla::Location>& locations,
   // test if total distance along a polyline formed by connecting locations exceeds the maximum
   // or if all_pairs is specified test all pairs of locations to see if any are over the threshold
   float total_path_distance = 0.0f;
-  for (int i = 0; i < (int) locations.size(); ++i) {
-    for (int j = i + 1; j < (int) locations.size(); ++j) {
+  for (int i = 0; i < (int)locations.size(); ++i) {
+    for (int j = i + 1; j < (int)locations.size(); ++j) {
       auto dist = to_ll(locations[i]).Distance(to_ll(locations[j]));
       total_path_distance += i + 1 == j ? dist : 0;
       if ((!all_pairs && total_path_distance > max_distance) || (all_pairs && dist > max_distance))

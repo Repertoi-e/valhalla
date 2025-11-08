@@ -89,7 +89,7 @@ BaseCostingOptionsConfig GetBaseCostOptsConfig() {
 
 const BaseCostingOptionsConfig kBaseCostOptsConfig = GetBaseCostOptsConfig();
 
-} // namespace
+} // namespace motorcyclecost_internal
 
 /**
  * Derived class providing dynamic edge costing for "direct" auto routes. This
@@ -362,8 +362,8 @@ bool MotorcycleCost::Allowed(const baldr::DirectedEdge* edge,
   // Allow U-turns at dead-end nodes.
   if (!IsAccessible(edge) || (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
       ((pred.restrictions() & (1 << edge->localedgeidx())) && !ignore_turn_restrictions_) ||
-      (edge->surface() > motorcyclecost_internal::kMinimumMotorcycleSurface) || IsUserAvoidEdge(edgeid) ||
-      (!allow_destination_only_ && !pred.destonly() && edge->destonly()) ||
+      (edge->surface() > motorcyclecost_internal::kMinimumMotorcycleSurface) ||
+      IsUserAvoidEdge(edgeid) || (!allow_destination_only_ && !pred.destonly() && edge->destonly()) ||
       (pred.closure_pruning() && IsClosed(edge, tile)) || CheckExclusions(edge, pred)) {
     return false;
   }
@@ -387,7 +387,8 @@ bool MotorcycleCost::AllowedReverse(const baldr::DirectedEdge* edge,
   // Allow U-turns at dead-end nodes.
   if (!IsAccessible(opp_edge) || (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
       ((opp_edge->restrictions() & (1 << pred.opp_local_idx())) && !ignore_turn_restrictions_) ||
-      (opp_edge->surface() > motorcyclecost_internal::kMinimumMotorcycleSurface) || IsUserAvoidEdge(opp_edgeid) ||
+      (opp_edge->surface() > motorcyclecost_internal::kMinimumMotorcycleSurface) ||
+      IsUserAvoidEdge(opp_edgeid) ||
       (!allow_destination_only_ && !pred.destonly() && opp_edge->destonly()) ||
       (pred.closure_pruning() && IsClosed(opp_edge, tile)) || CheckExclusions(opp_edge, pred)) {
     return false;
@@ -421,9 +422,12 @@ Cost MotorcycleCost::EdgeCost(const baldr::DirectedEdge* edge,
     return {sec * ferry_factor_, sec};
   }
 
-  float factor = kDensityFactor[edge->density()] +
-                 highway_factor_ * motorcyclecost_internal::kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
-                 surface_factor_ * motorcyclecost_internal::kSurfaceFactor[static_cast<uint32_t>(edge->surface())];
+  float factor =
+      kDensityFactor[edge->density()] +
+      highway_factor_ *
+          motorcyclecost_internal::kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
+      surface_factor_ *
+          motorcyclecost_internal::kSurfaceFactor[static_cast<uint32_t>(edge->surface())];
   factor += SpeedPenalty(edge, tile, time_info, flow_sources, edge_speed);
   if (edge->toll()) {
     factor += toll_factor_;
@@ -465,8 +469,9 @@ Cost MotorcycleCost::TransitionCost(
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
       turn_cost = motorcyclecost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? motorcyclecost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : motorcyclecost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right())
+                      ? motorcyclecost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                      : motorcyclecost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred.use() == Use::kRamp) ||
@@ -538,8 +543,9 @@ Cost MotorcycleCost::TransitionCostReverse(
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
       turn_cost = motorcyclecost_internal::kTCCrossing;
     } else {
-      turn_cost = (node->drive_on_right()) ? motorcyclecost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                                           : motorcyclecost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+      turn_cost = (node->drive_on_right())
+                      ? motorcyclecost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                      : motorcyclecost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred->use() == Use::kRamp) ||
@@ -591,10 +597,13 @@ void ParseMotorcycleCostOptions(const rapidjson::Document& doc,
   const auto& json = rapidjson::get_child(doc, costing_options_key.c_str(), dummy);
 
   ParseBaseCostOptions(json, c, motorcyclecost_internal::kBaseCostOptsConfig);
-  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kUseHighwaysRange, json, "/use_highways", use_highways);
+  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kUseHighwaysRange, json, "/use_highways",
+                          use_highways);
   JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kUseTollsRange, json, "/use_tolls", use_tolls);
-  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kUseTrailsRange, json, "/use_trails", use_trails);
-  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kMotorcycleSpeedRange, json, "/top_speed", top_speed);
+  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kUseTrailsRange, json, "/use_trails",
+                          use_trails);
+  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kMotorcycleSpeedRange, json, "/top_speed",
+                          top_speed);
 }
 
 cost_ptr_t CreateMotorcycleCost(const Costing& costing_options) {
@@ -634,7 +643,7 @@ TestMotorcycleCost* make_motorcyclecost_from_json(const std::string& property, f
      << testVal << "}}}";
   Api request;
   ParseApi(ss.str(), valhalla::Options::route, request);
-  return new TestMotorcycleCost(request.options().costings().find((int) Costing::motorcycle)->second);
+  return new TestMotorcycleCost(request.options().costings().find((int)Costing::motorcycle)->second);
 }
 
 template <typename T>

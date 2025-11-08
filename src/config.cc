@@ -24,8 +24,7 @@ protected:
 public:
   config_singleton_t(config_singleton_t const&) = delete;
   void operator=(const config_singleton_t&) = delete;
-  friend const valhalla::property_tree&
-  valhalla::config(const std::string& config_inline);
+  friend const valhalla::property_tree& valhalla::config(const std::string& config_inline);
 };
 } // namespace
 

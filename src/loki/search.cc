@@ -43,7 +43,9 @@ bool search_filter(const DirectedEdge* edge,
          (filter.level_ != kMaxLevel && !tile->edgeinfo(edge).includes_level(filter.level_));
 }
 
-bool side_filter(const PathLocation::PathEdge& edge, const valhalla::baldr::Location& location, GraphReader& reader) {
+bool side_filter(const PathLocation::PathEdge& edge,
+                 const valhalla::baldr::Location& location,
+                 GraphReader& reader) {
   // nothing to filter if you dont want to filter or if there is no side of street
   if (edge.sos == PathLocation::SideOfStreet::NONE ||
       location.preferred_side_ == valhalla::baldr::Location::PreferredSide::EITHER)

@@ -245,8 +245,7 @@ TEST(EnhancedTripPath, TestActivateTurnLanes) {
   edge_1.add_turn_lanes()->set_directions_mask(kTurnLaneSharpRight);
 
   float remaining_step_distance = 2.f; // kilometers
-  DirectionsLeg_Maneuver_Type next_maneuver_type =
-      DirectionsLeg_Maneuver_Type_kRight;
+  DirectionsLeg_Maneuver_Type next_maneuver_type = DirectionsLeg_Maneuver_Type_kRight;
 
   // Reverse active
   TryActivateTurnLanes(std::make_unique<EnhancedTripLeg_Edge>(&edge_1), kTurnLaneReverse,
@@ -408,8 +407,7 @@ TEST(EnhancedTripPath, TestActivateTurnLanesShortNextRight) {
   edge_1.add_turn_lanes()->set_directions_mask(kTurnLaneSharpRight);
 
   float remaining_step_distance = 0.1f; // kilometers
-  DirectionsLeg_Maneuver_Type next_maneuver_type =
-      DirectionsLeg_Maneuver_Type_kRight;
+  DirectionsLeg_Maneuver_Type next_maneuver_type = DirectionsLeg_Maneuver_Type_kRight;
 
   // Reverse active
   TryActivateTurnLanes(std::make_unique<EnhancedTripLeg_Edge>(&edge_1), kTurnLaneReverse,
@@ -535,8 +533,7 @@ TEST(EnhancedTripPath, TestActivateTurnLanesShortNextLeft) {
   edge_1.add_turn_lanes()->set_directions_mask(kTurnLaneSharpRight);
 
   float remaining_step_distance = 0.1f; // kilometers
-  DirectionsLeg_Maneuver_Type next_maneuver_type =
-      DirectionsLeg_Maneuver_Type_kLeft;
+  DirectionsLeg_Maneuver_Type next_maneuver_type = DirectionsLeg_Maneuver_Type_kLeft;
 
   // Reverse active
   TryActivateTurnLanes(std::make_unique<EnhancedTripLeg_Edge>(&edge_1), kTurnLaneReverse,

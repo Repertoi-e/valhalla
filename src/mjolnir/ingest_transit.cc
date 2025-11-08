@@ -409,15 +409,14 @@ float get_stop_pair_dist(const gtfs::Stop& stop_connect,
 }
 
 // return dangling stop_pairs, write stop data from feed
-bool write_stop_pair(
-    valhalla::Transit& tile,
-    const tile_transit_info_t& tile_info,
-    const feed_object_t& feed_trip,
-    const gtfs::Feed& feed,
-    const std::unordered_map<feed_object_t, GraphId>& platform_node_ids,
-    unique_transit_t& uniques,
-    const std::vector<valhalla::Transit_Node>& tile_nodes,
-    const std::unordered_map<feed_object_t, size_t>& routes_ids) {
+bool write_stop_pair(valhalla::Transit& tile,
+                     const tile_transit_info_t& tile_info,
+                     const feed_object_t& feed_trip,
+                     const gtfs::Feed& feed,
+                     const std::unordered_map<feed_object_t, GraphId>& platform_node_ids,
+                     unique_transit_t& uniques,
+                     const std::vector<valhalla::Transit_Node>& tile_nodes,
+                     const std::unordered_map<feed_object_t, size_t>& routes_ids) {
   bool dangles = false;
 
   const auto& tile_tripId = feed_trip.id;
@@ -638,8 +637,7 @@ write_routes(valhalla::Transit& tile, const tile_transit_info_t& tile_info, feed
     route->set_route_desc(currRoute.route_desc);
     route->set_route_long_name(currRoute.route_long_name);
     route->set_route_text_color(strtol(currRoute.route_text_color.c_str(), nullptr, 16));
-    route->set_vehicle_type(
-        (valhalla::Transit_VehicleType)(static_cast<int>(currRoute.route_type)));
+    route->set_vehicle_type((valhalla::Transit_VehicleType)(static_cast<int>(currRoute.route_type)));
 
     routes_ids.emplace(feed_route.first, idx);
     idx++;
@@ -649,7 +647,9 @@ write_routes(valhalla::Transit& tile, const tile_transit_info_t& tile_info, feed
 }
 
 // grab feed data from feed
-void write_shapes(valhalla::Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& feeds) {
+void write_shapes(valhalla::Transit& tile,
+                  const tile_transit_info_t& tile_info,
+                  feed_cache_t& feeds) {
 
   // loop through all shapes inside the tile
   for (const auto& feed_shape : tile_info.shapes) {
@@ -1000,7 +1000,7 @@ void write_pbf(const Transit& tile, const std::filesystem::path& transit_tile) {
   valhalla::midgard::mem_map<char> buffer;
   buffer.create(transit_tile.string(), serialized.size());
   memcpy(buffer.get(), serialized.data(), serialized.size());
-  
+
   if (tile.routes_size() && tile.nodes_size() && tile.stop_pairs_size() && tile.shapes_size()) {
     LOG_INFO(transit_tile.string() + " had " + std::to_string(tile.nodes_size()) + " nodes " +
              std::to_string(tile.routes_size()) + " routes " + std::to_string(tile.shapes_size()) +

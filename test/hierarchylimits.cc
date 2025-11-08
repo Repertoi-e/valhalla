@@ -6,7 +6,6 @@
 #include "test.h"
 #include "valhalla/worker.h"
 
-
 #include <string>
 #include <vector>
 
@@ -16,8 +15,7 @@ using namespace valhalla::sif;
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;
 
-property_tree
-make_test_config(const std::unordered_map<std::string, std::string>& overrides = {}) {
+property_tree make_test_config(const std::unordered_map<std::string, std::string>& overrides = {}) {
   return test::make_config(VALHALLA_BUILD_DIR "test/data/utrecht_tiles", overrides);
 }
 
@@ -85,7 +83,7 @@ std::string makePbfRequest(std::vector<std::pair<uint32_t, std::optional<float>>
     costing.mutable_options()->mutable_hierarchy_limits()->insert(
         {static_cast<unsigned int>(i), hierarchylims});
   }
-  opts->mutable_costings()->insert({(int) valhalla::Costing::auto_, costing});
+  opts->mutable_costings()->insert({(int)valhalla::Costing::auto_, costing});
 
   std::string request_str;
   request.SerializeToString(&request_str);
@@ -136,7 +134,7 @@ TEST_P(TestHierarchyLimits, from_request) {
     ParseApi(test_params.request, Options::sources_to_targets, request);
   }
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int)request.options().costing_type())->second;
   mode_costing[0] = CreateAutoCost(costings);
 
   // Now make sure the costmatrix hierarchy limits match up with what we expect
@@ -180,7 +178,7 @@ TEST(StandAlone, ClampHierarchyLimitsMatrix) {
   }
 
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int)request.options().costing_type())->second;
   mode_costing[0] = CreateAutoCost(costings);
 
   Costing_Options opts;
@@ -210,7 +208,7 @@ TEST(StandAlone, ClampHierarchyLimitsBidirAStar) {
   }
 
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int)request.options().costing_type())->second;
   mode_costing[0] = CreateAutoCost(costings);
 
   Costing_Options opts;
@@ -241,7 +239,7 @@ TEST(StandAlone, ClampHierarchyLimitsUnidirAStar) {
   }
 
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int)request.options().costing_type())->second;
   mode_costing[0] = CreateAutoCost(costings);
 
   Costing_Options opts;
@@ -294,8 +292,9 @@ TEST(StandAlone, Warnings) {
   std::string via = "B";
   std::string to = "C";
   req = logging::sprintf(req.c_str(), std::to_string(map_no_mod.nodes.at(from).lat()).c_str(),
-       std::to_string(map_no_mod.nodes.at(from).lng()).c_str(),
-       std::to_string(map_no_mod.nodes.at(to).lat()).c_str(), std::to_string(map_no_mod.nodes.at(to).lng()).c_str());
+                         std::to_string(map_no_mod.nodes.at(from).lng()).c_str(),
+                         std::to_string(map_no_mod.nodes.at(to).lat()).c_str(),
+                         std::to_string(map_no_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_no_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
 
@@ -307,11 +306,11 @@ TEST(StandAlone, Warnings) {
     })";
 
   req = logging::sprintf(req.c_str(), std::to_string(map_no_mod.nodes.at(from).lat()).c_str(),
-       std::to_string(map_no_mod.nodes.at(from).lng()).c_str(),
-       std::to_string(map_no_mod.nodes.at(via).lat()).c_str(),
-       std::to_string(map_no_mod.nodes.at(via).lng()).c_str(),
-       std::to_string(map_no_mod.nodes.at(to).lat()).c_str(),
-       std::to_string(map_no_mod.nodes.at(to).lng()).c_str());
+                         std::to_string(map_no_mod.nodes.at(from).lng()).c_str(),
+                         std::to_string(map_no_mod.nodes.at(via).lat()).c_str(),
+                         std::to_string(map_no_mod.nodes.at(via).lng()).c_str(),
+                         std::to_string(map_no_mod.nodes.at(to).lat()).c_str(),
+                         std::to_string(map_no_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_no_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
   EXPECT_EQ(result.info().warnings(0).code(), 209);
@@ -339,9 +338,9 @@ TEST(StandAlone, Warnings) {
     })";
 
   req = logging::sprintf(req.c_str(), std::to_string(map_mod.nodes.at(from).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
-         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(to).lng()).c_str());
+                         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
+                         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
+                         std::to_string(map_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
   EXPECT_EQ(result.info().warnings(0).code(), 210);
@@ -354,11 +353,11 @@ TEST(StandAlone, Warnings) {
     })";
 
   req = logging::sprintf(req.c_str(), std::to_string(map_mod.nodes.at(from).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
-         std::to_string(map_mod.nodes.at(via).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(via).lng()).c_str(),
-         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(to).lng()).c_str());
+                         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
+                         std::to_string(map_mod.nodes.at(via).lat()).c_str(),
+                         std::to_string(map_mod.nodes.at(via).lng()).c_str(),
+                         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
+                         std::to_string(map_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
   EXPECT_EQ(result.info().warnings(0).code(), 210);
@@ -371,9 +370,9 @@ TEST(StandAlone, Warnings) {
     })";
 
   req = logging::sprintf(req.c_str(), std::to_string(map_mod.nodes.at(from).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
-         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(to).lng()).c_str());
+                         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
+                         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
+                         std::to_string(map_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 0);
 
@@ -385,11 +384,11 @@ TEST(StandAlone, Warnings) {
     })";
 
   req = logging::sprintf(req.c_str(), std::to_string(map_mod.nodes.at(from).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
-         std::to_string(map_mod.nodes.at(via).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(via).lng()).c_str(),
-         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
-         std::to_string(map_mod.nodes.at(to).lng()).c_str());
+                         std::to_string(map_mod.nodes.at(from).lng()).c_str(),
+                         std::to_string(map_mod.nodes.at(via).lat()).c_str(),
+                         std::to_string(map_mod.nodes.at(via).lng()).c_str(),
+                         std::to_string(map_mod.nodes.at(to).lat()).c_str(),
+                         std::to_string(map_mod.nodes.at(to).lng()).c_str());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 0);
 }

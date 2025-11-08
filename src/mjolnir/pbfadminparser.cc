@@ -2,10 +2,12 @@
 #include "admin_lua_proc.h"
 #include "idtable.h"
 #include "midgard/logging.h"
+#include "midgard/string_utils.h"
 #include "mjolnir/luatagtransform.h"
 #include "mjolnir/osmadmindata.h"
-#include "midgard/string_utils.h"
+
 #include <valhalla/property_tree/ptree.hpp>
+
 #include <osmium/io/pbf_input.hpp>
 #include <osmium/osm/entity_bits.hpp>
 

@@ -344,46 +344,51 @@ valhalla::DirectionsLeg DirectionsTest(valhalla::Api& api,
         } else if (!prev_edge->HasActiveTurnLane()) {
           turn_lane_status = "NO_ACTIVE_TURN_LANES";
         }
-        valhalla::midgard::logging::Log((logging::sprintf("   %d: TURN_LANES: %s %s", m,
-                                         prev_edge->TurnLanesToString().c_str(), turn_lane_status.c_str()))
-                                        " [NARRATIVE] ");
+        valhalla::midgard::logging::Log(
+            (logging::sprintf("   %d: TURN_LANES: %s %s", m, prev_edge->TurnLanesToString().c_str(),
+                              turn_lane_status.c_str())) " [NARRATIVE] ");
       }
     }
 
     // Verbal succinct transition instruction
     if (!maneuver.verbal_succinct_transition_instruction().empty()) {
-      valhalla::midgard::logging::Log((logging::sprintf("   VERBAL_SUCCINCT: %s", maneuver.verbal_succinct_transition_instruction().c_str()))
-                                      " [NARRATIVE] ");
+      valhalla::midgard::logging::Log((
+          logging::sprintf("   VERBAL_SUCCINCT: %s", maneuver.verbal_succinct_transition_instruction()
+                                                         .c_str())) " [NARRATIVE] ");
     }
 
     // Verbal transition alert instruction
     if (!maneuver.verbal_transition_alert_instruction().empty()) {
-      valhalla::midgard::logging::Log((logging::sprintf("   VERBAL_ALERT: %s", maneuver.verbal_transition_alert_instruction().c_str()))
-                                      " [NARRATIVE] ");
+      valhalla::midgard::logging::Log(
+          (logging::sprintf("   VERBAL_ALERT: %s",
+                            maneuver.verbal_transition_alert_instruction().c_str())) " [NARRATIVE] ");
     }
 
     // Verbal pre transition instruction
     if (!maneuver.verbal_pre_transition_instruction().empty()) {
-      valhalla::midgard::logging::Log((logging::sprintf("   VERBAL_PRE: %s", maneuver.verbal_pre_transition_instruction().c_str()))
-                                      " [NARRATIVE] ");
+      valhalla::midgard::logging::Log(
+          (logging::sprintf("   VERBAL_PRE: %s",
+                            maneuver.verbal_pre_transition_instruction().c_str())) " [NARRATIVE] ");
     }
 
     // Verbal post transition instruction
     if (!maneuver.verbal_post_transition_instruction().empty()) {
-      valhalla::midgard::logging::Log((logging::sprintf("   VERBAL_POST: %s", maneuver.verbal_post_transition_instruction().c_str()))
-                                      " [NARRATIVE] ");
+      valhalla::midgard::logging::Log(
+          (logging::sprintf("   VERBAL_POST: %s",
+                            maneuver.verbal_post_transition_instruction().c_str())) " [NARRATIVE] ");
     }
 
     // Arrive instruction
     if (!maneuver.arrive_instruction().empty()) {
-      valhalla::midgard::logging::Log((logging::sprintf("   %s", maneuver.arrive_instruction().c_str()))
-                                      " [NARRATIVE] ");
+      valhalla::midgard::logging::Log(
+          (logging::sprintf("   %s", maneuver.arrive_instruction().c_str())) " [NARRATIVE] ");
     }
 
     // Verbal arrive instruction
     if (!maneuver.verbal_arrive_instruction().empty()) {
-      valhalla::midgard::logging::Log((logging::sprintf("   VERBAL_ARRIVE: %s", maneuver.verbal_arrive_instruction().c_str()))
-                                      " [NARRATIVE] ");
+      valhalla::midgard::logging::Log(
+          (logging::sprintf("   VERBAL_ARRIVE: %s",
+                            maneuver.verbal_arrive_instruction().c_str())) " [NARRATIVE] ");
     }
 
     // All turn lanes along maneuver
@@ -400,9 +405,9 @@ valhalla::DirectionsLeg DirectionsTest(valhalla::Api& api,
           } else if (!prev_edge->HasActiveTurnLane()) {
             turn_lane_status = "NO_ACTIVE_TURN_LANES";
           }
-          valhalla::midgard::logging::Log((logging::sprintf("   %d-%d: TURN_LANES: %s %s", m, q,
-                                           prev_edge->TurnLanesToString(), turn_lane_status))
-                                          " [NARRATIVE] ");
+          valhalla::midgard::logging::Log(
+              (logging::sprintf("   %d-%d: TURN_LANES: %s %s", m, q, prev_edge->TurnLanesToString(),
+                                turn_lane_status)) " [NARRATIVE] ");
         }
       }
     }

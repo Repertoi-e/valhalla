@@ -197,10 +197,9 @@ bool TimeDistanceMatrix::ComputeMatrix(Api& request,
 
   uint32_t bucketsize = costing_->UnitSize();
 
-  auto& origins = FORWARD ? request.mutable_options()->sources_ 
-                          : request.mutable_options()->targets_;
-  auto& destinations = FORWARD ? request.mutable_options()->targets_ 
-                               : request.mutable_options()->sources_;
+  auto& origins = FORWARD ? request.mutable_options()->sources_ : request.mutable_options()->targets_;
+  auto& destinations =
+      FORWARD ? request.mutable_options()->targets_ : request.mutable_options()->sources_;
 
   size_t num_elements = origins.size() * destinations.size();
   auto time_infos = SetTime(origins, graphreader);
@@ -211,7 +210,7 @@ bool TimeDistanceMatrix::ComputeMatrix(Api& request,
   reserve_pbf_arrays(*request.mutable_matrix(), num_elements, request.options().verbose(),
                      costing_->pass());
 
-  for (int origin_index = 0; origin_index < (int) origins.size(); ++origin_index) {
+  for (int origin_index = 0; origin_index < (int)origins.size(); ++origin_index) {
     // reserve some space for the next dijkstras (will be cleared at the end of the loop)
     edgelabels_.reserve(max_reserved_labels_count_);
     auto& origin = origins[origin_index];
@@ -403,9 +402,8 @@ void TimeDistanceMatrix::SetOrigin(GraphReader& graphreader,
 
 // Set destinations
 template <const ExpansionType expansion_direction, const bool FORWARD>
-void TimeDistanceMatrix::InitDestinations(
-    GraphReader& graphreader,
-    const std::vector<valhalla::Location>& locations) {
+void TimeDistanceMatrix::InitDestinations(GraphReader& graphreader,
+                                          const std::vector<valhalla::Location>& locations) {
   // For each destination
   uint32_t idx = 0;
   for (const auto& loc : locations) {
@@ -456,15 +454,14 @@ void TimeDistanceMatrix::InitDestinations(
 
 // Update any destinations along the edge. Returns true if all destinations
 // have be settled or if the specified location count has been met or exceeded.
-bool TimeDistanceMatrix::UpdateDestinations(
-    const valhalla::Location& origin,
-    const std::vector<valhalla::Location>& locations,
-    std::vector<uint32_t>& destinations,
-    const DirectedEdge* edge,
-    const graph_tile_ptr& tile,
-    const EdgeLabel& pred,
-    const TimeInfo& time_info,
-    const uint32_t matrix_locations) {
+bool TimeDistanceMatrix::UpdateDestinations(const valhalla::Location& origin,
+                                            const std::vector<valhalla::Location>& locations,
+                                            std::vector<uint32_t>& destinations,
+                                            const DirectedEdge* edge,
+                                            const graph_tile_ptr& tile,
+                                            const EdgeLabel& pred,
+                                            const TimeInfo& time_info,
+                                            const uint32_t matrix_locations) {
   // For each destination along this edge
   for (auto dest_idx : destinations) {
     Destination& dest = destinations_[dest_idx];

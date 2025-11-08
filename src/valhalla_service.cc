@@ -195,8 +195,8 @@ int main(int argc, char** argv) {
   auto logging_subtree = config.get_child_optional("loki.logging");
   if (logging_subtree) {
     auto logging_config =
-        valhalla::midgard::ToMap<const property_tree&,
-                                 std::unordered_map<std::string, std::string>>(logging_subtree.get());
+        valhalla::midgard::ToMap<const property_tree&, std::unordered_map<std::string, std::string>>(
+            logging_subtree.get());
     valhalla::midgard::logging::Configure(logging_config);
   }
 

@@ -194,9 +194,11 @@ TEST_F(AvoidTest, TestInvalidAvoidPolygons) {
           ],
           "costing":"auto",
         )";
-  std::string req_base = midgard::logging::sprintf(req.c_str(), std::to_string(avoid_map.nodes.at("A").lat()).c_str(),
-       std::to_string(avoid_map.nodes.at("A").lng()).c_str(), std::to_string(avoid_map.nodes.at("D").lat()).c_str(),
-       std::to_string(avoid_map.nodes.at("D").lng()).c_str());
+  std::string req_base =
+      midgard::logging::sprintf(req.c_str(), std::to_string(avoid_map.nodes.at("A").lat()).c_str(),
+                                std::to_string(avoid_map.nodes.at("A").lng()).c_str(),
+                                std::to_string(avoid_map.nodes.at("D").lat()).c_str(),
+                                std::to_string(avoid_map.nodes.at("D").lng()).c_str());
   Api request;
 
   // empty polygon

@@ -20,8 +20,7 @@ public:
    * @param graphreader optional pointer to the graph reader to use. If null, then the reader will be
    * constructed using pt.
    */
-  connectivity_map_t(const property_tree& pt,
-                     const std::shared_ptr<GraphReader>& graph_reader = {});
+  connectivity_map_t(const property_tree& pt, const std::shared_ptr<GraphReader>& graph_reader = {});
 
   /**
    * Alternative to GetTiles() to query whether a level even exists, e.g. transit.#

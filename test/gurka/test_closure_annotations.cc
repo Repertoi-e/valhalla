@@ -232,10 +232,12 @@ void expect_closures(const rapidjson::Document& response,
 }
 
 TEST_F(ClosureAnnotations, EndOnClosure) {
-  std::string req = midgard::logging::sprintf(req_with_closure_annotations.c_str(), std::to_string(closure_map.nodes.at("1").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("1").lng()).c_str(),
-       std::to_string(closure_map.nodes.at("2").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("2").lng()).c_str());
+  std::string req =
+      midgard::logging::sprintf(req_with_closure_annotations.c_str(),
+                                std::to_string(closure_map.nodes.at("1").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("1").lng()).c_str(),
+                                std::to_string(closure_map.nodes.at("2").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("2").lng()).c_str());
   auto result = gurka::do_action(Options::route, closure_map, req, reader);
   gurka::assert::raw::expect_path(result, {"AB"});
 
@@ -244,10 +246,12 @@ TEST_F(ClosureAnnotations, EndOnClosure) {
 }
 
 TEST_F(ClosureAnnotations, EndWithConsecutiveClosures) {
-  std::string req = midgard::logging::sprintf(req_with_closure_annotations.c_str(), std::to_string(closure_map.nodes.at("1").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("1").lng()).c_str(),
-       std::to_string(closure_map.nodes.at("3").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("3").lng()).c_str());
+  std::string req =
+      midgard::logging::sprintf(req_with_closure_annotations.c_str(),
+                                std::to_string(closure_map.nodes.at("1").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("1").lng()).c_str(),
+                                std::to_string(closure_map.nodes.at("3").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("3").lng()).c_str());
   auto result = gurka::do_action(Options::route, closure_map, req, reader);
   gurka::assert::raw::expect_path(result, {"AB", "BC"});
 
@@ -256,10 +260,12 @@ TEST_F(ClosureAnnotations, EndWithConsecutiveClosures) {
 }
 
 TEST_F(ClosureAnnotations, IntermediateClosure) {
-  const std::string& req = midgard::logging::sprintf(req_with_closure_annotations.c_str(), std::to_string(closure_map.nodes.at("1").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("1").lng()).c_str(),
-       std::to_string(closure_map.nodes.at("4").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("4").lng()).c_str());
+  const std::string& req =
+      midgard::logging::sprintf(req_with_closure_annotations.c_str(),
+                                std::to_string(closure_map.nodes.at("1").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("1").lng()).c_str(),
+                                std::to_string(closure_map.nodes.at("4").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("4").lng()).c_str());
   auto result = gurka::do_action(Options::route, closure_map, req, reader);
   gurka::assert::raw::expect_path(result, {"AB", "BC", "CD"});
 
@@ -269,10 +275,11 @@ TEST_F(ClosureAnnotations, IntermediateClosure) {
 
 TEST_F(ClosureAnnotations, BeginAtClosure) {
   const std::string& req =
-      midgard::logging::sprintf(req_with_closure_annotations.c_str(), std::to_string(closure_map.nodes.at("2").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("2").lng()).c_str(),
-       std::to_string(closure_map.nodes.at("4").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("4").lng()).c_str());
+      midgard::logging::sprintf(req_with_closure_annotations.c_str(),
+                                std::to_string(closure_map.nodes.at("2").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("2").lng()).c_str(),
+                                std::to_string(closure_map.nodes.at("4").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("4").lng()).c_str());
   auto result = gurka::do_action(Options::route, closure_map, req, reader);
   gurka::assert::raw::expect_path(result, {"AB", "BC", "CD"});
 
@@ -282,10 +289,11 @@ TEST_F(ClosureAnnotations, BeginAtClosure) {
 
 TEST_F(ClosureAnnotations, AllWithinClosure) {
   const std::string& req =
-      midgard::logging::sprintf(req_with_closure_annotations.c_str(), std::to_string(closure_map.nodes.at("2").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("2").lng()).c_str(),
-       std::to_string(closure_map.nodes.at("3").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("3").lng()).c_str());
+      midgard::logging::sprintf(req_with_closure_annotations.c_str(),
+                                std::to_string(closure_map.nodes.at("2").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("2").lng()).c_str(),
+                                std::to_string(closure_map.nodes.at("3").lat()).c_str(),
+                                std::to_string(closure_map.nodes.at("3").lng()).c_str());
   auto result = gurka::do_action(Options::route, closure_map, req, reader);
   gurka::assert::raw::expect_path(result, {"AB", "BC"});
 
@@ -295,10 +303,11 @@ TEST_F(ClosureAnnotations, AllWithinClosure) {
 
 TEST_F(ClosureAnnotations, DiscontinuousClosures) {
   const std::string& req =
-      (midgard::logging::sprintf(req_with_closure_annotations.c_str(), std::to_string(closure_map.nodes.at("A").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("A").lng()).c_str(),
-       std::to_string(closure_map.nodes.at("E").lat()).c_str(),
-       std::to_string(closure_map.nodes.at("E").lng()).c_str()));
+      (midgard::logging::sprintf(req_with_closure_annotations.c_str(),
+                                 std::to_string(closure_map.nodes.at("A").lat()).c_str(),
+                                 std::to_string(closure_map.nodes.at("A").lng()).c_str(),
+                                 std::to_string(closure_map.nodes.at("E").lat()).c_str(),
+                                 std::to_string(closure_map.nodes.at("E").lng()).c_str()));
   auto result = gurka::do_action(Options::route, closure_map, req, reader);
   gurka::assert::raw::expect_path(result, {"AB", "BC", "CD", "DE"});
 

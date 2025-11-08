@@ -369,7 +369,7 @@ std::vector<uint32_t> AddRoutes(const valhalla::Transit& pbf_tile, GraphTileBuil
     tilebuilder.AddTransitRoute(route);
 
     // Route type - need this to store in edge.
-    route_types.push_back((uint32_t) r.vehicle_type());
+    route_types.push_back((uint32_t)r.vehicle_type());
   }
   return route_types;
 }
@@ -889,7 +889,7 @@ void AddToGraph(GraphTileBuilder& tilebuilder_transit,
         // Get transit pbf tile
         std::string file_name = GraphTile::FileSuffix(
             GraphId(end_platform_graphid.tileid(), end_platform_graphid.level(), 0));
-  trim_chars_in_place(file_name, ".gph");
+        trim_chars_in_place(file_name, ".gph");
         file_name += ".pbf";
         std::filesystem::path file_path{transit_dir};
         file_path.append(file_name);
@@ -1007,7 +1007,7 @@ void build_tiles(const valhalla::property_tree& pt,
     // Get transit pbf tile
     const std::string transit_dir = pt.get<std::string>("transit_dir");
     std::string file_name = GraphTile::FileSuffix(GraphId(tile_id.tileid(), tile_id.level(), 0));
-  trim_chars_in_place(file_name, ".gph");
+    trim_chars_in_place(file_name, ".gph");
     file_name += ".pbf";
     std::filesystem::path pbf_fp{transit_dir};
     pbf_fp.append(file_name);

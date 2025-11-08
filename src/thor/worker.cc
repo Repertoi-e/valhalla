@@ -244,7 +244,7 @@ void thor_worker_t::adjust_scores(valhalla::Options& options) {
     for (auto& location : *locations) {
       // get the minimum score for all the candidates
       auto minScore = std::numeric_limits<float>::max();
-      
+
       auto location_edges = location.mutable_correlation()->mutable_edges();
       auto location_filtered_edges = location.mutable_correlation()->mutable_filtered_edges();
 

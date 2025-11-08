@@ -2,14 +2,14 @@
 
 #ifdef __EMSCRIPTEN__
 
+#include <valhalla/baldr/tilegetter.h>
+
+#include <emscripten/val.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <string>
 #include <vector>
-
-#include <emscripten/val.h>
-
-#include <valhalla/baldr/tilegetter.h>
 
 namespace valhalla {
 namespace baldr {
@@ -22,9 +22,8 @@ public:
   wasm_tile_getter_t() = default;
   ~wasm_tile_getter_t() override = default;
 
-  GET_response_t get(const std::string& url,
-                     const uint64_t offset = 0,
-                     const uint64_t size = 0) override;
+  GET_response_t
+  get(const std::string& url, const uint64_t offset = 0, const uint64_t size = 0) override;
 
   HEAD_response_t head(const std::string&, header_mask_t) override {
     return {};

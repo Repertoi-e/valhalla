@@ -2,9 +2,8 @@
 #include "baldr/graphid.h"
 #include "baldr/graphreader.h"
 #include "baldr/predictedspeeds.h"
-#include "mjolnir/graphtilebuilder.h"
-
 #include "midgard/string_utils.h"
+#include "mjolnir/graphtilebuilder.h"
 
 #include <valhalla/property_tree/ptree.hpp>
 
@@ -75,11 +74,11 @@ ParseTrafficFile(const std::vector<std::string>& filenames, TrafficStats& stat) 
       // for each row in the file
       while (getline(file, line) && ++line_num) {
         decltype(ts)::iterator traffic = ts.end();
-  auto tokens = split(line, ',', SplitMode::KeepEmpty);
-  uint32_t field_num = 0;
+        auto tokens = split(line, ',', SplitMode::KeepEmpty);
+        uint32_t field_num = 0;
         bool has_error = false;
         // for each column in the row
-  for (const auto& t : tokens) {
+        for (const auto& t : tokens) {
           if (has_error)
             break;
           // parse each column
