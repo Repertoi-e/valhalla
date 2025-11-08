@@ -772,7 +772,7 @@ void Dijkstras::ComputeMultiModal(
 
 // Add edge(s) at each origin to the adjacency list
 void Dijkstras::SetOriginLocations(GraphReader& graphreader,
-                                   google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
+                                   std::vector<valhalla::Location>& locations,
                                    const std::vector<baldr::TimeInfo>& time_infos,
                                    const cost_ptr_t& costing) {
   // Bail if you want to do a multipath expansion with more locations than edge label/status supports

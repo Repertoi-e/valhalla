@@ -1,4 +1,5 @@
 #include "skadi/sample.h"
+#include "baldr/compression_utils.h"
 #include "filesystem_utils.h"
 #include "midgard/logging.h"
 #include "midgard/pointll.h"
@@ -107,9 +108,25 @@ public:
     this->unpacked = unpacked;
 
     if (format == format_t::GZIP) {
-      LOG_WARN("Gzip elevation tiles are unsupported when zlib is disabled");
-      format = format_t::UNKNOWN;
-      return false;
+      // for setting where to read compressed data from
+      auto src_func = [this](z_stream& s) -> void {
+        s.next_in = static_cast<Byte*>(static_cast<void*>(data.get()));
+        s.avail_in = static_cast<unsigned int>(data.size());
+      };
+
+      // for setting where to write the uncompressed data to
+      auto dst_func = [this](z_stream& s) -> int {
+        s.next_out = (Byte*)(this->unpacked);
+        s.avail_out = HGT_BYTES;
+        return Z_FINISH; // we know the output will hold all the input
+      };
+
+      // we have to unzip it
+      if (!baldr::inflate(src_func, dst_func)) {
+        LOG_WARN("Corrupt gzip elevation data");
+        format = format_t::UNKNOWN;
+        return false;
+      }
     } else if (format == format_t::LZ4) {
 #if !defined __EMSCRIPTEN__
       LZ4F_decompressionContext_t decode;

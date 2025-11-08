@@ -111,9 +111,9 @@ TEST(Sample, get) {
   _get("test/data/sample");
 };
 
-/*TEST(Sample, getgz) {
+TEST(Sample, getgz) {
   _get("test/data/samplegz");
-};*/
+};
 
 TEST(Sample, getlz4) {
   _get("test/data/samplelz4");
