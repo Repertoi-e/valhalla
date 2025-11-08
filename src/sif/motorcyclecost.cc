@@ -295,7 +295,8 @@ public:
 // Constructor
 MotorcycleCost::MotorcycleCost(const Costing& costing)
     : DynamicCost(costing, TravelMode::kDrive, kMotorcycleAccess) {
-
+  using namespace motorcyclecost_internal;
+  
   const auto& costing_options = costing.options();
 
   // Vehicle type is motorcycle
@@ -340,7 +341,7 @@ MotorcycleCost::MotorcycleCost(const Costing& costing)
     surface_factor_ = f * f * f;
   } else {
     float f = 1.0f - use_trails * 2.0f;
-    surface_factor_ = static_cast<uint32_t>(motorcyclecost_internal::kMaxTrailBiasFactor * (f * f));
+    surface_factor_ = static_cast<uint32_t>(kMaxTrailBiasFactor * (f * f));
   }
 }
 
@@ -358,11 +359,12 @@ bool MotorcycleCost::Allowed(const baldr::DirectedEdge* edge,
                              const uint32_t tz_index,
                              uint8_t& restriction_idx,
                              uint8_t& destonly_access_restr_mask) const {
+  using namespace motorcyclecost_internal;
   // Check access, U-turn, and simple turn restriction.
   // Allow U-turns at dead-end nodes.
   if (!IsAccessible(edge) || (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
       ((pred.restrictions() & (1 << edge->localedgeidx())) && !ignore_turn_restrictions_) ||
-      (edge->surface() > motorcyclecost_internal::kMinimumMotorcycleSurface) ||
+      (edge->surface() > kMinimumMotorcycleSurface) ||
       IsUserAvoidEdge(edgeid) || (!allow_destination_only_ && !pred.destonly() && edge->destonly()) ||
       (pred.closure_pruning() && IsClosed(edge, tile)) || CheckExclusions(edge, pred)) {
     return false;
@@ -383,11 +385,12 @@ bool MotorcycleCost::AllowedReverse(const baldr::DirectedEdge* edge,
                                     const uint32_t tz_index,
                                     uint8_t& restriction_idx,
                                     uint8_t& destonly_access_restr_mask) const {
+  using namespace motorcyclecost_internal;
   // Check access, U-turn, and simple turn restriction.
   // Allow U-turns at dead-end nodes.
   if (!IsAccessible(opp_edge) || (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
       ((opp_edge->restrictions() & (1 << pred.opp_local_idx())) && !ignore_turn_restrictions_) ||
-      (opp_edge->surface() > motorcyclecost_internal::kMinimumMotorcycleSurface) ||
+      (opp_edge->surface() > kMinimumMotorcycleSurface) ||
       IsUserAvoidEdge(opp_edgeid) ||
       (!allow_destination_only_ && !pred.destonly() && opp_edge->destonly()) ||
       (pred.closure_pruning() && IsClosed(opp_edge, tile)) || CheckExclusions(opp_edge, pred)) {
@@ -403,6 +406,7 @@ Cost MotorcycleCost::EdgeCost(const baldr::DirectedEdge* edge,
                               const graph_tile_ptr& tile,
                               const baldr::TimeInfo& time_info,
                               uint8_t& flow_sources) const {
+  using namespace motorcyclecost_internal;
   auto edge_speed = fixed_speed_ == baldr::kDisableFixedSpeed
                         ? tile->GetSpeed(edge, flow_mask_, time_info.second_of_week, false,
                                          &flow_sources, time_info.seconds_from_now)
@@ -425,9 +429,9 @@ Cost MotorcycleCost::EdgeCost(const baldr::DirectedEdge* edge,
   float factor =
       kDensityFactor[edge->density()] +
       highway_factor_ *
-          motorcyclecost_internal::kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
+          kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
       surface_factor_ *
-          motorcyclecost_internal::kSurfaceFactor[static_cast<uint32_t>(edge->surface())];
+          kSurfaceFactor[static_cast<uint32_t>(edge->surface())];
   factor += SpeedPenalty(edge, tile, time_info, flow_sources, edge_speed);
   if (edge->toll()) {
     factor += toll_factor_;
@@ -455,6 +459,7 @@ Cost MotorcycleCost::TransitionCost(
     const EdgeLabel& pred,
     const graph_tile_ptr& /*tile*/,
     const std::function<LimitedGraphReader()>& /*reader_getter*/) const {
+  using namespace motorcyclecost_internal;
   // Get the transition cost for country crossing, ferry, gate, toll booth,
   // destination only, alley, maneuver penalty
   uint32_t idx = pred.opp_local_idx();
@@ -467,18 +472,18 @@ Cost MotorcycleCost::TransitionCost(
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = motorcyclecost_internal::kTCCrossing;
+      turn_cost = kTCCrossing;
     } else {
       turn_cost = (node->drive_on_right())
-                      ? motorcyclecost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                      : motorcyclecost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+                      ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                      : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred.use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred.use() != Use::kRamp)) {
-      turn_cost += motorcyclecost_internal::kTCRamp;
+      turn_cost += kTCRamp;
       if (edge->roundabout())
-        turn_cost += motorcyclecost_internal::kTCRoundabout;
+        turn_cost += kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -525,6 +530,7 @@ Cost MotorcycleCost::TransitionCostReverse(
     const std::function<LimitedGraphReader()>& /*reader_getter*/,
     const bool has_measured_speed,
     const InternalTurn /*internal_turn*/) const {
+  using namespace motorcyclecost_internal;
 
   // Motorcycles should be able to make uturns on short internal edges; therefore, InternalTurn
   // is ignored for now.
@@ -541,18 +547,18 @@ Cost MotorcycleCost::TransitionCostReverse(
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = motorcyclecost_internal::kTCCrossing;
+      turn_cost = kTCCrossing;
     } else {
       turn_cost = (node->drive_on_right())
-                      ? motorcyclecost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                      : motorcyclecost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+                      ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                      : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred->use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred->use() != Use::kRamp)) {
-      turn_cost += motorcyclecost_internal::kTCRamp;
+      turn_cost += kTCRamp;
       if (edge->roundabout())
-        turn_cost += motorcyclecost_internal::kTCRoundabout;
+        turn_cost += kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -589,6 +595,7 @@ Cost MotorcycleCost::TransitionCostReverse(
 void ParseMotorcycleCostOptions(const rapidjson::Document& doc,
                                 const std::string& costing_options_key,
                                 Costing* c) {
+  using namespace motorcyclecost_internal;
   c->set_type(Costing::motorcycle);
   c->set_name(Costing_Enum_Name(c->type()));
   auto* co = c->mutable_options();
@@ -596,13 +603,13 @@ void ParseMotorcycleCostOptions(const rapidjson::Document& doc,
   rapidjson::Value dummy;
   const auto& json = rapidjson::get_child(doc, costing_options_key.c_str(), dummy);
 
-  ParseBaseCostOptions(json, c, motorcyclecost_internal::kBaseCostOptsConfig);
-  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kUseHighwaysRange, json, "/use_highways",
+  ParseBaseCostOptions(json, c, kBaseCostOptsConfig);
+  JSON_PBF_RANGED_DEFAULT(co, kUseHighwaysRange, json, "/use_highways",
                           use_highways);
-  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kUseTollsRange, json, "/use_tolls", use_tolls);
-  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kUseTrailsRange, json, "/use_trails",
+  JSON_PBF_RANGED_DEFAULT(co, kUseTollsRange, json, "/use_tolls", use_tolls);
+  JSON_PBF_RANGED_DEFAULT(co, kUseTrailsRange, json, "/use_trails",
                           use_trails);
-  JSON_PBF_RANGED_DEFAULT(co, motorcyclecost_internal::kMotorcycleSpeedRange, json, "/top_speed",
+  JSON_PBF_RANGED_DEFAULT(co, kMotorcycleSpeedRange, json, "/top_speed",
                           top_speed);
 }
 
@@ -653,13 +660,14 @@ std::uniform_real_distribution<T>* make_distributor_from_range(const ranged_defa
 }
 
 TEST(MotorcycleCost, testMotorcycleCostParams) {
+  using namespace motorcyclecost_internal;
   constexpr unsigned testIterations = 250;
   constexpr unsigned seed = 0;
   std::mt19937 generator(seed);
   std::shared_ptr<std::uniform_real_distribution<float>> distributor;
   std::shared_ptr<TestMotorcycleCost> ctorTester;
 
-  const auto& defaults = motorcyclecost_internal::kBaseCostOptsConfig;
+  const auto& defaults = kBaseCostOptsConfig;
 
   // maneuver_penalty_
   distributor.reset(make_distributor_from_range(defaults.maneuver_penalty_));

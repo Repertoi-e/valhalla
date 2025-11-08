@@ -348,6 +348,8 @@ public:
 // Constructor
 MotorScooterCost::MotorScooterCost(const Costing& costing)
     : DynamicCost(costing, TravelMode::kDrive, kMopedAccess) {
+  using namespace motorscootercost_internal;
+  
   const auto& costing_options = costing.options();
 
   // Get the base costs
@@ -357,8 +359,8 @@ MotorScooterCost::MotorScooterCost(const Costing& costing)
   // Scale from 0 (avoid hills) to 1 (don't avoid hills)
   float use_hills = costing_options.use_hills();
   float avoid_hills = (1.0f - use_hills);
-  for (uint32_t i = 0; i <= motorscootercost_internal::kMaxGradeFactor; ++i) {
-    grade_penalty_[i] = avoid_hills * motorscootercost_internal::kAvoidHillsStrength[i];
+  for (uint32_t i = 0; i <= kMaxGradeFactor; ++i) {
+    grade_penalty_[i] = avoid_hills * kAvoidHillsStrength[i];
   }
 
   // Set the road classification factor based on use_primary option - scales from
@@ -379,11 +381,13 @@ bool MotorScooterCost::Allowed(const baldr::DirectedEdge* edge,
                                const uint32_t tz_index,
                                uint8_t& restriction_idx,
                                uint8_t& destonly_access_restr_mask) const {
+  using namespace motorscootercost_internal;
+  
   // Check access, U-turn, and simple turn restriction.
   // Allow U-turns at dead-end nodes.
   if (!IsAccessible(edge) || (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
       ((pred.restrictions() & (1 << edge->localedgeidx())) && !ignore_turn_restrictions_) ||
-      (edge->surface() > motorscootercost_internal::kMinimumScooterSurface) ||
+      (edge->surface() > kMinimumScooterSurface) ||
       IsUserAvoidEdge(edgeid) || (!allow_destination_only_ && !pred.destonly() && edge->destonly()) ||
       (pred.closure_pruning() && IsClosed(edge, tile)) || CheckExclusions(edge, pred)) {
     return false;
@@ -404,11 +408,13 @@ bool MotorScooterCost::AllowedReverse(const baldr::DirectedEdge* edge,
                                       const uint32_t tz_index,
                                       uint8_t& restriction_idx,
                                       uint8_t& destonly_access_restr_mask) const {
+  using namespace motorscootercost_internal;
+  
   // Check access, U-turn, and simple turn restriction.
   // Allow U-turns at dead-end nodes.
   if (!IsAccessible(opp_edge) || (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
       ((opp_edge->restrictions() & (1 << pred.opp_local_idx())) && !ignore_turn_restrictions_) ||
-      (opp_edge->surface() > motorscootercost_internal::kMinimumScooterSurface) ||
+      (opp_edge->surface() > kMinimumScooterSurface) ||
       IsUserAvoidEdge(opp_edgeid) ||
       (!allow_destination_only_ && !pred.destonly() && opp_edge->destonly()) ||
       (pred.closure_pruning() && IsClosed(opp_edge, tile)) || CheckExclusions(opp_edge, pred)) {
@@ -424,6 +430,7 @@ Cost MotorScooterCost::EdgeCost(const baldr::DirectedEdge* edge,
                                 const graph_tile_ptr& tile,
                                 const baldr::TimeInfo& time_info,
                                 uint8_t& flow_sources) const {
+  using namespace motorscootercost_internal;
   auto speed = fixed_speed_ == baldr::kDisableFixedSpeed
                    ? tile->GetSpeed(edge, flow_mask_, time_info.second_of_week, false, &flow_sources,
                                     time_info.seconds_from_now)
@@ -438,9 +445,9 @@ Cost MotorScooterCost::EdgeCost(const baldr::DirectedEdge* edge,
   // prevent scooter speed to become 0
   uint32_t scooter_speed =
       std::max(1.f, (std::min(top_speed_, speed) *
-                     motorscootercost_internal::kSurfaceSpeedFactors[static_cast<uint32_t>(
+                     kSurfaceSpeedFactors[static_cast<uint32_t>(
                          edge->surface())] *
-                     motorscootercost_internal::kGradeBasedSpeedFactor[static_cast<uint32_t>(
+                     kGradeBasedSpeedFactor[static_cast<uint32_t>(
                          edge->weighted_grade())]));
 
   assert(scooter_speed < kSpeedFactor.size());
@@ -453,12 +460,12 @@ Cost MotorScooterCost::EdgeCost(const baldr::DirectedEdge* edge,
   float factor =
       1.0f + (kDensityFactor[edge->density()] - 0.85f) +
       (road_factor_ *
-       motorscootercost_internal::kRoadClassFactor[static_cast<uint32_t>(edge->classification())]) +
+       kRoadClassFactor[static_cast<uint32_t>(edge->classification())]) +
       grade_penalty_[static_cast<uint32_t>(edge->weighted_grade())] +
       SpeedPenalty(edge, tile, time_info, flow_sources, speed);
 
   if (edge->destonly()) {
-    factor += motorscootercost_internal::kDestinationOnlyFactor;
+    factor += kDestinationOnlyFactor;
   }
 
   if (edge->use() == Use::kTrack) {
@@ -483,6 +490,7 @@ Cost MotorScooterCost::TransitionCost(
     const EdgeLabel& pred,
     const graph_tile_ptr& /*tile*/,
     const std::function<baldr::LimitedGraphReader()>& /*reader_getter*/) const {
+  using namespace motorscootercost_internal;
   // Get the transition cost for country crossing, ferry, gate, toll booth,
   // destination only, alley, maneuver penalty
   uint32_t idx = pred.opp_local_idx();
@@ -495,19 +503,19 @@ Cost MotorScooterCost::TransitionCost(
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = motorscootercost_internal::kTCCrossing;
+      turn_cost = kTCCrossing;
     } else {
       turn_cost =
           (node->drive_on_right())
-              ? motorscootercost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-              : motorscootercost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+              ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+              : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred.use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred.use() != Use::kRamp)) {
-      turn_cost += motorscootercost_internal::kTCRamp;
+      turn_cost += kTCRamp;
       if (edge->roundabout())
-        turn_cost += motorscootercost_internal::kTCRoundabout;
+        turn_cost += kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -555,6 +563,7 @@ Cost MotorScooterCost::TransitionCostReverse(
     const std::function<baldr::LimitedGraphReader()>& /*reader_getter*/,
     const bool has_measured_speed,
     const InternalTurn /*internal_turn*/) const {
+  using namespace motorscootercost_internal;
 
   // MotorScooters should be able to make uturns on short internal edges; therefore, InternalTurn
   // is ignored for now.
@@ -571,19 +580,19 @@ Cost MotorScooterCost::TransitionCostReverse(
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = motorscootercost_internal::kTCCrossing;
+      turn_cost = kTCCrossing;
     } else {
       turn_cost =
           (node->drive_on_right())
-              ? motorscootercost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-              : motorscootercost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+              ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+              : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred->use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred->use() != Use::kRamp)) {
-      turn_cost += motorscootercost_internal::kTCRamp;
+      turn_cost += kTCRamp;
       if (edge->roundabout())
-        turn_cost += motorscootercost_internal::kTCRoundabout;
+        turn_cost += kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -618,6 +627,8 @@ Cost MotorScooterCost::TransitionCostReverse(
 void ParseMotorScooterCostOptions(const rapidjson::Document& doc,
                                   const std::string& costing_options_key,
                                   Costing* c) {
+  using namespace motorscootercost_internal;
+  
   c->set_type(Costing::motor_scooter);
   c->set_name(Costing_Enum_Name(c->type()));
   auto* co = c->mutable_options();
@@ -625,12 +636,12 @@ void ParseMotorScooterCostOptions(const rapidjson::Document& doc,
   rapidjson::Value dummy;
   const auto& json = rapidjson::get_child(doc, costing_options_key.c_str(), dummy);
 
-  ParseBaseCostOptions(json, c, motorscootercost_internal::kBaseCostOptsConfig);
-  JSON_PBF_RANGED_DEFAULT(co, motorscootercost_internal::kTopSpeedRange, json, "/top_speed",
+  ParseBaseCostOptions(json, c, kBaseCostOptsConfig);
+  JSON_PBF_RANGED_DEFAULT(co, kTopSpeedRange, json, "/top_speed",
                           top_speed);
-  JSON_PBF_RANGED_DEFAULT(co, motorscootercost_internal::kUseHillsRange, json, "/use_hills",
+  JSON_PBF_RANGED_DEFAULT(co, kUseHillsRange, json, "/use_hills",
                           use_hills);
-  JSON_PBF_RANGED_DEFAULT(co, motorscootercost_internal::kUsePrimaryRange, json, "/use_primary",
+  JSON_PBF_RANGED_DEFAULT(co, kUsePrimaryRange, json, "/use_primary",
                           use_primary);
 }
 
@@ -689,6 +700,7 @@ std::uniform_int_distribution<T>* make_int_distributor_from_range(const ranged_d
 }
 
 TEST(MotorscooterCost, testMotorScooterCostParams) {
+  using namespace motorscootercost_internal;
   constexpr unsigned testIterations = 250;
   constexpr unsigned seed = 0;
   std::mt19937 generator(seed);
@@ -696,7 +708,7 @@ TEST(MotorscooterCost, testMotorScooterCostParams) {
   std::shared_ptr<std::uniform_int_distribution<uint32_t>> iDistributor;
   std::shared_ptr<TestMotorScooterCost> ctorTester;
 
-  const auto& defaults = motorscootercost_internal::kBaseCostOptsConfig;
+  const auto& defaults = kBaseCostOptsConfig;
 
   // maneuver_penalty_
   fDistributor.reset(make_real_distributor_from_range(defaults.maneuver_penalty_));
@@ -769,12 +781,12 @@ TEST(MotorscooterCost, testMotorScooterCostParams) {
   }
 
   // top_speed_
-  iDistributor.reset(make_int_distributor_from_range(motorscootercost_internal::kTopSpeedRange));
+  iDistributor.reset(make_int_distributor_from_range(kTopSpeedRange));
   for (unsigned i = 0; i < testIterations; ++i) {
     ctorTester.reset(make_motorscootercost_from_json("top_speed", (*iDistributor)(generator)));
     EXPECT_THAT(ctorTester->top_speed_,
-                test::IsBetween(motorscootercost_internal::kTopSpeedRange.min,
-                                motorscootercost_internal::kTopSpeedRange.max));
+                test::IsBetween(kTopSpeedRange.min,
+                                kTopSpeedRange.max));
   }
 
   // service_penalty_

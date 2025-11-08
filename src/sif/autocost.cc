@@ -365,6 +365,7 @@ public:
 // Constructor
 AutoCost::AutoCost(const Costing& costing, uint32_t access_mask)
     : DynamicCost(costing, TravelMode::kDrive, access_mask, true) {
+  using namespace autocost_internal;
   const auto& costing_options = costing.options();
 
   // Get the vehicle type - enter as string and convert to enum.
@@ -393,7 +394,7 @@ AutoCost::AutoCost(const Costing& costing, uint32_t access_mask)
   }
 
   // Preference for distance vs time
-  distance_factor_ = costing_options.use_distance() * autocost_internal::kInvMedianSpeed;
+  distance_factor_ = costing_options.use_distance() * kInvMedianSpeed;
   inv_distance_factor_ = 1.f - costing_options.use_distance();
 
   // Preference to use toll roads (separate from toll booth penalty). Sets a toll
@@ -489,6 +490,7 @@ Cost AutoCost::EdgeCost(const baldr::DirectedEdge* edge,
                         const graph_tile_ptr& tile,
                         const baldr::TimeInfo& time_info,
                         uint8_t& flow_sources) const {
+  using namespace autocost_internal;
   // either the computed edge speed or optional top_speed
   auto edge_speed = fixed_speed_ == baldr::kDisableFixedSpeed
                         ? tile->GetSpeed(edge, flow_mask_, time_info.second_of_week, false,
@@ -519,8 +521,8 @@ Cost AutoCost::EdgeCost(const baldr::DirectedEdge* edge,
 
   factor +=
       highway_factor_ *
-          autocost_internal::kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
-      surface_factor_ * autocost_internal::kSurfaceFactor[static_cast<uint32_t>(edge->surface())] +
+          kHighwayFactor[static_cast<uint32_t>(edge->classification())] +
+      surface_factor_ * kSurfaceFactor[static_cast<uint32_t>(edge->surface())] +
       SpeedPenalty(edge, tile, time_info, flow_sources, edge_speed) + edge->toll() * toll_factor_;
 
   switch (edge->use()) {
@@ -539,7 +541,7 @@ Cost AutoCost::EdgeCost(const baldr::DirectedEdge* edge,
     case Use::kTurnChannel:
       if (flow_sources & kDefaultFlowMask) {
         // only historic & live speeds
-        factor *= autocost_internal::kTurnChannelFactor;
+        factor *= kTurnChannelFactor;
       }
       break;
     default:
@@ -561,6 +563,7 @@ Cost AutoCost::TransitionCost(const baldr::DirectedEdge* edge,
                               const EdgeLabel& pred,
                               const graph_tile_ptr& /*tile*/,
                               const std::function<LimitedGraphReader()>& /*reader_getter*/) const {
+  using namespace autocost_internal;
   // Get the transition cost for country crossing, ferry, gate, toll booth,
   // destination only, alley, maneuver penalty
   uint32_t idx = pred.opp_local_idx();
@@ -573,18 +576,18 @@ Cost AutoCost::TransitionCost(const baldr::DirectedEdge* edge,
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = autocost_internal::kTCCrossing;
+      turn_cost = kTCCrossing;
     } else {
       turn_cost = (node->drive_on_right())
-                      ? autocost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                      : autocost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+                      ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                      : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred.use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred.use() != Use::kRamp)) {
-      turn_cost += autocost_internal::kTCRamp;
+      turn_cost += kTCRamp;
       if (edge->roundabout())
-        turn_cost += autocost_internal::kTCRoundabout;
+        turn_cost += kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -635,6 +638,7 @@ Cost AutoCost::TransitionCostReverse(const uint32_t idx,
                                      const std::function<LimitedGraphReader()>& /*reader_getter*/,
                                      const bool has_measured_speed,
                                      const InternalTurn internal_turn) const {
+  using namespace autocost_internal;
   // Get the transition cost for country crossing, ferry, gate, toll booth,
   // destination only, alley, maneuver penalty
   Cost c = base_transition_cost(node, edge, pred, idx);
@@ -646,18 +650,18 @@ Cost AutoCost::TransitionCostReverse(const uint32_t idx,
   if (stopimpact > 0 && !shortest_) {
     float turn_cost;
     if (edge->edge_to_right(idx) && edge->edge_to_left(idx)) {
-      turn_cost = autocost_internal::kTCCrossing;
+      turn_cost = kTCCrossing;
     } else {
       turn_cost = (node->drive_on_right())
-                      ? autocost_internal::kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
-                      : autocost_internal::kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
+                      ? kRightSideTurnCosts[static_cast<uint32_t>(turntype)]
+                      : kLeftSideTurnCosts[static_cast<uint32_t>(turntype)];
     }
 
     if ((edge->use() != Use::kRamp && pred->use() == Use::kRamp) ||
         (edge->use() == Use::kRamp && pred->use() != Use::kRamp)) {
-      turn_cost += autocost_internal::kTCRamp;
+      turn_cost += kTCRamp;
       if (edge->roundabout())
-        turn_cost += autocost_internal::kTCRoundabout;
+        turn_cost += kTCRoundabout;
     }
 
     float seconds = turn_cost;
@@ -697,6 +701,7 @@ Cost AutoCost::TransitionCostReverse(const uint32_t idx,
 void ParseAutoCostOptions(const rapidjson::Document& doc,
                           const std::string& costing_options_key,
                           Costing* c) {
+  using namespace autocost_internal;
   c->set_type(Costing::auto_);
   c->set_name(Costing_Enum_Name(c->type()));
   auto* co = c->mutable_options();
@@ -704,22 +709,22 @@ void ParseAutoCostOptions(const rapidjson::Document& doc,
   rapidjson::Value dummy;
   const auto& json = rapidjson::get_child(doc, costing_options_key.c_str(), dummy);
 
-  ParseBaseCostOptions(json, c, autocost_internal::kBaseCostOptsConfig);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAlleyFactorRange, json, "/alley_factor",
+  ParseBaseCostOptions(json, c, kBaseCostOptsConfig);
+  JSON_PBF_RANGED_DEFAULT(co, kAlleyFactorRange, json, "/alley_factor",
                           alley_factor);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseHighwaysRange, json, "/use_highways",
+  JSON_PBF_RANGED_DEFAULT(co, kUseHighwaysRange, json, "/use_highways",
                           use_highways);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseTollsRange, json, "/use_tolls", use_tolls);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kUseDistanceRange, json, "/use_distance",
+  JSON_PBF_RANGED_DEFAULT(co, kUseTollsRange, json, "/use_tolls", use_tolls);
+  JSON_PBF_RANGED_DEFAULT(co, kUseDistanceRange, json, "/use_distance",
                           use_distance);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAutoHeightRange, json, "/height", height);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kAutoWidthRange, json, "/width", width);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kProbabilityRange, json, "/restriction_probability",
+  JSON_PBF_RANGED_DEFAULT(co, kAutoHeightRange, json, "/height", height);
+  JSON_PBF_RANGED_DEFAULT(co, kAutoWidthRange, json, "/width", width);
+  JSON_PBF_RANGED_DEFAULT(co, kProbabilityRange, json, "/restriction_probability",
                           restriction_probability);
   JSON_PBF_DEFAULT_V2(co, false, json, "/include_hot", include_hot);
   JSON_PBF_DEFAULT_V2(co, false, json, "/include_hov2", include_hov2);
   JSON_PBF_DEFAULT_V2(co, false, json, "/include_hov3", include_hov3);
-  JSON_PBF_RANGED_DEFAULT(co, autocost_internal::kVehicleSpeedRange, json, "/top_speed", top_speed);
+  JSON_PBF_RANGED_DEFAULT(co, kVehicleSpeedRange, json, "/top_speed", top_speed);
 }
 
 cost_ptr_t CreateAutoCost(const Costing& costing_options) {
@@ -965,6 +970,7 @@ public:
                         const graph_tile_ptr& tile,
                         const baldr::TimeInfo& time_info,
                         uint8_t& flow_sources) const override {
+    using namespace autocost_internal;
     auto edge_speed = fixed_speed_ == baldr::kDisableFixedSpeed
                           ? tile->GetSpeed(edge, flow_mask_, time_info.second_of_week, false,
                                            &flow_sources, time_info.seconds_from_now)
@@ -980,7 +986,7 @@ public:
     float factor = (edge->use() == Use::kFerry) ? ferry_factor_ : kDensityFactor[edge->density()];
     factor += SpeedPenalty(edge, tile, time_info, flow_sources, edge_speed);
     if ((edge->forwardaccess() & kTaxiAccess) && !(edge->forwardaccess() & kAutoAccess)) {
-      factor *= autocost_internal::kTaxiFactor;
+      factor *= kTaxiFactor;
     }
 
     if (edge->use() == Use::kAlley) {
@@ -1118,13 +1124,14 @@ make_distributor_from_range(const ranged_default_t<float>& range) {
 }
 
 TEST(AutoCost, testAutoCostParams) {
+  using namespace autocost_internal;
   constexpr unsigned testIterations = 250;
   constexpr unsigned seed = 0;
   std::mt19937 generator(seed);
   std::uniform_real_distribution<float> distributor;
   std::shared_ptr<TestAutoCost> tester;
 
-  const auto& defaults = autocost_internal::kBaseCostOptsConfig;
+  const auto& defaults = kBaseCostOptsConfig;
 
   // maneuver_penalty_
   distributor = make_distributor_from_range(defaults.maneuver_penalty_);
@@ -1143,11 +1150,11 @@ TEST(AutoCost, testAutoCostParams) {
   }
 
   // alley_factor_
-  distributor = make_distributor_from_range(autocost_internal::kAlleyFactorRange);
+  distributor = make_distributor_from_range(kAlleyFactorRange);
   for (unsigned i = 0; i < testIterations; ++i) {
     tester = make_autocost_from_json("alley_factor", distributor(generator));
-    EXPECT_THAT(tester->alley_factor_, test::IsBetween(autocost_internal::kAlleyFactorRange.min,
-                                                       autocost_internal::kAlleyFactorRange.max));
+    EXPECT_THAT(tester->alley_factor_, test::IsBetween(kAlleyFactorRange.min,
+                                                       kAlleyFactorRange.max));
   }
 
   // destination_only_penalty_

@@ -632,12 +632,15 @@ float TransitCost::AStarCostFactor() const {
 
 //  Override unit size since walking costs are higher range of values
 uint32_t TransitCost::UnitSize() const {
-  return transitcost_internal::kUnitSize;
+  using namespace transitcost_internal;
+  return kUnitSize;
 }
 
 void ParseTransitCostOptions(const rapidjson::Document& doc,
                              const std::string& costing_options_key,
                              Costing* c) {
+  using namespace transitcost_internal;
+  
   c->set_type(Costing::transit);
   c->set_name(Costing_Enum_Name(c->type()));
   auto* co = c->mutable_options();
@@ -647,17 +650,17 @@ void ParseTransitCostOptions(const rapidjson::Document& doc,
 
   // TODO: no base costing parsing because transit doesnt care about any of those options?
 
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kModeFactorRange, json, "/mode_factor",
+  JSON_PBF_RANGED_DEFAULT(co, kModeFactorRange, json, "/mode_factor",
                           mode_factor);
   JSON_PBF_DEFAULT_V2(co, false, json, "/wheelchair", wheelchair);
   JSON_PBF_DEFAULT_V2(co, false, json, "/bicycle", bicycle);
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kUseBusRange, json, "/use_bus", use_bus);
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kUseRailRange, json, "/use_rail", use_rail);
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kUseTransfersRange, json, "/use_transfers",
+  JSON_PBF_RANGED_DEFAULT(co, kUseBusRange, json, "/use_bus", use_bus);
+  JSON_PBF_RANGED_DEFAULT(co, kUseRailRange, json, "/use_rail", use_rail);
+  JSON_PBF_RANGED_DEFAULT(co, kUseTransfersRange, json, "/use_transfers",
                           use_transfers);
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kTransferCostRange, json, "/transfer_cost",
+  JSON_PBF_RANGED_DEFAULT(co, kTransferCostRange, json, "/transfer_cost",
                           transfer_cost);
-  JSON_PBF_RANGED_DEFAULT(co, transitcost_internal::kTransferPenaltyRange, json, "/transfer_penalty",
+  JSON_PBF_RANGED_DEFAULT(co, kTransferPenaltyRange, json, "/transfer_penalty",
                           transfer_penalty);
 
   // filter_stop_action
