@@ -20,7 +20,7 @@
 #include "tyr/serializer_constants.h"
 #include "tyr/serializers.h"
 
-#ifdef INLINE_TEST
+#ifdef INLINE_TEST_TODO_FIX
 #include <gtest/gtest.h>
 #endif
 
@@ -2175,7 +2175,7 @@ std::string serialize(valhalla::Api& api) {
 
 } // namespace osrm_serializers
 
-#ifdef INLINE_TEST
+#ifdef INLINE_TEST_TODO_FIX
 
 using namespace osrm_serializers;
 

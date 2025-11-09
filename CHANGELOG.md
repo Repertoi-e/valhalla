@@ -1,13 +1,16 @@
 ## Repertoi-e fork
 
-* REMOVED: Dependency on boost in favor of std:: or tiny replacements 
-* REMOVED: boost::optional in favor of std::optional
-* REMOVED: boost::format in favor of a tiny wrapper around sprintf
-* REMOVED: boost::property_tree::ptree in favor of a light custom replacement
+* REMOVED: Polymorphism from sif, it used to have virtual dispatch dynamic costing whatever, in pathing hotloop, without ability for compiler to inline
+* REMOVED: Dependency on boost in favor of std:: or tiny replacements: boost::optional in favor of std::optional, boost::format in favor of a tiny wrapper around sprintf, boost::property_tree::ptree in favor of a light custom replacement
 * REMOVED: Dependency on google's libprotobuf in favor of a shim around plain old C++ structs and protozero for serialization/deserialization. 
            This removes dependecy on a bunch of libraries that Google's protobuf uses, this alone opened the possibility to build Valhalla to WASM with emscripten.
-* REMOVED: Fibonacci heap in favor of std::priority_queue (Fibonnaci heap is hella slow in practice, no?), we're not even doing performance-aware cache utilization yet so will benchmark later probably
+* REMOVED: Fibonacci heap in favor of std::priority_queue (Fibonacci heap is hella slow in practice, no?)
 * REMOVED: Git submodules, as they are the antichrist
+
+* TODO: Uncomment and fix VersionChecksum test cuz idk why its failing now
+* TODO: Fix SimpleCost test
+* TODO: Uncomment and fix pinpoints tests, but we need proper valhalla.json config to regen .pbf files
+* TODO: Fix INLINE_TEXT for sif 
 
 ## UNRELEASED
 * **Removed**

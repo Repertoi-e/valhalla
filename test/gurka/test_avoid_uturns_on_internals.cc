@@ -62,6 +62,7 @@ TEST(Standalone, AvoidUturnsOnInternals) {
                                build_config);
 
   for (auto& c : costing) {
+    SCOPED_TRACE("Costing: " + c);
     auto result = gurka::do_action(valhalla::Options::route, map, {"1", "3"}, c);
     if (c == "bicycle" || c == "motor_scooter" || c == "motorcycle" || c == "pedestrian")
       gurka::assert::raw::expect_path(result, {"Rijkerstreek", "JK", "Rijkerstreek", "Toekanweg",
@@ -73,6 +74,7 @@ TEST(Standalone, AvoidUturnsOnInternals) {
   }
 
   for (auto& c : costing) {
+    SCOPED_TRACE("Costing: " + c);
     auto result = gurka::do_action(valhalla::Options::route, map, {"1", "2"}, c);
     if (c == "bicycle" || c == "motor_scooter" || c == "motorcycle" || c == "pedestrian")
       gurka::assert::raw::expect_path(result, {"Rijkerstreek", "JK", "Rijkerstreek"});

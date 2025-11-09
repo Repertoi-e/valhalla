@@ -12,11 +12,11 @@
 #include <string>
 #include <utility>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/val.h>
-#endif
-
 using namespace valhalla::midgard;
+
+namespace valhalla {
+std::unordered_set<GraphId> fetch_wasm_tile_manifest();
+} // namespace valhalla
 
 namespace {
 
@@ -33,45 +33,13 @@ struct tile_index_entry {
 #ifdef __EMSCRIPTEN__
 using valhalla::baldr::GraphId;
 
-std::unordered_set<GraphId> FetchTilesFromModule() {
-  std::unordered_set<GraphId> tiles;
-  try {
-    auto module = emscripten::val::global("Module");
-    if (module.isNull() || module.isUndefined()) {
-      return tiles;
-    }
-    auto fn = module["listGraphTiles"];
-    if (fn.isNull() || fn.isUndefined()) {
-      return tiles;
-    }
-    auto js_paths = module.call<emscripten::val>("listGraphTiles");
-    const auto length = js_paths["length"].as<unsigned>();
-    tiles.reserve(length);
-    for (unsigned i = 0; i < length; ++i) {
-      auto path_val = js_paths[i];
-      if (path_val.isNull() || path_val.isUndefined()) {
-        continue;
-      }
-      try {
-        auto path = path_val.as<std::string>();
-        tiles.emplace(valhalla::baldr::GraphTile::GetTileId(path));
-      } catch (...) {
-        // Ignore manifest entries that we cannot parse
-      }
-    }
-  } catch (...) {
-    // Surface an empty set if interop fails; callers handle absence gracefully
-  }
-  return tiles;
-}
-
 const std::unordered_set<GraphId>& WasmTileManifest() {
   static std::mutex manifest_mutex;
   static std::unordered_set<GraphId> manifest;
   static bool manifest_initialized = false;
   std::lock_guard<std::mutex> lock(manifest_mutex);
   if (!manifest_initialized) {
-    manifest = FetchTilesFromModule();
+    manifest = valhalla::fetch_wasm_tile_manifest();
     manifest_initialized = true;
   }
   return manifest;
@@ -105,6 +73,7 @@ tile_gone_error_t::tile_gone_error_t(std::string prefix, baldr::GraphId edgeid)
 }
 
 GraphReader::tile_extract_t::tile_extract_t(const property_tree& pt, bool traffic_readonly) {
+#if !defined __EMSCRIPTEN__
   // A lambda for loading the contents of a graph tile tar from an index file
   bool traffic_from_index = false;
   auto index_loader = [this, &traffic_from_index](const std::string& filename,
@@ -223,6 +192,7 @@ GraphReader::tile_extract_t::tile_extract_t(const property_tree& pt, bool traffi
       LOG_WARN("Traffic tile extract could not be loaded");
     }
   }
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -1031,12 +1001,14 @@ std::unordered_set<GraphId> GraphReader::GetTileSet(const uint8_t level) const {
   return tiles;
 }
 
+#if !defined __EMSCRIPTEN__
 const std::string& GraphReader::tile_extract() const {
   static std::string empty_str;
   if (tile_extract_->tiles.empty())
     return empty_str;
   return tile_extract_->archive->tar_file;
 }
+#endif
 
 AABB2<PointLL> GraphReader::GetMinimumBoundingBox(const AABB2<PointLL>& bb) {
   // Iterate through all the tiles that intersect this bounding box

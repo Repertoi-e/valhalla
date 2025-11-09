@@ -22,8 +22,11 @@
 #define stat _stat64
 #else
 #include <sys/mman.h>
-#include <sys/stat.h>
 #include <unistd.h>
+
+#if !defined __EMSCRIPTEN__
+#include <sys/stat.h>
+#endif
 #endif // _WIN32
 #include <fcntl.h>
 
@@ -253,6 +256,7 @@ protected:
   std::string file_name;
 };
 
+#if !defined __EMSCRIPTEN__
 template <class T> class sequence {
 public:
   // static_assert(std::is_pod<T>::value, "sequence requires POD types for now");
@@ -721,6 +725,7 @@ struct tar {
     }
   }
 };
+#endif
 
 } // namespace midgard
 } // namespace valhalla

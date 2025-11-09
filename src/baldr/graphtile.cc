@@ -51,6 +51,7 @@ private:
 
 graph_tile_ptr
 GraphTile::DecompressTile(const GraphId& graphid, const char* compressed, size_t compressed_size) {
+#if !defined __EMSCRIPTEN__
   // for setting where to read compressed data from
   auto src_func = [&compressed, compressed_size](z_stream& s) -> void {
     s.next_in = const_cast<Byte*>(static_cast<const Byte*>(static_cast<const void*>(compressed)));
@@ -83,6 +84,9 @@ GraphTile::DecompressTile(const GraphId& graphid, const char* compressed, size_t
 
   return graph_tile_ptr{
       new GraphTile(graphid, std::make_unique<const VectorGraphMemory>(std::move(data)))};
+#else
+  throw std::runtime_error("gz decompression not supported in WASM, better to do this in the browser");
+#endif
 }
 
 // Constructor given a filename. Reads the graph data into memory.

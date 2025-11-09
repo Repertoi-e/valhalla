@@ -4,6 +4,7 @@
 #include "baldr/graphconstants.h"
 #include "baldr/tilehierarchy.h"
 #include "midgard/logging.h"
+#include "sif/dynamiccost.h"
 
 #include <algorithm>
 #include <cmath>
@@ -27,8 +28,8 @@
 void stub_printf(const char*, ...) {
 }
 
-// #define DEBUG_PRINTF(...) printf(__VA_ARGS__)
-#define DEBUG_PRINTF(...) stub_printf(__VA_ARGS__)
+#define DEBUG_PRINTF(...) printf(__VA_ARGS__)
+// #define DEBUG_PRINTF(...) stub_printf(__VA_ARGS__)
 
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;
@@ -389,6 +390,10 @@ GraphTileBuilder::GraphTileBuilder(const std::string& tile_dir,
                                    bool serialize_turn_lanes)
     : GraphTile(tile_dir, graphid), tile_dir_(tile_dir) {
 
+  sif::cost_ptr_t auto_cost = sif::CreateAutoCost({});
+  sif::cost_ptr_t bicycle_cost = sif::CreateBicycleCost({});
+  sif::cost_ptr_t pedestrian_cost = sif::CreatePedestrianCost({});
+
   // Copy tile header to a builder (if tile exists). Always set the tileid
   if (header_) {
     header_builder_ = *header_;
@@ -417,6 +422,26 @@ GraphTileBuilder::GraphTileBuilder(const std::string& tile_dir,
   nodes_builder_.reserve(n);
   std::copy(nodes_, nodes_ + n, std::back_inserter(nodes_builder_));
 
+  // calculate how many nodes are allowed for each costing type
+  size_t auto_count = 0;
+  size_t bicycle_count = 0;
+  size_t pedestrian_count = 0;
+  for (const auto& node : nodes_builder_) {
+    if (auto_cost->Allowed(&node)) {
+      auto_count++;
+    } 
+    if (bicycle_cost->Allowed(&node)) {
+      bicycle_count++;
+    } 
+    if (pedestrian_cost->Allowed(&node)) {
+      pedestrian_count++;
+    }
+  }
+  DEBUG_PRINTF("Node counts by costing: auto=%zu (%f%%) bicycle=%zu (%f%%) pedestrian=%zu (%f%%)\n",
+               auto_count, (auto_count * 100.0 / n), bicycle_count,
+               (bicycle_count * 100.0 / n), pedestrian_count,
+               (pedestrian_count * 100.0 / n));
+
   // Copy node transitions to the builder list
   n = header_->transitioncount();
   transitions_builder_.reserve(n);
@@ -426,6 +451,27 @@ GraphTileBuilder::GraphTileBuilder(const std::string& tile_dir,
   n = header_->directededgecount();
   directededges_builder_.reserve(n);
   std::copy(directededges_, directededges_ + n, std::back_inserter(directededges_builder_));
+
+  //caclulate how many edges are allowed for each costing type
+  size_t auto_edge_count = 0;
+  size_t bicycle_edge_count = 0;
+  size_t pedestrian_edge_count = 0;
+  for (const auto& edge : directededges_builder_) {
+    if (auto_cost->Allowed(&edge, this)) {
+      auto_edge_count++;
+    } 
+    if (bicycle_cost->Allowed(&edge, this)) {
+      bicycle_edge_count++;
+    } 
+    if (pedestrian_cost->Allowed(&edge, this)) {
+      pedestrian_edge_count++;
+    }
+  }
+  DEBUG_PRINTF(
+      "DirectedEdge counts by costing: auto=%zu (%f%%) bicycle=%zu (%f%%) pedestrian=%zu (%f%%)\n", auto_edge_count,
+      (auto_edge_count * 100.0 / n), bicycle_edge_count,
+      (bicycle_edge_count * 100.0 / n), pedestrian_edge_count,
+      (pedestrian_edge_count * 100.0 / n));
 
   // Add extended directededge attributes (if available)
   if (header_->has_ext_directededge()) {

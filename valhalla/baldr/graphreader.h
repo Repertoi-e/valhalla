@@ -459,12 +459,18 @@ public:
    */
   virtual bool DoesTileExist(const GraphId& graphid) const;
 
+#if !defined __EMSCRIPTEN__
   /**
    * Test if traffic tiles exist.   *
    */
   bool HasLiveTraffic() {
     return !tile_extract_->traffic_tiles.empty();
   }
+#else
+  bool HasLiveTraffic() {
+    return false;
+  }
+#endif
 
   /**
    * Get a pointer to a graph tile object given a GraphId.
@@ -902,11 +908,13 @@ public:
     return tile_dir_;
   }
 
+#if !defined __EMSCRIPTEN__
   /**
    * Returns the location of the tile extract
    * @return  Returns the tile extract file path.
    */
   const std::string& tile_extract() const;
+#endif
 
   /**
    * Returns the tilesets location whether thats a tile_dir or a tile_extract. Purely url
@@ -914,8 +922,10 @@ public:
    * tile_dir
    */
   const std::string& GetTileSetLocation() const {
+#if !defined __EMSCRIPTEN__
     if (!tile_extract_->tiles.empty())
       return tile_extract();
+#endif
     if (!tile_dir_.empty())
       return tile_dir_;
     return tile_url_;
@@ -976,8 +986,11 @@ protected:
     uint64_t checksum;
   };
   std::shared_ptr<const tile_extract_t> tile_extract_;
+
+#if !defined __EMSCRIPTEN__
   static std::shared_ptr<const GraphReader::tile_extract_t>
   get_extract_instance(const property_tree& pt);
+#endif
 
   // Information about where the tiles are kept
   const std::string tile_dir_;

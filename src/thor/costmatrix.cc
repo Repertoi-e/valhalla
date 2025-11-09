@@ -1193,7 +1193,7 @@ void CostMatrix::SetSources(GraphReader& graphreader,
                              !(costing_->IsClosed(directededge, tile)),
                              static_cast<bool>(flow_sources & kDefaultFlowMask),
                              InternalTurn::kNoTurn, kInvalidRestriction,
-                             static_cast<uint8_t>(costing_->Allowed(directededge, tile)),
+                             static_cast<uint8_t>(costing_->Allowed(directededge, tile.get())),
                              directededge->destonly() ||
                                  (costing_->is_hgv() && directededge->destonly_hgv()),
                              directededge->forwardaccess() & kTruckAccess, destonly_restriction_mask);
@@ -1299,7 +1299,7 @@ void CostMatrix::SetTargets(baldr::GraphReader& graphreader,
                              !(costing_->IsClosed(directededge, tile)),
                              static_cast<bool>(flow_sources & kDefaultFlowMask),
                              InternalTurn::kNoTurn, kInvalidRestriction,
-                             static_cast<uint8_t>(costing_->Allowed(directededge, tile)),
+                             static_cast<uint8_t>(costing_->Allowed(directededge, tile.get())),
                              directededge->destonly() ||
                                  (costing_->is_hgv() && directededge->destonly_hgv()),
                              directededge->forwardaccess() & kTruckAccess, destonly_restriction_mask);

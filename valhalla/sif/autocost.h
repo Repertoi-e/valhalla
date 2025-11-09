@@ -1,12 +1,262 @@
 #ifndef VALHALLA_SIF_AUTOCOST_H_
 #define VALHALLA_SIF_AUTOCOST_H_
 
+#include "dynamiccost_const.h"
+
 #include <valhalla/baldr/rapidjson_fwd.h>
 #include <valhalla/proto/options.pb.h>
-#include <valhalla/sif/dynamiccost.h>
 
 namespace valhalla {
 namespace sif {
+
+/**
+ * Derived class providing dynamic edge costing for "direct" auto routes. This
+ * is a route that is generally shortest time but uses route hierarchies that
+ * can result in slightly longer routes that avoid shortcuts on residential
+ * roads.
+ */
+class AutoCost {
+public:
+  AutoCost() {}
+  
+  /**
+   * Construct auto costing. Pass in cost type and costing_options using protocol buffer(pbf).
+   * @param  type            Vehicle type (Car, Motorcycle, Truck, etc)
+   * @param  costing_options pbf with request costing_options.
+   */
+  AutoCost(DynamicCost* parent, const Costing& costing_options);
+
+  ~AutoCost() {
+  }
+
+  /**
+   * Checks if access is allowed for the provided directed edge.
+   * This is generally based on mode of travel and the access modes
+   * allowed on the edge. However, it can be extended to exclude access
+   * based on other parameters such as conditional restrictions and
+   * conditional access that can depend on time and travel mode.
+   * @param  edge                        Pointer to a directed edge.
+   * @param  is_dest                     Is a directed edge the destination?
+   * @param  pred                        Predecessor edge information.
+   * @param  tile                        Current tile.
+   * @param  edgeid                      GraphId of the directed edge.
+   * @param  current_time                Current time (seconds since epoch). A value of 0
+   *                                     indicates the route is not time dependent.
+   * @param  tz_index                    timezone index for the node
+   * @param  destonly_access_restr_mask  Mask containing access restriction types that had a
+   * local traffic exemption at the start of the expansion. This mask will be mutated by eliminating
+   * flags for locally exempt access restriction types that no longer exist on the passed edge
+   *
+   * @return Returns true if access is allowed, false if not.
+   */
+  bool Allowed(const DynamicCost* parent,
+               const baldr::DirectedEdge* edge,
+               const bool is_dest,
+               const EdgeLabel& pred,
+               const baldr::graph_tile_ptr& tile,
+               const baldr::GraphId& edgeid,
+               const uint64_t current_time,
+               const uint32_t tz_index,
+               uint8_t& restriction_idx,
+               uint8_t& destonly_access_restr_mask) const;
+
+  bool Bus_Allowed(const DynamicCost* parent,
+                   const baldr::DirectedEdge* edge,
+                   const bool is_dest,
+                   const EdgeLabel& pred,
+                   const baldr::graph_tile_ptr& tile,
+                   const baldr::GraphId& edgeid,
+                   const uint64_t current_time,
+                   const uint32_t tz_index,
+                   uint8_t& restriction_idx,
+                   uint8_t& destonly_access_restr_mask) const;
+
+  bool Taxi_Allowed(const DynamicCost* parent,
+                    const baldr::DirectedEdge* edge,
+                    const bool is_dest,
+                    const EdgeLabel& pred,
+                    const baldr::graph_tile_ptr& tile,
+                    const baldr::GraphId& edgeid,
+                    const uint64_t current_time,
+                    const uint32_t tz_index,
+                    uint8_t& restriction_idx,
+                    uint8_t& destonly_access_restr_mask) const;
+
+  /**
+   * Checks if access is allowed for an edge on the reverse path
+   * (from destination towards origin). Both opposing edges (current and
+   * predecessor) are provided. The access check is generally based on mode
+   * of travel and the access modes allowed on the edge. However, it can be
+   * extended to exclude access based on other parameters such as conditional
+   * restrictions and conditional access that can depend on time and travel
+   * mode.
+   * @param  edge                        Pointer to a directed edge.
+   * @param  pred                        Predecessor edge information.
+   * @param  opp_edge                    Pointer to the opposing directed edge.
+   * @param  tile                        Current tile.
+   * @param  edgeid                      GraphId of the opposing edge.
+   * @param  current_time                Current time (seconds since epoch). A value of 0
+   *                                     indicates the route is not time dependent.
+   * @param  tz_index                    timezone index for the node
+   * @param  destonly_access_restr_mask  Mask containing access restriction types that had a
+   * local traffic exemption at the start of the expansion. This mask will be mutated by eliminating
+   * flags for locally exempt access restriction types that no longer exist on the passed edge
+   *
+   * @return  Returns true if access is allowed, false if not.
+   */
+  bool AllowedReverse(const DynamicCost* parent,
+                      const baldr::DirectedEdge* edge,
+                      const EdgeLabel& pred,
+                      const baldr::DirectedEdge* opp_edge,
+                      const baldr::graph_tile_ptr& tile,
+                      const baldr::GraphId& opp_edgeid,
+                      const uint64_t current_time,
+                      const uint32_t tz_index,
+                      uint8_t& restriction_idx,
+                      uint8_t& destonly_access_restr_mask) const;
+
+  bool Bus_AllowedReverse(const DynamicCost* parent,
+                          const baldr::DirectedEdge* edge,
+                          const EdgeLabel& pred,
+                          const baldr::DirectedEdge* opp_edge,
+                          const baldr::graph_tile_ptr& tile,
+                          const baldr::GraphId& opp_edgeid,
+                          const uint64_t current_time,
+                          const uint32_t tz_index,
+                          uint8_t& restriction_idx,
+                          uint8_t& destonly_access_restr_mask) const;
+
+  bool Taxi_AllowedReverse(const DynamicCost* parent,
+                           const baldr::DirectedEdge* edge,
+                           const EdgeLabel& pred,
+                           const baldr::DirectedEdge* opp_edge,
+                           const baldr::graph_tile_ptr& tile,
+                           const baldr::GraphId& opp_edgeid,
+                           const uint64_t current_time,
+                           const uint32_t tz_index,
+                           uint8_t& restriction_idx,
+                           uint8_t& destonly_access_restr_mask) const;
+
+  /**
+   * Callback for Allowed doing mode  specific restriction checks
+   */
+  bool ModeSpecificAllowed(const baldr::AccessRestriction& restriction) const;
+
+  /**
+   * Get the cost to traverse the specified directed edge. Cost includes
+   * the time (seconds) to traverse the edge.
+   * @param   edge       Pointer to a directed edge.
+   * @param   tile       Graph tile.
+   * @param   time_info  Time info about edge passing.
+   * @return  Returns the cost and time (seconds)
+   */
+  Cost EdgeCost(const DynamicCost* parent,
+                const baldr::DirectedEdge* edge,
+                const baldr::graph_tile_ptr& tile,
+                const baldr::TimeInfo& time_info,
+                uint8_t& flow_sources) const;
+
+  Cost Taxi_EdgeCost(const DynamicCost* parent,
+                     const baldr::DirectedEdge* edge,
+                     const baldr::graph_tile_ptr& tile,
+                     const baldr::TimeInfo& time_info,
+                     uint8_t& flow_sources) const;
+
+  /**
+   * Returns the cost to make the transition from the predecessor edge.
+   * Defaults to 0. Costing models that wish to include edge transition
+   * costs (i.e., intersection/turn costs) must override this method.
+   * @param  edge          Directed edge (the to edge)
+   * @param  node          Node (intersection) where transition occurs.
+   * @param  pred          Predecessor edge information.
+   * @param  tile          Pointer to the graph tile containing the to edge.
+   * @param  reader_getter Functor that facilitates access to a limited version of the graph reader
+   * @return Returns the cost and time (seconds)
+   */
+  Cost TransitionCost(const DynamicCost* parent,
+                      const baldr::DirectedEdge* edge,
+                      const baldr::NodeInfo* node,
+                      const EdgeLabel& pred,
+                      const baldr::graph_tile_ptr& tile,
+                      const std::function<baldr::LimitedGraphReader()>& reader_getter) const;
+
+  /**
+   * Returns the cost to make the transition from the predecessor edge
+   * when using a reverse search (from destination towards the origin).
+   * @param  idx                Directed edge local index
+   * @param  node               Node (intersection) where transition occurs.
+   * @param  pred               the opposing current edge in the reverse tree.
+   * @param  edge               the opposing predecessor in the reverse tree
+   * @param  tile               Graphtile that contains the node and the opp_edge
+   * @param  edge_id            Graph ID of opp_pred_edge to get its tile if needed
+   * @param  reader_getter      Functor that facilitates access to a limited version of the graph
+   * reader
+   * @param  has_measured_speed Do we have any of the measured speed types set?
+   * @param  internal_turn      Did we make an turn on a short internal edge.
+   * @return  Returns the cost and time (seconds)
+   */
+  Cost TransitionCostReverse(const DynamicCost* parent,
+                             const uint32_t idx,
+                             const baldr::NodeInfo* node,
+                             const baldr::DirectedEdge* pred,
+                             const baldr::DirectedEdge* edge,
+                             const baldr::graph_tile_ptr& tile,
+                             const baldr::GraphId& edge_id,
+                             const std::function<baldr::LimitedGraphReader()>& reader_getter,
+                             const bool has_measured_speed,
+                             const InternalTurn internal_turn) const;
+
+  /**
+   * Get the cost factor for A* heuristics. This factor is multiplied
+   * with the distance to the destination to produce an estimate of the
+   * minimum cost to the destination. The A* heuristic must underestimate the
+   * cost to the destination. So a time based estimate based on speed should
+   * assume the maximum speed is used to the destination such that the time
+   * estimate is less than the least possible time along roads.
+   */
+  float AStarCostFactor() const;
+
+  bool IsHOVAllowed(const baldr::DirectedEdge* edge) const {
+    // A non-hov edge means hov is allowed.
+    if (!edge->is_hov_only())
+      return true;
+
+    // The edge is either HOV-2 or HOV-3 from this point forward.
+
+    // If include_hov3 is set we can route onto both HOV-2 and HOV-3 edges
+    if (include_hov3_)
+      return true;
+
+    // If include_hov2 is set we can route onto HOV-2 edges.
+    if (include_hov2_ && (edge->hov_type() == baldr::HOVEdgeType::kHOV2))
+      return true;
+
+    // If include_hot is set we can route onto HOT edges (HOV and tolled).
+    if (include_hot_ && edge->toll())
+      return true;
+
+    return false;
+  }
+
+  // Hidden in source file so we don't need it to be protected
+  // We expose it within the source file for testing purposes
+public:
+  // HOT/HOV flags
+  bool include_hot_{false};
+  bool include_hov2_{false};
+  bool include_hov3_{false};
+
+  float highway_factor_;      // Factor applied when road is a motorway or trunk
+  float alley_factor_;        // Avoid alleys factor.
+  float toll_factor_;         // Factor applied when road has a toll
+  float surface_factor_;      // How much the surface factors are applied.
+  float distance_factor_;     // How much distance factors in overall favorability
+  float inv_distance_factor_; // How much time factors in overall favorability
+
+  // Vehicle attributes (used for special restrictions and costing)
+  float height_; // Vehicle height in meters
+  float width_;  // Vehicle width in meters
+};
 
 /**
  * Parses the auto cost options from json and stores values in pbf.
@@ -20,13 +270,6 @@ void ParseAutoCostOptions(const rapidjson::Document& doc,
                           Costing* pbf_costing);
 
 /**
- * Create an auto route cost method. This is generally shortest time but uses
- * hierarchies and can avoid "shortcuts" through residential areas.
- * @param  costing pbf with request options.
- */
-cost_ptr_t CreateAutoCost(const Costing& costing);
-
-/**
  * Parses the bus cost options from json and stores values in pbf.
  * @param doc The json request represented as a DOM tree.
  * @param costing_options_key A string representing the location in the DOM tree where the costing
@@ -38,14 +281,6 @@ void ParseBusCostOptions(const rapidjson::Document& doc,
                          Costing* pbf_costing);
 
 /**
- * Create a bus cost method. This is derived from auto costing and
- * uses the same rules except for using the bus access flag instead
- * of the auto access flag.
- * @param  costing pbf with request options.
- */
-cost_ptr_t CreateBusCost(const Costing& costing);
-
-/**
  * Parses the taxi cost options from json and stores values in pbf.
  * @param doc The json request represented as a DOM tree.
  * @param costing_options_key A string representing the location in the DOM tree where the costing
@@ -55,13 +290,6 @@ cost_ptr_t CreateBusCost(const Costing& costing);
 void ParseTaxiCostOptions(const rapidjson::Document& doc,
                           const std::string& costing_options_key,
                           Costing* pbf_costing);
-
-/**
- * Create a taxi cost method. This is derived from auto costing and
- * uses the same rules except for favoring taxi roads
- * @param  costing pbf with request options.
- */
-cost_ptr_t CreateTaxiCost(const Costing& costing);
 
 } // namespace sif
 } // namespace valhalla

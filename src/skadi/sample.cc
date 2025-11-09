@@ -108,6 +108,7 @@ public:
     this->unpacked = unpacked;
 
     if (format == format_t::GZIP) {
+#if !defined __EMSCRIPTEN__
       // for setting where to read compressed data from
       auto src_func = [this](z_stream& s) -> void {
         s.next_in = static_cast<Byte*>(static_cast<void*>(data.get()));
@@ -127,6 +128,9 @@ public:
         format = format_t::UNKNOWN;
         return false;
       }
+#else
+      throw std::runtime_error("Gzip elevation tiles are unsupported in WASM for now, probably better to do decompression in the browser");
+#endif
     } else if (format == format_t::LZ4) {
 #if !defined __EMSCRIPTEN__
       LZ4F_decompressionContext_t decode;
@@ -151,7 +155,7 @@ public:
 
       LZ4F_freeDecompressionContext(decode);
 #else
-      throw std::runtime_error("LZ4 elevation tiles are unsupported for now");
+      throw std::runtime_error("LZ4 elevation tiles are unsupported for now in WASM, is it worth it?");
 #endif
     } else {
       LOG_WARN("Corrupt elevation data of unknown type");

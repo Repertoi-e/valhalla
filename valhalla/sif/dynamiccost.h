@@ -1,184 +1,18 @@
 #ifndef VALHALLA_SIF_DYNAMICCOST_H_
 #define VALHALLA_SIF_DYNAMICCOST_H_
 
-#include <valhalla/baldr/accessrestriction.h>
-#include <valhalla/baldr/datetime.h>
-#include <valhalla/baldr/directededge.h>
-#include <valhalla/baldr/graphconstants.h>
-#include <valhalla/baldr/graphid.h>
-#include <valhalla/baldr/graphtile.h>
-#include <valhalla/baldr/graphtileptr.h>
-#include <valhalla/baldr/nodeinfo.h>
-#include <valhalla/baldr/rapidjson_fwd.h>
-#include <valhalla/baldr/time_info.h>
-#include <valhalla/baldr/timedomain.h>
-#include <valhalla/baldr/transitdeparture.h>
-#include <valhalla/proto/options.pb.h>
-#include <valhalla/sif/costconstants.h>
-#include <valhalla/sif/edgelabel.h>
-#include <valhalla/thor/edgestatus.h>
-
-#include <cstdint>
-#include <memory>
-#include <unordered_map>
-
-// macros aren't great but writing these out for every option is an abomination worse than this macro
-
-/**
- * this macro takes a ranged_default_t and uses it to make sure user provided values (in json or in
- * pbf) are in range before setting it on the costing options
- *
- * @param costing_options  pointer to protobuf costing options object
- * @param range            ranged_default_t object which will check any provided values are in range
- * @param json             rapidjson value object which should contain user provided costing options
- * @param json_key         the json key to use to pull a user provided value out of the jsonn
- * @param option_name      the name of the option will be set on the costing options object
- */
-
-#define JSON_PBF_RANGED_DEFAULT(costing_options, range, json, json_key, option_name)                 \
-  {                                                                                                  \
-    costing_options->set_##option_name(                                                              \
-        range(rapidjson::get<decltype(range.def)>(json, json_key,                                    \
-                                                  costing_options->has_##option_name##_case()        \
-                                                      ? costing_options->option_name()               \
-                                                      : range.def)));                                \
-  }
-
-/**
- * same as above, but for costing options without pbf's awful oneof
- *
- * @param costing_options  pointer to protobuf costing options object
- * @param range            ranged_default_t object which will check any provided values are in range
- * @param json             rapidjson value object which should contain user provided costing options
- * @param json_key         the json key to use to pull a user provided value out of the jsonn
- * @param option_name      the name of the option will be set on the costing options object
- */
-
-#define JSON_PBF_RANGED_DEFAULT_V2(costing_options, range, json, json_key, option_name)              \
-  {                                                                                                  \
-    costing_options->set_##option_name(                                                              \
-        range(rapidjson::get<decltype(range.def)>(json, json_key,                                    \
-                                                  costing_options->option_name()                     \
-                                                      ? costing_options->option_name()               \
-                                                      : range.def)));                                \
-  }
-
-/**
- * this macro takes a default value and uses it when no user provided values exist (in json or in pbf)
- * to set the option on the costing options object
- *
- * @param costing_options  pointer to protobuf costing options object
- * @param def              the default value which is used when neither json nor pbf is provided
- * @param json             rapidjson value object which should contain user provided costing options
- * @param json_key         the json key to use to pull a user provided value out of the json
- * @param option_name      the name of the option will be set on the costing options object
- */
-
-#define JSON_PBF_DEFAULT(costing_options, def, json, json_key, option_name)                          \
-  {                                                                                                  \
-    costing_options->set_##option_name(                                                              \
-        rapidjson::get<std::remove_cv<std::remove_reference<decltype(def)>::type>::                  \
-                           type>(json, json_key,                                                     \
-                                 costing_options->has_##option_name##_case()                         \
-                                     ? costing_options->option_name()                                \
-                                     : def));                                                        \
-  }
-
-/**
- * same as above, but for costing options without pbf's awful oneof
- *
- * @param costing_options  pointer to protobuf costing options object
- * @param def              the default value which is used when neither json nor pbf is provided
- * @param json             rapidjson value object which should contain user provided costing options
- * @param json_key         the json key to use to pull a user provided value out of the json
- * @param option_name      the name of the option will be set on the costing options object
- */
-
-#define JSON_PBF_DEFAULT_V2(costing_options, def, json, json_key, option_name)                       \
-  {                                                                                                  \
-    costing_options->set_##option_name(                                                              \
-        rapidjson::get<std::remove_cv<                                                               \
-            std::remove_reference<decltype(def)>::type>::type>(json, json_key,                       \
-                                                               costing_options->option_name()        \
-                                                                   ? costing_options->option_name()  \
-                                                                   : def));                          \
-  }
+#include "autocost.h"
+#include "bicyclecost.h"
+#include "dynamiccost_const.h"
+#include "motorcyclecost.h"
+#include "motorscootercost.h"
+#include "nocost.h"
+#include "pedestriancost.h"
+#include "transitcost.h"
+#include "truckcost.h"
 
 namespace valhalla {
 namespace sif {
-
-const std::unordered_map<Costing::Type, std::vector<Costing::Type>> kCostingTypeMapping{
-    {Costing::none_, {Costing::none_}},
-    {Costing::bicycle, {Costing::bicycle}},
-    {Costing::bus, {Costing::bus}},
-    {Costing::motor_scooter, {Costing::motor_scooter}},
-    {Costing::multimodal, {Costing::multimodal, Costing::transit, Costing::pedestrian}},
-    {Costing::pedestrian, {Costing::pedestrian}},
-    {Costing::transit, {Costing::transit, Costing::pedestrian}},
-    {Costing::truck, {Costing::truck}},
-    {Costing::motorcycle, {Costing::motorcycle}},
-    {Costing::taxi, {Costing::taxi}},
-    {Costing::auto_, {Costing::auto_}},
-    {Costing::bikeshare, {Costing::bikeshare, Costing::pedestrian, Costing::bicycle}},
-};
-
-const sif::Cost kNoCost(0.0f, 0.0f);
-
-// Default unit size (seconds) for cost sorting.
-constexpr uint32_t kDefaultUnitSize = 1;
-
-// Maximum penalty allowed. Cannot be too high because sometimes one cannot avoid a particular
-// attribute or condition to complete a route.
-constexpr float kMaxPenalty = 12.0f * midgard::kSecPerHour; // 12 hours
-
-// Maximum ferry penalty (when use_ferry == 0 or use_rail_ferry == 0). Can't make this too large
-// since a ferry is sometimes required to complete a route.
-constexpr float kMaxFerryPenalty = 6.0f * midgard::kSecPerHour; // 6 hours
-
-// Default uturn costs
-constexpr float kTCUnfavorablePencilPointUturn = 15.f;
-constexpr float kTCUnfavorableUturn = 600.f;
-
-// Maximum highway avoidance bias (modulates the highway factors based on road class)
-constexpr float kMaxHighwayBiasFactor = 8.0f;
-
-/**
- * Mask values used in the allowed function by loki::reach to control how conservative
- * the decision should be. By default allowed methods will not disallow start/end/simple
- * restrictions/shortcuts and closures are determined by the costing configuration
- */
-constexpr uint16_t kDisallowNone = 0x0;
-constexpr uint16_t kDisallowStartRestriction = 0x1;
-constexpr uint16_t kDisallowEndRestriction = 0x2;
-constexpr uint16_t kDisallowSimpleRestriction = 0x4;
-constexpr uint16_t kDisallowClosure = 0x8;
-constexpr uint16_t kDisallowShortcut = 0x10;
-
-constexpr std::array<float, 253> populate_speedfactor() {
-  std::array<float, 253> speedfactor{};
-  speedfactor[0] = midgard::kSecPerHour; // TODO - what to make speed=0?
-  for (uint32_t s = 1; s <= baldr::kMaxSpeedKph; s++) {
-    speedfactor[s] = (midgard::kSecPerHour * 0.001f) / static_cast<float>(s);
-  }
-
-  return speedfactor;
-}
-constexpr std::array<float, 253> kSpeedFactor = populate_speedfactor();
-
-constexpr std::array<float, 16> populate_densityfactor() {
-  std::array<float, 16> densityfactor{};
-  // Set density factors - used to penalize edges in dense, urban areas
-  for (uint32_t d = 0; d < 16; d++) {
-    densityfactor[d] = 0.85f + (d * 0.025f);
-  }
-
-  return densityfactor;
-}
-constexpr std::array<float, 16> kDensityFactor = populate_densityfactor(); // Density factor
-
-constexpr std::array<float, 16> kTransDensityFactor = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.1f,
-                                                       1.2f, 1.3f, 1.4f, 1.6f, 1.9f, 2.2f,
-                                                       2.5f, 2.8f, 3.1f, 3.5f};
 
 /**
  * Base class for dynamic edge costing. This class defines the interface for
@@ -207,7 +41,7 @@ public:
               uint32_t access_mask,
               bool penalize_uturns = false);
 
-  virtual ~DynamicCost();
+  ~DynamicCost();
 
   DynamicCost(const DynamicCost&) = delete;
   DynamicCost& operator=(const DynamicCost&) = delete;
@@ -217,7 +51,7 @@ public:
    * hierarchy limits).
    * @return  Returns true if the costing model allows multiple passes.
    */
-  virtual bool AllowMultiPass() const;
+  bool AllowMultiPass() const;
 
   /**
    * Get the pass number.
@@ -241,20 +75,23 @@ public:
    * travel between transfers.
    * @return  max transfer distance multimodal
    */
-  virtual uint32_t GetMaxTransferDistanceMM();
+  uint32_t GetMaxTransferDistanceMM();
 
   /**
    * This method overrides the factor for this mode.  The lower the value
    * the more the mode is favored.
    * @return  mode factor
    */
-  virtual float GetModeFactor();
+  float GetModeFactor();
 
   /**
    * Get the access mode used by this costing method.
    * @return  Returns access mode.
    */
-  virtual uint32_t access_mode() const {
+  uint32_t access_mode() const {
+    if (costing_type_ == Costing::transit) {
+      return 0;
+    }
     return access_mask_;
   }
 
@@ -278,15 +115,15 @@ public:
    *
    * @return Returns true if access is allowed, false if not.
    */
-  virtual bool Allowed(const baldr::DirectedEdge* edge,
-                       const bool is_dest,
-                       const EdgeLabel& pred,
-                       const baldr::graph_tile_ptr& tile,
-                       const baldr::GraphId& edgeid,
-                       const uint64_t current_time,
-                       const uint32_t tz_index,
-                       uint8_t& restriction_idx,
-                       uint8_t& destonly_access_restr_mask) const = 0;
+  bool Allowed(const baldr::DirectedEdge* edge,
+               const bool is_dest,
+               const EdgeLabel& pred,
+               const baldr::graph_tile_ptr& tile,
+               const baldr::GraphId& edgeid,
+               const uint64_t current_time,
+               const uint32_t tz_index,
+               uint8_t& restriction_idx,
+               uint8_t& destonly_access_restr_mask) const;
 
   /**
    * Checks if access is allowed for an edge on the reverse path
@@ -306,15 +143,15 @@ public:
    * @param  tz_index       timezone index for the node
    * @return  Returns true if access is allowed, false if not.
    */
-  virtual bool AllowedReverse(const baldr::DirectedEdge* edge,
-                              const EdgeLabel& pred,
-                              const baldr::DirectedEdge* opp_edge,
-                              const baldr::graph_tile_ptr& tile,
-                              const baldr::GraphId& opp_edgeid,
-                              const uint64_t current_time,
-                              const uint32_t tz_index,
-                              uint8_t& restriction_idx,
-                              uint8_t& destonly_access_restr_mask) const = 0;
+  bool AllowedReverse(const baldr::DirectedEdge* edge,
+                      const EdgeLabel& pred,
+                      const baldr::DirectedEdge* opp_edge,
+                      const baldr::graph_tile_ptr& tile,
+                      const baldr::GraphId& opp_edgeid,
+                      const uint64_t current_time,
+                      const uint32_t tz_index,
+                      uint8_t& restriction_idx,
+                      uint8_t& destonly_access_restr_mask) const;
 
   /**
    * Checks if any edge exclusion is present.
@@ -342,9 +179,28 @@ public:
    * @param   node  Pointer to node information.
    * @return  Returns true if access is allowed, false if not.
    */
-  inline virtual bool Allowed(const baldr::NodeInfo* node) const {
+  inline bool Allowed(const baldr::NodeInfo* node) const {
+    if (costing_type_ == Costing::transit || costing_type_ == Costing::none_ ||
+        costing_type_ == Costing::multimodal) {
+      return true;
+    }
     return ((node->access() & access_mask_) || ignore_access_) &&
            !(exclude_cash_only_tolls_ && node->cash_only_toll());
+  }
+
+  inline bool AllowedDefault(const baldr::DirectedEdge* edge,
+                             const baldr::GraphTile* tile,
+                             uint16_t disallow_mask) const {
+    auto access_mask = (ignore_access_ ? baldr::kAllAccess : access_mask_);
+    bool accessible = (edge->forwardaccess() & access_mask) ||
+                      (ignore_oneways_ && (edge->reverseaccess() & access_mask));
+    bool assumed_restricted =
+        ((disallow_mask & kDisallowStartRestriction) && edge->start_restriction()) ||
+        ((disallow_mask & kDisallowEndRestriction) && edge->end_restriction()) ||
+        ((disallow_mask & kDisallowSimpleRestriction) && edge->restrictions()) ||
+        ((disallow_mask & kDisallowShortcut) && edge->is_shortcut());
+    return accessible && !assumed_restricted &&
+           ((edge->use() != baldr::Use::kConstruction) || ignore_construction_);
   }
 
   /**
@@ -360,19 +216,41 @@ public:
    * @param disallow_mask  a mask that controls additional properties that should disallow the edge
    * @return true if the edge is allowed to be used (either as a candidate or a reach traversal)
    */
-  inline virtual bool Allowed(const baldr::DirectedEdge* edge,
-                              const baldr::graph_tile_ptr&,
-                              uint16_t disallow_mask = kDisallowNone) const {
-    auto access_mask = (ignore_access_ ? baldr::kAllAccess : access_mask_);
-    bool accessible = (edge->forwardaccess() & access_mask) ||
-                      (ignore_oneways_ && (edge->reverseaccess() & access_mask));
-    bool assumed_restricted =
-        ((disallow_mask & kDisallowStartRestriction) && edge->start_restriction()) ||
-        ((disallow_mask & kDisallowEndRestriction) && edge->end_restriction()) ||
-        ((disallow_mask & kDisallowSimpleRestriction) && edge->restrictions()) ||
-        ((disallow_mask & kDisallowShortcut) && edge->is_shortcut());
-    return accessible && !assumed_restricted &&
-           ((edge->use() != baldr::Use::kConstruction) || ignore_construction_);
+  inline bool Allowed(const baldr::DirectedEdge* edge,
+                      const baldr::GraphTile* tile,
+                      uint16_t disallow_mask = kDisallowNone) const {
+    switch (costing_type_) {
+      case Costing::auto_:
+      case Costing::bus:
+      case Costing::taxi:
+      case Costing::motorcycle:
+      case Costing::motor_scooter:
+      case Costing::truck: {
+        bool allow_closures = (!filter_closures_ && !(disallow_mask & kDisallowClosure)) ||
+                              !(flow_mask_ & baldr::kCurrentFlowMask);
+        return AllowedDefault(edge, tile, disallow_mask) && !edge->bss_connection() &&
+               (allow_closures || !tile->IsClosed(edge)) &&
+               (costing_type_ == Costing::auto_ ? auto_cost_.IsHOVAllowed(edge) : true);
+      }
+      case Costing::bicycle:
+        return AllowedDefault(edge, tile, disallow_mask) && !edge->bss_connection() &&
+               edge->use() != baldr::Use::kSteps &&
+               (bicycle_cost_.avoid_bad_surfaces_ != 1.0f ||
+                edge->surface() <= bicycle_cost_.worst_allowed_surface_);
+      case Costing::pedestrian:
+      case Costing::bikeshare:
+        return AllowedDefault(edge, tile, disallow_mask) && edge->use() < baldr::Use::kRailFerry &&
+               edge->sac_scale() <= pedestrian_cost_.max_hiking_difficulty_ &&
+               (!edge->bss_connection() || pedestrian_cost_.project_on_bss_connection);
+      case Costing::transit:
+        return AllowedDefault(edge, tile, disallow_mask) && edge->use() < baldr::Use::kFerry &&
+               !edge->bss_connection();
+      case Costing::none_:
+      case Costing::multimodal:
+        return !(edge->is_shortcut() || edge->IsTransitLine());
+      default:
+        return AllowedDefault(edge, tile, disallow_mask);
+    }
   }
 
   /**
@@ -381,7 +259,11 @@ public:
    * @param   edge  Pointer to edge information.
    * @return  Returns true if access is allowed, false if not.
    */
-  inline virtual bool IsAccessible(const baldr::DirectedEdge* edge) const {
+  inline bool IsAccessible(const baldr::DirectedEdge* edge) const {
+    if (costing_type_ == Costing::none_ || costing_type_ == Costing::multimodal) {
+      return true;
+    }
+
     // you can go on it if:
     // you have forward access for the mode you care about
     // you dont care about what mode has access so long as its forward
@@ -393,8 +275,15 @@ public:
            (ignore_construction_ && edge->use() == baldr::Use::kConstruction);
   }
 
-  inline virtual bool ModeSpecificAllowed(const baldr::AccessRestriction&) const {
-    return true;
+  inline bool ModeSpecificAllowed(const baldr::AccessRestriction& restriction) const {
+    if (costing_type_ == Costing::auto_ || costing_type_ == Costing::bus ||
+        costing_type_ == Costing::taxi) {
+      return auto_cost_.ModeSpecificAllowed(restriction);
+    } else if (costing_type_ == Costing::truck) {
+      return truck_cost_.ModeSpecificAllowed(restriction);
+    } else {
+      return true;
+    }
   }
 
   /**
@@ -406,9 +295,9 @@ public:
    * @param   curr_time Current local time (seconds from midnight).
    * @return  Returns the cost and time (seconds)
    */
-  virtual Cost EdgeCost(const baldr::DirectedEdge* edge,
-                        const baldr::TransitDeparture* departure,
-                        const uint32_t curr_time) const = 0;
+  Cost EdgeCost(const baldr::DirectedEdge* edge,
+                const baldr::TransitDeparture* departure,
+                const uint32_t curr_time) const;
 
   /**
    * Get the cost to traverse the specified directed edge. Cost includes
@@ -420,10 +309,10 @@ public:
    * @param   flow_sources  Which speed sources were used in this speed calculation.
    * @return  Returns the cost and time (seconds).
    */
-  virtual Cost EdgeCost(const baldr::DirectedEdge* edge,
-                        const baldr::graph_tile_ptr& tile,
-                        const baldr::TimeInfo& time_info,
-                        uint8_t& flow_sources) const = 0;
+  Cost EdgeCost(const baldr::DirectedEdge* edge,
+                const baldr::graph_tile_ptr& tile,
+                const baldr::TimeInfo& time_info,
+                uint8_t& flow_sources) const;
 
   /**
    * Get the cost to traverse the specified directed edge. Cost includes
@@ -432,7 +321,7 @@ public:
    * @param   tile    Pointer to the tile which contains the directed edge for speed lookup
    * @return  Returns the cost and time (seconds).
    */
-  virtual Cost EdgeCost(const baldr::DirectedEdge* edge, const baldr::graph_tile_ptr& tile) const;
+  Cost EdgeCost(const baldr::DirectedEdge* edge, const baldr::graph_tile_ptr& tile) const;
 
   /**
    * Returns the cost to make the transition from the predecessor edge.
@@ -445,11 +334,11 @@ public:
    * @param   reader   Grahpreader to get the tile containing the predecessor if needed
    * @return  Returns the cost and time (seconds)
    */
-  virtual Cost TransitionCost(const baldr::DirectedEdge* edge,
-                              const baldr::NodeInfo* node,
-                              const EdgeLabel& pred,
-                              const baldr::graph_tile_ptr& tile,
-                              const std::function<baldr::LimitedGraphReader()>& reader_getter) const;
+  Cost TransitionCost(const baldr::DirectedEdge* edge,
+                      const baldr::NodeInfo* node,
+                      const EdgeLabel& pred,
+                      const baldr::graph_tile_ptr& tile,
+                      const std::function<baldr::LimitedGraphReader()>& reader_getter) const;
 
   /**
    * Returns the cost to make the transition from the predecessor edge
@@ -469,15 +358,15 @@ public:
    * @param  internal_turn      Did we make a uturn on a short internal edge?
    * @return                    Returns the cost and time (seconds)
    */
-  virtual Cost TransitionCostReverse(const uint32_t idx,
-                                     const baldr::NodeInfo* node,
-                                     const baldr::DirectedEdge* opp_edge,
-                                     const baldr::DirectedEdge* opp_pred_edge,
-                                     const baldr::graph_tile_ptr& tile,
-                                     const baldr::GraphId& pred_id,
-                                     const std::function<baldr::LimitedGraphReader()>& reader_getter,
-                                     const bool has_measured_speed = false,
-                                     const InternalTurn internal_turn = InternalTurn::kNoTurn) const;
+  Cost TransitionCostReverse(const uint32_t idx,
+                             const baldr::NodeInfo* node,
+                             const baldr::DirectedEdge* opp_edge,
+                             const baldr::DirectedEdge* opp_pred_edge,
+                             const baldr::graph_tile_ptr& tile,
+                             const baldr::GraphId& pred_id,
+                             const std::function<baldr::LimitedGraphReader()>& reader_getter,
+                             const bool has_measured_speed = false,
+                             const InternalTurn internal_turn = InternalTurn::kNoTurn) const;
 
   /**
    * Test if an edge should be restricted due to a complex restriction.
@@ -819,7 +708,7 @@ public:
    * @param  internal_turn              Did we make an internal turn on the previous edge.
    * @param  seconds      Time.
    */
-  inline void AddUturnPenalty(const uint32_t idx,
+  void AddUturnPenalty(const uint32_t idx,
                               const baldr::NodeInfo* node,
                               const baldr::DirectedEdge* edge,
                               const bool has_reverse,
@@ -827,40 +716,19 @@ public:
                               const bool has_right,
                               const bool penalize_internal_uturns,
                               const InternalTurn internal_turn,
-                              float& seconds) const {
-
-    if (node->drive_on_right()) {
-      // Did we make a uturn on a short, internal edge or did we make a uturn at a node.
-      if (has_reverse ||
-          (penalize_internal_uturns && internal_turn == InternalTurn::kLeftTurn && has_left))
-        seconds += kTCUnfavorableUturn;
-      // Did we make a pencil point uturn?
-      else if (edge->turntype(idx) == baldr::Turn::Type::kSharpLeft && edge->edge_to_right(idx) &&
-               !edge->edge_to_left(idx) && edge->named() && edge->name_consistency(idx))
-        seconds *= kTCUnfavorablePencilPointUturn;
-    } else {
-      // Did we make a uturn on a short, internal edge or did we make a uturn at a node.
-      if (has_reverse ||
-          (penalize_internal_uturns && internal_turn == InternalTurn::kRightTurn && has_right))
-        seconds += kTCUnfavorableUturn;
-      // Did we make a pencil point uturn?
-      else if (edge->turntype(idx) == baldr::Turn::Type::kSharpRight && !edge->edge_to_right(idx) &&
-               edge->edge_to_left(idx) && edge->named() && edge->name_consistency(idx))
-        seconds *= kTCUnfavorablePencilPointUturn;
-    }
-  }
+                              float& seconds) const;
 
   /**
    * Returns the transfer cost between 2 transit stops.
    * @return  Returns the transfer cost and time (seconds).
    */
-  virtual Cost TransferCost() const;
+  Cost TransferCost() const;
 
   /**
    * Returns the default transfer cost between 2 transit lines.
    * @return  Returns the transfer cost and time (seconds).
    */
-  virtual Cost DefaultTransferCost() const;
+  Cost DefaultTransferCost() const;
 
   /**
    * Get the cost factor for A* heuristics. This factor is multiplied
@@ -871,7 +739,7 @@ public:
    * estimate is less than the least possible time along roads.
    * @return  Returns the cost factor used in the A* heuristic.
    */
-  virtual float AStarCostFactor() const = 0;
+  float AStarCostFactor() const;
 
   /**
    * Get the general unit size that can be considered as equal for sorting
@@ -883,19 +751,19 @@ public:
    * Defaults to 1 (second).
    * @return  Returns unit size.
    */
-  virtual uint32_t UnitSize() const;
+  uint32_t UnitSize() const;
 
   /**
    * Sets the flag indicating whether destination only edges are allowed.
    * Bidirectional path algorithms can (usually) disable access.
    */
-  virtual void set_allow_destination_only(const bool allow);
+  void set_allow_destination_only(const bool allow);
 
   /**
    * Set to allow use of transit connections.
    * @param  allow  Flag indicating whether transit connections are allowed.
    */
-  virtual void SetAllowTransitConnections(const bool allow);
+  void SetAllowTransitConnections(const bool allow);
 
   /**
    * Sets the flag indicating whether edges with valid restriction conditional=destination are
@@ -919,27 +787,27 @@ public:
    * Get the current travel type.
    * @return  Returns the current travel type.
    */
-  virtual uint8_t travel_type() const;
+  uint8_t travel_type() const;
 
   /**
    * Is the current vehicle type HGV?
    * @return  Returns whether it's a truck.
    */
   bool is_hgv() const {
-    return is_hgv_;
+    return costing_type_ == Costing::truck;
   }
 
   /**
    * Get the wheelchair required flag.
    * @return  Returns true if wheelchair is required.
    */
-  virtual bool wheelchair() const;
+  bool wheelchair() const;
 
   /**
    * Get the bicycle required flag.
    * @return  Returns true if bicycle is required.
    */
-  virtual bool bicycle() const;
+  bool bicycle() const;
 
   /**
    * Gets the hierarchy limits.
@@ -960,19 +828,19 @@ public:
   /**
    * Checks if we should exclude or not.
    */
-  virtual void AddToExcludeList(const baldr::graph_tile_ptr& tile);
+  void AddToExcludeList(const baldr::graph_tile_ptr& tile);
 
   /**
    * Checks if we should exclude or not.
    * @return  Returns true if we should exclude, false if not.
    */
-  virtual bool IsExcluded(const baldr::graph_tile_ptr& tile, const baldr::DirectedEdge* edge);
+  bool IsExcluded(const baldr::graph_tile_ptr& tile, const baldr::DirectedEdge* edge);
 
   /**
    * Checks if we should exclude or not.
    * @return  Returns true if we should exclude, false if not.
    */
-  virtual bool IsExcluded(const baldr::graph_tile_ptr& tile, const baldr::NodeInfo* node);
+  bool IsExcluded(const baldr::graph_tile_ptr& tile, const baldr::NodeInfo* node);
 
   /**
    * Adds a list of edges (GraphIds) to the user specified avoid list.
@@ -1030,16 +898,23 @@ public:
     return flow_mask_;
   }
 
-  virtual Cost BSSCost() const;
+  Cost BSSCost() const;
 
   /*
    * Determine whether an edge is currently closed due to traffic.
    * @param  edgeid         GraphId of the opposing edge.
    * @return  Returns true if the edge is closed due to live traffic constraints, false if not.
    */
-  inline virtual bool IsClosed(const baldr::DirectedEdge* edge,
-                               const baldr::graph_tile_ptr& tile) const {
-    return !ignore_closures_ && (flow_mask_ & baldr::kCurrentFlowMask) && tile->IsClosed(edge);
+  inline bool IsClosed(const baldr::DirectedEdge* edge, const baldr::graph_tile_ptr& tile) const {
+    switch (costing_type_) {
+      case Costing_Type::bicycle:
+      case Costing_Type::pedestrian:
+      case Costing_Type::transit:
+      case Costing_Type::none_:
+        return false;
+      default:
+        return !ignore_closures_ && (flow_mask_ & baldr::kCurrentFlowMask) && tile->IsClosed(edge);
+    }
   }
 
   float SpeedPenalty(const baldr::DirectedEdge* edge,
@@ -1073,24 +948,25 @@ public:
     return use_hierarchy_limits;
   }
 
-protected:
   /**
    * Calculate `track` costs based on tracks preference.
    * @param use_tracks value of tracks preference in range [0; 1]
    */
-  virtual void set_use_tracks(float use_tracks);
+  void set_use_tracks(float use_tracks);
 
   /**
    * Calculate `living_street` costs based on living streets preference.
    * @param use_living_streets value of living streets preference in range [0; 1]
    */
-  virtual void set_use_living_streets(float use_living_streets);
+  void set_use_living_streets(float use_living_streets);
 
   /**
    * Calculate `lit` costs based on lit preference.
    * @param use_lit value of lit preference in range [0; 1]
    */
-  virtual void set_use_lit(float use_lit);
+  void set_use_lit(float use_lit);
+
+  Costing_Type costing_type_;
 
   // Algorithm pass
   uint32_t pass_;
@@ -1182,13 +1058,14 @@ protected:
 
   bool exclude_cash_only_tolls_{false};
 
-  // HOT/HOV flags
-  bool include_hot_{false};
-  bool include_hov2_{false};
-  bool include_hov3_{false};
-
-  // Is it truck?
-  bool is_hgv_{false};
+  AutoCost auto_cost_;
+  BicycleCost bicycle_cost_;
+  MotorcycleCost motorcycle_cost_;
+  MotorScooterCost motor_scooter_cost_;
+  PedestrianCost pedestrian_cost_;
+  TransitCost transit_cost_;
+  TruckCost truck_cost_;
+  NoCost no_cost_;
 
   /**
    * Get the base transition costs (and ferry factor) from the costing options.
@@ -1316,6 +1193,59 @@ protected:
                                  const baldr::DirectedEdge* edge,
                                  const predecessor_t* pred,
                                  const uint32_t idx) const {
+
+    if (costing_type_ == Costing_Type::pedestrian || costing_type_ == Costing_Type::bikeshare) {
+      // TODO CLEANUP - remove duplicate code
+
+      /**
+       * Override the base transition cost to not add maneuver penalties onto transit edges.
+       * Base transition cost that all costing methods use. Includes costs for
+       * country crossing, boarding a ferry, toll booth, gates, entering destination
+       * only, alleys, and maneuver penalties. Each costing method can provide different
+       * costs for these transitions (via costing options).
+       *
+       * The template allows us to treat edgelabels and directed edges the same. The unidirectinal
+       * path algorithms dont have access to the directededge from the label but they have the same
+       * function names. At the moment we could change edgelabel to keep the edge pointer because
+       * we dont clear tiles while the algorithm is running but for embedded use-cases we might one
+       * day do that so its best to keep support for labels and edges here
+       *
+       * @param node Node at the intersection where the edge transition occurs.
+       * @param edge Directed edge entering.
+       * @param pred Predecessor edge.
+       * @param idx  Index used for name consistency.
+       * @return Returns the transition cost (cost, elapsed time).
+       */
+      // Cases with both time and penalty: country crossing, ferry, gate, toll booth
+      sif::Cost c;
+      c += country_crossing_cost_ * (node->type() == baldr::NodeType::kBorderControl);
+      c += gate_cost_ * (node->type() == baldr::NodeType::kGate) * (!node->tagged_access());
+      c += private_access_cost_ * (node->type() == baldr::NodeType::kGate) * node->private_access();
+      c += bike_share_cost_ * (node->type() == baldr::NodeType::kBikeShare);
+      c += ferry_transition_cost_ *
+           (edge->use() == baldr::Use::kFerry && pred->use() != baldr::Use::kFerry);
+      c += rail_ferry_transition_cost_ *
+           (edge->use() == baldr::Use::kRailFerry && pred->use() != baldr::Use::kRailFerry);
+
+      // Additional penalties without any time cost
+      c.cost += destination_only_penalty_ * (edge->destonly() && !pred->destonly());
+      c.cost +=
+          alley_penalty_ * (edge->use() == baldr::Use::kAlley && pred->use() != baldr::Use::kAlley);
+      c.cost += maneuver_penalty_ * (!edge->link() && edge->use() != baldr::Use::kEgressConnection &&
+                                     edge->use() != baldr::Use::kPlatformConnection &&
+                                     !edge->name_consistency(idx));
+      c.cost += living_street_penalty_ * (edge->use() == baldr::Use::kLivingStreet &&
+                                          pred->use() != baldr::Use::kLivingStreet);
+      c.cost +=
+          track_penalty_ * (edge->use() == baldr::Use::kTrack && pred->use() != baldr::Use::kTrack);
+      c.cost += service_penalty_ *
+                (edge->use() == baldr::Use::kServiceRoad && pred->use() != baldr::Use::kServiceRoad);
+
+      // shortest ignores any penalties in favor of path length
+      c.cost *= !shortest_;
+      return c;
+    }
+
     // Cases with both time and penalty: country crossing, ferry, rail_ferry, gate, toll booth
     sif::Cost c;
     c += country_crossing_cost_ * (node->type() == baldr::NodeType::kBorderControl);
@@ -1355,6 +1285,55 @@ protected:
 
 using cost_ptr_t = std::shared_ptr<DynamicCost>;
 using mode_costing_t = std::array<cost_ptr_t, static_cast<size_t>(TravelMode_ARRAYSIZE)>;
+
+inline cost_ptr_t CreateNoCost(const Costing& costing) {
+  return std::make_shared<DynamicCost>(costing, TravelMode::kDrive, baldr::kAllAccess);
+}
+
+inline cost_ptr_t CreateMotorScooterCost(const Costing& costing_options) {
+  return std::make_shared<DynamicCost>(costing_options, TravelMode::kDrive, baldr::kMopedAccess);
+}
+
+inline cost_ptr_t CreateAutoCost(const Costing& costing_options) {
+  return std::make_shared<DynamicCost>(costing_options, TravelMode::kDrive, baldr::kAutoAccess | baldr::kHOVAccess, true);
+}
+
+inline cost_ptr_t CreateBusCost(const Costing& costing_options) {
+  return std::make_shared<DynamicCost>(costing_options, TravelMode::kDrive, baldr::kBusAccess, true);
+}
+
+inline cost_ptr_t CreateTaxiCost(const Costing& costing_options) {
+  return std::make_shared<DynamicCost>(costing_options, TravelMode::kDrive, baldr::kTaxiAccess, true);
+}
+
+inline cost_ptr_t CreateBicycleCost(const Costing& costing_options) {
+  return std::make_shared<DynamicCost>(costing_options, TravelMode::kBicycle, baldr::kBicycleAccess);
+}
+
+inline cost_ptr_t CreateMotorcycleCost(const Costing& costing_options) {
+  return std::make_shared<DynamicCost>(costing_options, TravelMode::kDrive, baldr::kMotorcycleAccess);
+}
+
+inline cost_ptr_t CreatePedestrianCost(const Costing& costing_options) {
+  return std::make_shared<DynamicCost>(costing_options, TravelMode::kPedestrian,
+                                       baldr::kPedestrianAccess);
+}
+
+inline cost_ptr_t CreateBikeShareCost(const Costing& costing_options) {
+  auto cost_ptr = std::make_shared<DynamicCost>(costing_options, TravelMode::kPedestrian,
+                                                baldr::kPedestrianAccess);
+  cost_ptr->pedestrian_cost_.project_on_bss_connection = true;
+  return cost_ptr;
+}
+
+inline cost_ptr_t CreateTruckCost(const Costing& costing_options) {
+  return std::make_shared<DynamicCost>(costing_options, TravelMode::kDrive, baldr::kTruckAccess, true);
+}
+
+inline cost_ptr_t CreateTransitCost(const Costing& costing_options) {
+  return std::make_shared<DynamicCost>(costing_options, TravelMode::kPublicTransit,
+                                       baldr::kPedestrianAccess);
+}
 
 /*
  * Structure that stores default values for costing options that are common for most costing models.
