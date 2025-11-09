@@ -1,4 +1,3 @@
-
 #include "baldr/accessrestriction.cc"
 #include "baldr/admin.cc"
 #include "baldr/attributes_controller.cc"

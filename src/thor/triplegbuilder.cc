@@ -1587,7 +1587,7 @@ TripLeg_Edge* AddTripEdge(const AttributesController& controller,
   // Process transit information
   if (edge_itr->trip_id && (directededge->use() == Use::kRail || directededge->use() == Use::kBus)) {
 
-    TransitRouteInfo* transit_route_info = trip_edge->mutable_transit_route_info();
+    valhalla::TransitRouteInfo* transit_route_info = trip_edge->mutable_transit_route_info();
 
     // Set block_id if requested
     if (controller(kEdgeTransitRouteInfoBlockId)) {

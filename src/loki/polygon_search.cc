@@ -148,9 +148,9 @@ std::unordered_set<vb::GraphId> edges_in_rings(const std::vector<valhalla::Ring>
         baldr::GraphId opp_id;
 
         // bail if we wouldnt be allowed on this edge anyway (or its opposing)
-        if (!costing->Allowed(edge, tile) &&
+        if (!costing->Allowed(edge, tile.get()) &&
             (!(opp_id = reader.GetOpposingEdgeId(edge_id, opp_edge, opp_tile)).Is_Valid() ||
-             !costing->Allowed(opp_edge, opp_tile))) {
+             !costing->Allowed(opp_edge, opp_tile.get()))) {
           continue;
         }
 

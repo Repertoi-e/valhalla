@@ -74,7 +74,7 @@ directed_reach Reach::operator()(const DirectedEdge* edge,
   Clear();
   graph_tile_ptr tile, start_tile = reader.GetGraphTile(edge_id);
   if ((tile = start_tile) &&
-      costing->Allowed(edge, tile, sif::kDisallowSimpleRestriction | sif::kDisallowShortcut))
+      costing->Allowed(edge, tile.get(), sif::kDisallowSimpleRestriction | sif::kDisallowShortcut))
     enqueue(edge->endnode(), reader, costing, tile);
 
   // get outbound reach by doing a simple forward expansion until you either hit the max_reach
@@ -95,7 +95,7 @@ directed_reach Reach::operator()(const DirectedEdge* edge,
       // potential stopping point (maybe a path followed the restriction)
 
       // if this edge is traversable we enqueue its end node
-      if (costing->Allowed(&edge, tile, forward_disallow_mask))
+      if (costing->Allowed(&edge, tile.get(), forward_disallow_mask))
         enqueue(edge.endnode(), reader, costing, tile);
     }
   }
@@ -109,7 +109,7 @@ directed_reach Reach::operator()(const DirectedEdge* edge,
 
   // seed the expansion with a place to start expanding from, tile may have changed so reset it
   Clear();
-  if ((tile = start_tile) && costing->Allowed(edge, tile, sif::kDisallowShortcut))
+  if ((tile = start_tile) && costing->Allowed(edge, tile.get(), sif::kDisallowShortcut))
     enqueue(reader.GetBeginNodeId(edge, tile), reader, costing, tile);
 
   // get inbound reach by doing a simple reverse expansion until you either hit the max_reach
@@ -136,7 +136,7 @@ directed_reach Reach::operator()(const DirectedEdge* edge,
       // at the start of a simple restriction because it could have been on our path
 
       // if this opposing edge is traversable we enqueue its begin node
-      if (costing->Allowed(opp_edge, tile, reverse_disallow_mask))
+      if (costing->Allowed(opp_edge, tile.get(), reverse_disallow_mask))
         enqueue(edge.endnode(), reader, costing, tile);
     }
   }
@@ -166,7 +166,7 @@ directed_reach Reach::exact(const valhalla::baldr::DirectedEdge* edge,
   directed_reach reach{};
 
   graph_tile_ptr tile = reader.GetGraphTile(edge_id);
-  if (!tile || !costing->Allowed(edge, tile, sif::kDisallowShortcut)) {
+  if (!tile || !costing->Allowed(edge, tile.get(), sif::kDisallowShortcut)) {
     return reach;
   }
 

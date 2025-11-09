@@ -5,6 +5,7 @@
 #include "proto_conversions.h"
 #include "sif/autocost.h"
 #include "sif/bicyclecost.h"
+#include "sif/dynamiccost.h"
 #include "sif/hierarchylimits.h"
 #include "sif/motorcyclecost.h"
 #include "sif/motorscootercost.h"
@@ -119,8 +120,8 @@ BaseCostingOptionsConfig::BaseCostingOptionsConfig()
     : dest_only_penalty_{0.f, kDefaultDestinationOnlyPenalty, kMaxPenalty},
       maneuver_penalty_{0.f, kDefaultManeuverPenalty, kMaxPenalty},
       alley_penalty_{0.f, kDefaultAlleyPenalty, kMaxPenalty},
-      gate_cost_{0.f, kDefaultGateCost, kMaxPenalty}, gate_penalty_{0.f, kDefaultGatePenalty,
-                                                                    kMaxPenalty},
+      gate_cost_{0.f, kDefaultGateCost, kMaxPenalty},
+      gate_penalty_{0.f, kDefaultGatePenalty, kMaxPenalty},
       private_access_penalty_{0.f, kDefaultPrivateAccessPenalty, kMaxPenalty},
       country_crossing_cost_{0.f, kDefaultCountryCrossingCost, kMaxPenalty},
       country_crossing_penalty_{0.f, kDefaultCountryCrossingPenalty, kMaxPenalty},
@@ -128,26 +129,23 @@ BaseCostingOptionsConfig::BaseCostingOptionsConfig()
       toll_booth_penalty_{0.f, kDefaultTollBoothPenalty, kMaxPenalty},
       ferry_cost_{0.f, kDefaultFerryCost, kMaxPenalty}, use_ferry_{0.f, kDefaultUseFerry, 1.f},
       rail_ferry_cost_{0.f, kDefaultRailFerryCost, kMaxPenalty},
-      use_rail_ferry_{0.f, kDefaultUseRailFerry, 1.f}, service_penalty_{0.f, kDefaultServicePenalty,
-                                                                        kMaxPenalty},
-      service_factor_{kMinFactor, kDefaultServiceFactor, kMaxFactor}, use_tracks_{0.f,
-                                                                                  kDefaultUseTracks,
-                                                                                  1.f},
+      use_rail_ferry_{0.f, kDefaultUseRailFerry, 1.f},
+      service_penalty_{0.f, kDefaultServicePenalty, kMaxPenalty},
+      service_factor_{kMinFactor, kDefaultServiceFactor, kMaxFactor},
+      use_tracks_{0.f, kDefaultUseTracks, 1.f},
       use_living_streets_{0.f, kDefaultUseLivingStreets, 1.f}, use_lit_{0.f, kDefaultUseLit, 1.f},
       closure_factor_{kClosureFactorRange}, exclude_unpaved_(false), exclude_bridges_(false),
       exclude_tunnels_(false), exclude_tolls_(false), exclude_highways_(false),
-      exclude_ferries_(false), has_excludes_(false),
-      exclude_cash_only_tolls_(false), include_hot_{false}, include_hov2_{false}, include_hov3_{
-                                                                                      false} {
+      exclude_ferries_(false), has_excludes_(false), exclude_cash_only_tolls_(false) {
 }
 
 DynamicCost::DynamicCost(const Costing& costing,
                          const TravelMode mode,
                          uint32_t access_mask,
                          bool penalize_uturns)
-    : pass_(0), allow_transit_connections_(false), allow_destination_only_(true),
-      allow_conditional_destination_(false), travel_mode_(mode), access_mask_(access_mask),
-      closure_factor_(kDefaultClosureFactor), flow_mask_(kDefaultFlowMask),
+    : costing_type_(costing.type()), pass_(0), allow_transit_connections_(false),
+      allow_destination_only_(true), allow_conditional_destination_(false), travel_mode_(mode),
+      access_mask_(access_mask), closure_factor_(kDefaultClosureFactor), flow_mask_(kDefaultFlowMask),
       shortest_(costing.options().shortest()),
       ignore_restrictions_(costing.options().ignore_restrictions()),
       ignore_non_vehicular_restrictions_(costing.options().ignore_non_vehicular_restrictions()),
@@ -159,7 +157,7 @@ DynamicCost::DynamicCost(const Costing& costing,
       ignore_construction_(costing.options().ignore_construction()),
       top_speed_(costing.options().top_speed()), fixed_speed_(costing.options().fixed_speed()),
       filter_closures_(ignore_closures_ ? false : costing.filter_closures()),
-      penalize_uturns_(penalize_uturns), is_hgv_(costing.type() == Costing::truck) {
+      penalize_uturns_(penalize_uturns) {
 
   // set user supplied hierarchy limits if present, fill the other
   // required levels up with sentinel values (clamping to config supplied limits/defaults is handled
@@ -183,16 +181,57 @@ DynamicCost::DynamicCost(const Costing& costing,
   for (auto& edge : costing.options().exclude_edges()) {
     user_exclude_edges_.insert({GraphId(edge.id()), edge.percent_along()});
   }
+
+  switch (costing_type_) {
+    case Costing::auto_:
+    case Costing::bus:
+    case Costing::taxi:
+      auto_cost_ = AutoCost(this, costing);
+      break;
+    case Costing::bicycle:
+      bicycle_cost_ = BicycleCost(this, costing);
+      break;
+    case Costing::motorcycle:
+      motorcycle_cost_ = MotorcycleCost(this, costing);
+      break;
+    case Costing::motor_scooter:
+      motor_scooter_cost_ = MotorScooterCost(this, costing);
+      break;
+    case Costing::pedestrian:
+    case Costing::bikeshare:
+      pedestrian_cost_ = PedestrianCost(this, costing);
+      break;
+    case Costing::transit:
+      transit_cost_ = TransitCost(this, costing);
+      break;
+    case Costing::truck:
+      truck_cost_ = TruckCost(this, costing);
+      break;
+    case Costing::none_:
+    case Costing::multimodal:
+      no_cost_ = NoCost();
+  }
 }
 
 DynamicCost::~DynamicCost() {
 }
 
-// Does the costing method allow multiple passes (with relaxed hierarchy
 // limits). Defaults to false. Costing methods that wish to allow multiple
 // passes with relaxed hierarchy transitions must override this method.
 bool DynamicCost::AllowMultiPass() const {
-  return false;
+  switch (costing_type_) {
+    case Costing::auto_:
+    case Costing::taxi:
+    case Costing::bus:
+    case Costing::motorcycle:
+    case Costing::motor_scooter:
+    case Costing::pedestrian:
+    case Costing::bikeshare:
+    case Costing::truck:
+      return true;
+    default:
+      return false;
+  }
 }
 
 // We provide a convenience method for those algorithms which dont have time components or aren't
@@ -204,46 +243,58 @@ Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge, const graph_tile_ptr
   return EdgeCost(edge, tile, TimeInfo::invalid(), flow_sources);
 }
 
-// Returns the cost to make the transition from the predecessor edge.
-// Defaults to 0. Costing models that wish to include edge transition
-// costs (i.e., intersection/turn costs) must override this method.
-Cost DynamicCost::TransitionCost(const DirectedEdge*,
-                                 const NodeInfo*,
-                                 const EdgeLabel&,
-                                 const graph_tile_ptr&,
-                                 const std::function<baldr::LimitedGraphReader()>&) const {
-  return {0.0f, 0.0f};
-}
-
-// Returns the cost to make the transition from the predecessor edge
-// when using a reverse search (from destination towards the origin).
-// Defaults to 0. Costing models that wish to include edge transition
-// costs (i.e., intersection/turn costs) must override this method.
-Cost DynamicCost::TransitionCostReverse(const uint32_t,
-                                        const baldr::NodeInfo*,
-                                        const baldr::DirectedEdge*,
-                                        const baldr::DirectedEdge*,
-                                        const graph_tile_ptr&,
-                                        const baldr::GraphId&,
-                                        const std::function<baldr::LimitedGraphReader()>&,
-                                        const bool,
-                                        const InternalTurn) const {
-  return {0.0f, 0.0f};
+void DynamicCost::AddUturnPenalty(const uint32_t idx,
+                                  const baldr::NodeInfo* node,
+                                  const baldr::DirectedEdge* edge,
+                                  const bool has_reverse,
+                                  const bool has_left,
+                                  const bool has_right,
+                                  const bool penalize_internal_uturns,
+                                  const InternalTurn internal_turn,
+                                  float& seconds) const {
+  if (node->drive_on_right()) {
+    // Did we make a uturn on a short, internal edge or did we make a uturn at a node.
+    if (has_reverse ||
+        (penalize_internal_uturns && internal_turn == InternalTurn::kLeftTurn && has_left))
+      seconds += kTCUnfavorableUturn;
+    // Did we make a pencil point uturn?
+    else if (edge->turntype(idx) == baldr::Turn::Type::kSharpLeft && edge->edge_to_right(idx) &&
+             !edge->edge_to_left(idx) && edge->named() && edge->name_consistency(idx))
+      seconds *= kTCUnfavorablePencilPointUturn;
+  } else {
+    // Did we make a uturn on a short, internal edge or did we make a uturn at a node.
+    if (has_reverse ||
+        (penalize_internal_uturns && internal_turn == InternalTurn::kRightTurn && has_right))
+      seconds += kTCUnfavorableUturn;
+    // Did we make a pencil point uturn?
+    else if (edge->turntype(idx) == baldr::Turn::Type::kSharpRight && !edge->edge_to_right(idx) &&
+             edge->edge_to_left(idx) && edge->named() && edge->name_consistency(idx))
+      seconds *= kTCUnfavorablePencilPointUturn;
+  }
 }
 
 // Returns the transfer cost between 2 transit stops.
 Cost DynamicCost::TransferCost() const {
+  if (costing_type_ == Costing::transit) {
+    return transit_cost_.TransferCost();
+  }
   return {0.0f, 0.0f};
 }
 
 // Returns the default transfer cost between 2 transit stops.
 Cost DynamicCost::DefaultTransferCost() const {
+  if (costing_type_ == Costing::transit) {
+    return transit_cost_.DefaultTransferCost();
+  }
   return {0.0f, 0.0f};
 }
 
 // Get the general unit size that can be considered as equal for sorting
 // purposes. Defaults to 1 (second).
 uint32_t DynamicCost::UnitSize() const {
+  if (costing_type_ == Costing::transit) {
+    return transit_cost_.UnitSize();
+  }
   return kDefaultUnitSize;
 }
 
@@ -266,13 +317,282 @@ void DynamicCost::set_allow_conditional_destination(const bool allow) {
 // to travel for this mode.  It is the max distance you are willing to
 // travel between transfers.
 uint32_t DynamicCost::GetMaxTransferDistanceMM() {
+  if (costing_type_ == Costing::pedestrian || costing_type_ == Costing::bikeshare) {
+    return pedestrian_cost_.GetMaxTransferDistanceMM();
+  }
   return 0;
 }
 
 // This method overrides the factor for this mode.  The lower the value
 // the more the mode is favored.
 float DynamicCost::GetModeFactor() {
+  if (costing_type_ == Costing::pedestrian || costing_type_ == Costing::bikeshare) {
+    return pedestrian_cost_.GetModeFactor();
+  } else if (costing_type_ == Costing::transit) {
+    return transit_cost_.GetModeFactor();
+  }
   return 1.0f;
+}
+
+bool DynamicCost::Allowed(const baldr::DirectedEdge* edge,
+                          const bool is_dest,
+                          const EdgeLabel& pred,
+                          const baldr::graph_tile_ptr& tile,
+                          const baldr::GraphId& edgeid,
+                          const uint64_t current_time,
+                          const uint32_t tz_index,
+                          uint8_t& restriction_idx,
+                          uint8_t& destonly_access_restr_mask) const {
+  switch (costing_type_) {
+    case Costing::auto_:
+    case Costing::bus:
+    case Costing::taxi:
+      return auto_cost_.Allowed(this, edge, is_dest, pred, tile, edgeid, current_time, tz_index,
+                                restriction_idx, destonly_access_restr_mask);
+    case Costing::bicycle:
+      return bicycle_cost_.Allowed(this, edge, is_dest, pred, tile, edgeid, current_time, tz_index,
+                                   restriction_idx, destonly_access_restr_mask);
+    case Costing::motorcycle:
+      return motorcycle_cost_.Allowed(this, edge, is_dest, pred, tile, edgeid, current_time, tz_index,
+                                      restriction_idx, destonly_access_restr_mask);
+    case Costing::motor_scooter:
+      return motor_scooter_cost_.Allowed(this, edge, is_dest, pred, tile, edgeid, current_time,
+                                         tz_index, restriction_idx, destonly_access_restr_mask);
+    case Costing::pedestrian:
+    case Costing::bikeshare:
+      return pedestrian_cost_.Allowed(this, edge, is_dest, pred, tile, edgeid, current_time, tz_index,
+                                      restriction_idx, destonly_access_restr_mask);
+    case Costing::transit:
+      return transit_cost_.Allowed(this, edge, is_dest, pred, tile, edgeid, current_time, tz_index,
+                                   restriction_idx, destonly_access_restr_mask);
+    case Costing::truck:
+      return truck_cost_.Allowed(this, edge, is_dest, pred, tile, edgeid, current_time, tz_index,
+                                 restriction_idx, destonly_access_restr_mask);
+    case Costing::none_:
+    case Costing::multimodal:
+      return no_cost_.Allowed(this, edge, is_dest, pred, tile, edgeid, current_time, tz_index,
+                              restriction_idx, destonly_access_restr_mask);
+  }
+
+  throw std::runtime_error("Allowed not implemented for costing type");
+}
+
+bool DynamicCost::AllowedReverse(const baldr::DirectedEdge* edge,
+                                 const EdgeLabel& pred,
+                                 const baldr::DirectedEdge* opp_edge,
+                                 const baldr::graph_tile_ptr& tile,
+                                 const baldr::GraphId& edgeid,
+                                 const uint64_t current_time,
+                                 const uint32_t tz_index,
+                                 uint8_t& restriction_idx,
+                                 uint8_t& destonly_access_restr_mask) const {
+  switch (costing_type_) {
+    case Costing::auto_:
+    case Costing::bus:
+    case Costing::taxi:
+      return auto_cost_.AllowedReverse(this, edge, pred, opp_edge, tile, edgeid, current_time,
+                                       tz_index, restriction_idx, destonly_access_restr_mask);
+    case Costing::bicycle:
+      return bicycle_cost_.AllowedReverse(this, edge, pred, opp_edge, tile, edgeid, current_time,
+                                          tz_index, restriction_idx, destonly_access_restr_mask);
+    case Costing::motorcycle:
+      return motorcycle_cost_.AllowedReverse(this, edge, pred, opp_edge, tile, edgeid, current_time,
+                                             tz_index, restriction_idx, destonly_access_restr_mask);
+    case Costing::motor_scooter:
+      return motor_scooter_cost_.AllowedReverse(this, edge, pred, opp_edge, tile, edgeid,
+                                                current_time, tz_index, restriction_idx,
+                                                destonly_access_restr_mask);
+    case Costing::pedestrian:
+    case Costing::bikeshare:
+      return pedestrian_cost_.AllowedReverse(this, edge, pred, opp_edge, tile, edgeid, current_time,
+                                             tz_index, restriction_idx, destonly_access_restr_mask);
+    case Costing::transit:
+      return transit_cost_.AllowedReverse(this, edge, pred, opp_edge, tile, edgeid, current_time,
+                                          tz_index, restriction_idx, destonly_access_restr_mask);
+    case Costing::truck:
+      return truck_cost_.AllowedReverse(this, edge, pred, opp_edge, tile, edgeid, current_time,
+                                        tz_index, restriction_idx, destonly_access_restr_mask);
+    case Costing::none_:
+    case Costing::multimodal:
+      return no_cost_.AllowedReverse(this, edge, pred, opp_edge, tile, edgeid, current_time, tz_index,
+                                     restriction_idx, destonly_access_restr_mask);
+  }
+
+  throw std::runtime_error("AllowedReverse not implemented for costing type");
+}
+
+Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge,
+                           const baldr::TransitDeparture* departure,
+                           const uint32_t curr_time) const {
+  switch (costing_type_) {
+    case Costing::transit:
+      return transit_cost_.EdgeCost(this, edge, departure, curr_time);
+    default:
+      throw std::runtime_error("Costing does not implement transit edge costs");
+  }
+  throw std::runtime_error("EdgeCost not implemented for costing type");
+}
+
+Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge,
+                           const baldr::graph_tile_ptr& tile,
+                           const baldr::TimeInfo& time_info,
+                           uint8_t& flow_sources) const {
+  switch (costing_type_) {
+    case Costing::auto_:
+    case Costing::bus:
+    case Costing::taxi:
+      return auto_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+    case Costing::bicycle:
+      return bicycle_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+    case Costing::motorcycle:
+      return motorcycle_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+    case Costing::motor_scooter:
+      return motor_scooter_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+    case Costing::pedestrian:
+    case Costing::bikeshare:
+      return pedestrian_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+    case Costing::transit:
+      throw std::runtime_error("Transit costing does not implement non-transit edge costs");
+    case Costing::truck:
+      return truck_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+    case Costing::none_:
+    case Costing::multimodal:
+      return no_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+  }
+  throw std::runtime_error("EdgeCost not implemented for costing type");
+}
+
+Cost DynamicCost::TransitionCost(
+    const baldr::DirectedEdge* edge,
+    const baldr::NodeInfo* node,
+    const EdgeLabel& pred,
+    const baldr::graph_tile_ptr& tile,
+    const std::function<baldr::LimitedGraphReader()>& reader_getter) const {
+
+  switch (costing_type_) {
+    case Costing::auto_:
+    case Costing::bus:
+    case Costing::taxi:
+      return auto_cost_.TransitionCost(this, edge, node, pred, tile, reader_getter);
+    case Costing::bicycle:
+      return bicycle_cost_.TransitionCost(this, edge, node, pred, tile, reader_getter);
+    case Costing::motorcycle:
+      return motorcycle_cost_.TransitionCost(this, edge, node, pred, tile, reader_getter);
+    case Costing::motor_scooter:
+      return motor_scooter_cost_.TransitionCost(this, edge, node, pred, tile, reader_getter);
+    case Costing::pedestrian:
+    case Costing::bikeshare:
+      return pedestrian_cost_.TransitionCost(this, edge, node, pred, tile, reader_getter);
+    case Costing::transit:
+      return transit_cost_.TransitionCost(this, edge, node, pred, tile, reader_getter);
+    case Costing::truck:
+      return truck_cost_.TransitionCost(this, edge, node, pred, tile, reader_getter);
+    case Costing::none_:
+    case Costing::multimodal:
+      return {};
+  }
+  throw std::runtime_error("TransitionCost not implemented for costing type");
+}
+
+Cost DynamicCost::TransitionCostReverse(
+    const uint32_t idx,
+    const baldr::NodeInfo* node,
+    const baldr::DirectedEdge* opp_edge,
+    const baldr::DirectedEdge* opp_pred_edge,
+    const baldr::graph_tile_ptr& tile,
+    const baldr::GraphId& pred_id,
+    const std::function<baldr::LimitedGraphReader()>& reader_getter,
+    const bool has_measured_speed,
+    const InternalTurn internal_turn) const {
+  switch (costing_type_) {
+    case Costing::auto_:
+    case Costing::bus:
+    case Costing::taxi:
+      return auto_cost_.TransitionCostReverse(this, idx, node, opp_edge, opp_pred_edge, tile, pred_id,
+                                              reader_getter, has_measured_speed, internal_turn);
+    case Costing::bicycle:
+      return bicycle_cost_.TransitionCostReverse(this, idx, node, opp_edge, opp_pred_edge, tile,
+                                                 pred_id, reader_getter, has_measured_speed,
+                                                 internal_turn);
+    case Costing::motorcycle:
+      return motorcycle_cost_.TransitionCostReverse(this, idx, node, opp_edge, opp_pred_edge, tile,
+                                                    pred_id, reader_getter, has_measured_speed,
+                                                    internal_turn);
+    case Costing::motor_scooter:
+      return motor_scooter_cost_.TransitionCostReverse(this, idx, node, opp_edge, opp_pred_edge, tile,
+                                                       pred_id, reader_getter, has_measured_speed,
+                                                       internal_turn);
+    case Costing::pedestrian:
+    case Costing::bikeshare:
+      return pedestrian_cost_.TransitionCostReverse(this, idx, node, opp_edge, opp_pred_edge, tile,
+                                                    pred_id, reader_getter, has_measured_speed,
+                                                    internal_turn);
+    case Costing::truck:
+      return truck_cost_.TransitionCostReverse(this, idx, node, opp_edge, opp_pred_edge, tile,
+                                               pred_id, reader_getter, has_measured_speed,
+                                               internal_turn);
+    case Costing::transit:
+    case Costing::none_:
+    case Costing::multimodal:
+      break;
+  }
+
+  return {0.0f, 0.0f};
+}
+
+float DynamicCost::AStarCostFactor() const {
+  switch (costing_type_) {
+    case Costing::auto_:
+    case Costing::bus:
+    case Costing::taxi:
+    case Costing::truck:
+    case Costing::motorcycle:
+    case Costing::motor_scooter:
+      return kSpeedFactor[top_speed_];
+    case Costing::bicycle:
+      // Assume max speed of 2 * the average speed set for costing
+      return kSpeedFactor[static_cast<uint32_t>(2 * bicycle_cost_.speed_)];
+    case Costing::pedestrian:
+    case Costing::bikeshare:
+      // On first pass use the walking speed plus a small factor to account for
+      // favoring walkways, on the second pass use the the maximum ferry speed.
+      if (pass_ == 0) {
+
+        // Determine factor based on all of the factor options
+        float factor = 1.f;
+        if (pedestrian_cost_.walkway_factor_ < 1.f) {
+          factor *= pedestrian_cost_.walkway_factor_;
+        }
+        if (pedestrian_cost_.sidewalk_factor_ < 1.f) {
+          factor *= pedestrian_cost_.sidewalk_factor_;
+        }
+        if (pedestrian_cost_.alley_factor_ < 1.f) {
+          factor *= pedestrian_cost_.alley_factor_;
+        }
+        if (pedestrian_cost_.driveway_factor_ < 1.f) {
+          factor *= pedestrian_cost_.driveway_factor_;
+        }
+        if (track_factor_ < 1.f) {
+          factor *= track_factor_;
+        }
+        if (living_street_factor_ < 1.f) {
+          factor *= living_street_factor_;
+        }
+        if (service_factor_ < 1.f) {
+          factor *= service_factor_;
+        }
+        return (pedestrian_cost_.speedfactor_ * factor);
+      } else {
+        return (midgard::kSecPerHour * 0.001f) / static_cast<float>(baldr::kMaxFerrySpeedKph);
+      }
+    case Costing::transit:
+      return 0.0f;
+    case Costing::none_:
+    case Costing::multimodal:
+      return 1.f;
+  }
+
+  throw std::runtime_error("AStarCostFactor not implemented for costing type");
 }
 
 // Gets the hierarchy limits.
@@ -308,30 +628,64 @@ TravelMode DynamicCost::travel_mode() const {
 
 // Get the current travel type.
 uint8_t DynamicCost::travel_type() const {
-  return 0;
+  switch (costing_type_) {
+    case Costing::auto_:
+    case Costing::taxi:
+      return static_cast<uint8_t>(VehicleType::kCar);
+    case Costing::bus:
+      return static_cast<uint8_t>(VehicleType::kBus);
+    case Costing::motorcycle:
+      return static_cast<uint8_t>(VehicleType::kMotorcycle);
+    case Costing::motor_scooter:
+      return static_cast<uint8_t>(VehicleType::kMotorScooter);
+    case Costing::truck:
+      return static_cast<uint8_t>(VehicleType::kTruck);
+    case Costing::bicycle:
+      return static_cast<uint8_t>(bicycle_cost_.type_);
+    case Costing::pedestrian:
+    case Costing::bikeshare:
+      return static_cast<uint8_t>(pedestrian_cost_.type_);
+    default:
+      return 0;
+  }
 }
 
 // Get the wheelchair required flag.
 bool DynamicCost::wheelchair() const {
+  if (costing_type_ == Costing::transit) {
+    return transit_cost_.wheelchair();
+  }
   return false;
 }
 
 // Get the bicycle required flag.
 bool DynamicCost::bicycle() const {
+  if (costing_type_ == Costing::transit) {
+    return transit_cost_.bicycle();
+  }
   return false;
 }
 
 // Add to the exclude list.
-void DynamicCost::AddToExcludeList(const graph_tile_ptr&) {
+void DynamicCost::AddToExcludeList(const graph_tile_ptr& tile) {
+  if (costing_type_ == Costing::transit) {
+    transit_cost_.AddToExcludeList(tile);
+  }
 }
 
 // Checks if we should exclude or not.
-bool DynamicCost::IsExcluded(const graph_tile_ptr&, const baldr::DirectedEdge*) {
+bool DynamicCost::IsExcluded(const graph_tile_ptr& tile, const baldr::DirectedEdge* edge) {
+  if (costing_type_ == Costing::transit) {
+    return transit_cost_.IsExcluded(tile, edge);
+  }
   return false;
 }
 
 // Checks if we should exclude or not.
-bool DynamicCost::IsExcluded(const graph_tile_ptr&, const baldr::NodeInfo*) {
+bool DynamicCost::IsExcluded(const graph_tile_ptr& tile, const baldr::NodeInfo* node) {
+  if (costing_type_ == Costing::transit) {
+    return transit_cost_.IsExcluded(tile, node);
+  }
   return false;
 }
 
@@ -343,6 +697,11 @@ void DynamicCost::AddUserAvoidEdges(const std::vector<AvoidEdge>& exclude_edges)
 }
 
 Cost DynamicCost::BSSCost() const {
+  if (costing_type_ == Costing::bicycle) {
+    return bicycle_cost_.BSSCost();
+  } else if (costing_type_ == Costing::pedestrian || costing_type_ == Costing::bikeshare) {
+    return pedestrian_cost_.BSSCost();
+  }
   return kNoCost;
 }
 
@@ -422,9 +781,12 @@ void ParseBaseCostOptions(const rapidjson::Value& json,
   for (const auto& level : TileHierarchy::levels()) {
     std::string hierarchy_limits_path = "/hierarchy_limits/" + std::to_string(level.level);
 
-    unsigned int max_up_transitions = rapidjson::get<decltype(
-        max_up_transitions)>(json, std::string(hierarchy_limits_path + "/max_up_transitions").c_str(),
-                             kUnlimitedTransitions);
+    unsigned int max_up_transitions =
+        rapidjson::get<decltype(max_up_transitions)>(json,
+                                                     std::string(hierarchy_limits_path +
+                                                                 "/max_up_transitions")
+                                                         .c_str(),
+                                                     kUnlimitedTransitions);
     float expand_within_distance =
         rapidjson::get<decltype(expand_within_distance)>(json,
                                                          std::string(hierarchy_limits_path +

@@ -13,12 +13,43 @@
 #include <emscripten/emscripten.h>
 
 // Include last cuz unf it defines some weir shi
-#include "arche/arche.h"
+// #include "arche/arche.h"
 
 namespace valhalla {
 
+static emscripten::val g_fetch_locale = emscripten::val::undefined();
+static emscripten::val g_fetch_tile = emscripten::val::undefined();
+static emscripten::val g_list_tiles = emscripten::val::undefined();
+
 using baldr::tile_getter_t;
 using baldr::wasm_tile_getter_t;
+
+extern std::unordered_set<baldr::GraphId> fetch_wasm_tile_manifest() {
+  std::unordered_set<baldr::GraphId> tiles;
+  try {
+    if (g_list_tiles.isNull() || g_list_tiles.isUndefined()) {
+      throw valhalla_exception_t{500, "Tile manifest function not initialized"};
+    }
+    auto js_paths = g_list_tiles();
+    const auto length = js_paths["length"].as<unsigned>();
+    tiles.reserve(length);
+    for (unsigned i = 0; i < length; ++i) {
+      auto path_val = js_paths[i];
+      if (path_val.isNull() || path_val.isUndefined()) {
+        continue;
+      }
+      try {
+        auto path = path_val.as<std::string>();
+        tiles.emplace(valhalla::baldr::GraphTile::GetTileId(path));
+      } catch (...) {
+        // Ignore manifest entries that we cannot parse
+      }
+    }
+  } catch (...) {
+    // Surface an empty set if interop fails; callers handle absence gracefully
+  }
+  return tiles;
+}
 
 odin::locales_singleton_t load_narrative_locals() {
   return {};
@@ -26,14 +57,11 @@ odin::locales_singleton_t load_narrative_locals() {
 
 std::shared_ptr<valhalla::odin::NarrativeDictionary>
 load_narrative_locals_for(const std::string& locale_string) {
-  auto module = emscripten::val::global("Module");
-  if (module.isNull() || module.isUndefined())
-    return nullptr;
-  auto fn = module["fetchLocale"];
-  if (fn.isNull() || fn.isUndefined())
-    return nullptr;
+  if (g_fetch_locale.isNull() || g_fetch_locale.isUndefined()) {
+    throw valhalla_exception_t{500, "Locale fetch function not initialized"};
+  }
 
-  auto json_val = module.call<emscripten::val>("fetchLocale", locale_string).await();
+  auto json_val = g_fetch_locale(locale_string);
   std::string json = json_val.as<std::string>();
 
   property_tree narrative_pt;
@@ -49,24 +77,20 @@ tile_getter_t::GET_response_t
 wasm_tile_getter_t::get(const std::string& url, const uint64_t offset, const uint64_t size) {
   tile_getter_t::GET_response_t response;
 
-  auto module = emscripten::val::global("Module");
-  if (module.isNull() || module.isUndefined())
-    return response;
-  auto fn = module["fetchGraphTile"];
-  if (fn.isNull() || fn.isUndefined())
-    return response;
-
-  auto tile = module.call<emscripten::val>("fetchGraphTile", url).await();
+  if (g_fetch_tile.isNull() || g_fetch_tile.isUndefined()) {
+    throw valhalla_exception_t{500, "Tile fetch function not initialized"};
+  }
+  auto tile = g_fetch_tile(url);
 
   response.data_ = (char*)(tile["data"]["byteOffset"].as<size_t>());
   response.size_ = tile["size"].as<uint64_t>();
 
   // printf("C/ Tile fetched: %s, size: %zu\n", url.c_str(), response.size_);
-  uint8_t checksum = 0;
+  /*uint8_t checksum = 0;
   for (size_t i = 0; i < response.size_; ++i) {
     checksum ^= response.data_[i];
   }
-  // printf("C/ Tile checksum: %02x\n", checksum);
+  printf("C/ Tile checksum: %02x\n", checksum);*/
 
   response.status_ = tile_getter_t::status_code_t::SUCCESS;
   response.http_code_ = 200;
@@ -76,7 +100,7 @@ wasm_tile_getter_t::get(const std::string& url, const uint64_t offset, const uin
 } // namespace valhalla
 
 extern "C" {
-void* malloc(size_t size) {
+/*void* malloc(size_t size) {
   return (void*)malloc<byte>({.Count = (s64)size});
 }
 
@@ -124,16 +148,17 @@ int posix_memalign(void** memptr, size_t alignment, size_t size) {
   }
   *memptr = emscripten_builtin_memalign(alignment, size);
   return 0;
-}
+}*/
 }
 
 namespace emscripten {
 val js_malloc(size_t size) {
-  return val(typed_memory_view(size, (byte*)malloc<byte>({.Count = (s64)size})));
+  // return val(typed_memory_view(size, (byte*)malloc<byte>({.Count = (s64)size})));
+  return val(typed_memory_view(size, (char *) malloc(size)));
 }
 
 void js_free(val buffer) {
-  free((byte*)buffer.as<uintptr_t>());
+  free((char *)buffer.as<uintptr_t>());
 }
 
 template <class Allocator = std::allocator<bool>>
@@ -163,6 +188,14 @@ bool Options_Action_Enum_Parse(const std::string& action, Options::Action* a);
 
 using namespace valhalla;
 
+void init_js_callbacks_holder(emscripten::val fetch_locale,
+                              emscripten::val fetch_tile,
+                              emscripten::val list_tiles) {
+  g_fetch_locale = fetch_locale;
+  g_fetch_tile = fetch_tile;
+  g_list_tiles = list_tiles;
+}
+
 tyr::actor_t* actor = nullptr;
 
 extern "C" EMSCRIPTEN_KEEPALIVE void init_actor(const char* valhalla_config_json) {
@@ -178,7 +211,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js,
   //   RequestArena.AutomaticBlockSize = 64_MiB;
   // }
 
-  context newContext = Context;
+  // context newContext = Context;
   // newContext.Alloc = {arena_allocator, &RequestArena};
   // newContext.LogAllAllocations = true;
 
@@ -230,8 +263,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js,
         throw valhalla_exception_t{400};
     }
   } // request processing error specific error condition
-  catch (const valhalla_exception_t& ve) {
-    result = serialize_error(ve, request);
+  catch (const valhalla_exception_t& e) {
+    // result = serialize_error(e, request);
+    result = "exception";
   } catch (const std::exception& e) {
     result = serialize_error({599, std::string(e.what())}, request);
   } catch (...) { result = serialize_error({599, std::string("Unknown exception thrown")}, request); }
@@ -246,6 +280,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js,
 EMSCRIPTEN_BINDINGS(valhalla_bindings) {
   using namespace emscripten;
 
+  function("init_js_callbacks_holder", &init_js_callbacks_holder);
   function("_malloc", &js_malloc);
   function("_free", &js_free);
 }

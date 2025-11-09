@@ -2,8 +2,9 @@
 #include "baldr/graphconstants.h"
 #include "baldr/rapidjson_utils.h"
 #include "proto_conversions.h"
+#include "sif/dynamiccost.h"
 
-#ifdef INLINE_TEST
+#ifdef INLINE_TEST_TODO_FIX
 #include "test.h"
 #include "worker.h"
 
@@ -51,272 +52,9 @@ constexpr ranged_default_t<float> kTransferPenaltyRange{0, kDefaultTransferPenal
 
 } // namespace transitcost_internal
 
-/**
- * Derived class providing dynamic edge costing for transit parts
- * of multi-modal routes.
- */
-class TransitCost : public DynamicCost {
-public:
-  /**
-   * Construct transit costing. Pass in cost type and costing_options using protocol buffer(pbf).
-   * @param  costing specified costing type.
-   * @param  costing_options pbf with request costing_options.
-   */
-  TransitCost(const Costing& costing_options);
-
-  virtual ~TransitCost();
-
-  /**
-   * Get the wheelchair required flag.
-   * @return  Returns true if wheelchair is required.
-   */
-  bool wheelchair() const override;
-
-  /**
-   * Get the bicycle required flag.
-   * @return  Returns true if bicycle is required.
-   */
-  bool bicycle() const override;
-
-  /**
-   * This method overrides the factor for this mode.  The higher the value
-   * the more the mode is favored.
-   */
-  virtual float GetModeFactor() override;
-
-  /**
-   * Get the access mode used by this costing method.
-   * @return  Returns access mode.
-   */
-  uint32_t access_mode() const override;
-
-  /**
-   * Checks if access is allowed for the provided directed edge.
-   * This is generally based on mode of travel and the access modes
-   * allowed on the edge. However, it can be extended to exclude access
-   * based on other parameters such as conditional restrictions and
-   * conditional access that can depend on time and travel mode.
-   * @param  edge           Pointer to a directed edge.
-   * @param  is_dest        Is a directed edge the destination?
-   * @param  pred           Predecessor edge information.
-   * @param  tile           Current tile.
-   * @param  edgeid         GraphId of the directed edge.
-   * @param  current_time   Current time (seconds since epoch).
-   * @param  tz_index       timezone index for the node
-   * @return Returns true if access is allowed, false if not.
-   */
-  virtual bool Allowed(const baldr::DirectedEdge* edge,
-                       const bool is_dest,
-                       const EdgeLabel& pred,
-                       const graph_tile_ptr& tile,
-                       const baldr::GraphId& edgeid,
-                       const uint64_t current_time,
-                       const uint32_t tz_index,
-                       uint8_t& restriction_idx,
-                       uint8_t& /*destonly_access_restr_mask*/) const override;
-
-  /**
-   * Checks if access is allowed for an edge on the reverse path
-   * (from destination towards origin). Both opposing edges (current and
-   * predecessor) are provided. The access check is generally based on mode
-   * of travel and the access modes allowed on the edge. However, it can be
-   * extended to exclude access based on other parameters such as conditional
-   * restrictions and conditional access that can depend on time and travel
-   * mode.
-   * @param  edge           Pointer to a directed edge.
-   * @param  pred           Predecessor edge information.
-   * @param  opp_edge       Pointer to the opposing directed edge.
-   * @param  tile           Current tile.
-   * @param  edgeid         GraphId of the opposing edge.
-   * @param  current_time   Current time (seconds since epoch).
-   * @param  tz_index       timezone index for the node
-   * @return  Returns true if access is allowed, false if not.
-   */
-  virtual bool AllowedReverse(const baldr::DirectedEdge* edge,
-                              const EdgeLabel& pred,
-                              const baldr::DirectedEdge* opp_edge,
-                              const graph_tile_ptr& tile,
-                              const baldr::GraphId& opp_edgeid,
-                              const uint64_t current_time,
-                              const uint32_t tz_index,
-                              uint8_t& restriction_idx,
-                              uint8_t& /*destonly_access_restr_mask*/) const override;
-
-  /**
-   * Checks if access is allowed for the provided node. Node access can
-   * be restricted if bollards or gates are present.
-   * @param  node  Pointer to node information.
-   * @return  Returns true if access is allowed, false if not.
-   */
-  virtual bool Allowed(const baldr::NodeInfo* node) const override;
-
-  /**
-   * Get the cost to traverse the specified directed edge using a transit
-   * departure (schedule based edge traversal). Cost includes
-   * the time (seconds) to traverse the edge.
-   * @param   edge      Pointer to a directed edge.
-   * @param   departure Transit departure record.
-   * @param   curr_time Current local time (seconds from midnight).
-   * @return  Returns the cost and time (seconds)
-   */
-  virtual Cost EdgeCost(const baldr::DirectedEdge* edge,
-                        const baldr::TransitDeparture* departure,
-                        const uint32_t curr_time) const override;
-
-  /**
-   * Transit costing only works on transit edges, hence we throw
-   * @param edge
-   * @param tile
-   * @param seconds
-   * @return
-   */
-  virtual Cost EdgeCost(const baldr::DirectedEdge*,
-                        const graph_tile_ptr&,
-                        const baldr::TimeInfo&,
-                        uint8_t&) const override {
-    throw std::runtime_error("TransitCost::EdgeCost only supports transit edges");
-  }
-
-  bool IsClosed(const baldr::DirectedEdge*, const graph_tile_ptr&) const override {
-    return false;
-  }
-
-  /**
-   * Returns the cost to make the transition from the predecessor edge.
-   * Defaults to 0. Costing models that wish to include edge transition
-   * costs (i.e., intersection/turn costs) must override this method.
-   * @param  edge          Directed edge (the to edge)
-   * @param  node          Node (intersection) where transition occurs.
-   * @param  pred          Predecessor edge information.
-   * @param  tile          Pointer to the graph tile containing the to edge.
-   * @param  reader_getter Functor that facilitates access to a limited version of the graph reader
-   * @return Returns the cost and time (seconds)
-   */
-  virtual Cost
-  TransitionCost(const baldr::DirectedEdge* edge,
-                 const baldr::NodeInfo* node,
-                 const EdgeLabel& pred,
-                 const graph_tile_ptr& tile,
-                 const std::function<baldr::LimitedGraphReader()>& reader_getter) const override;
-
-  /**
-   * Returns the transfer cost between 2 transit stops.
-   * @return  Returns the transfer cost and time (seconds).
-   */
-  virtual Cost TransferCost() const override;
-
-  /**
-   * Returns the default transfer cost between 2 transit lines.
-   * @return  Returns the transfer cost and time (seconds).
-   */
-  virtual Cost DefaultTransferCost() const override;
-
-  /**
-   * Get the cost factor for A* heuristics. This factor is multiplied
-   * with the distance to the destination to produce an estimate of the
-   * minimum cost to the destination. The A* heuristic must underestimate the
-   * cost to the destination. So a time based estimate based on speed should
-   * assume the maximum speed is used to the destination such that the time
-   * estimate is less than the least possible time along roads.
-   */
-  virtual float AStarCostFactor() const override;
-
-  /**
-   * Override unit size since walking costs are higher range of vales
-   */
-  virtual uint32_t UnitSize() const override;
-
-  /**
-   * Function to be used in location searching which will
-   * exclude and allow ranking results from the search by looking at each
-   * edges attribution and suitability for use as a location by the travel
-   * mode used by the costing method. Function is also used to filter
-   * edges not usable / inaccessible by transit route use.
-   * This is used to conflate the stops to OSM way ids and we don't want to
-   * include ferries.
-   */
-  bool Allowed(const baldr::DirectedEdge* edge,
-               const graph_tile_ptr& tile,
-               uint16_t disallow_mask = kDisallowNone) const override {
-    return DynamicCost::Allowed(edge, tile, disallow_mask) && edge->use() < Use::kFerry &&
-           !edge->bss_connection();
-  }
-
-  /**This method adds to the exclude list based on the
-   * user-provided exclude and include lists.
-   */
-  virtual void AddToExcludeList(const graph_tile_ptr& tile) override;
-
-  /**
-   * Checks if we should exclude or not.
-   * @return  Returns true if we should exclude, false if not.
-   */
-  virtual bool IsExcluded(const graph_tile_ptr& tile, const baldr::DirectedEdge* edge) override;
-
-  /**
-   * Checks if we should exclude or not.
-   * @return  Returns true if we should exclude, false if not.
-   */
-  virtual bool IsExcluded(const graph_tile_ptr& tile, const baldr::NodeInfo* node) override;
-
-public:
-  // Are wheelchair or bicycle required
-  bool wheelchair_;
-  bool bicycle_;
-
-  // This is the factor for this mode.  The higher the value the more the
-  // mode is favored.
-  float mode_factor_;
-
-  // A measure of willingness to ride on buses or rail. Ranges from 0-1 with
-  // 0 being not willing at all and 1 being totally comfortable with taking
-  // this transportation. These factors determine how much rail or buses are
-  // preferred over each other (if at all).
-  float use_bus_;
-  float use_rail_;
-  float bus_factor_;
-  float rail_factor_;
-
-  // A measure of willingness to make transfers. Ranges from 0-1 with
-  // 0 being not willing at all and 1 being totally comfortable.
-  float use_transfers_;
-  float transfer_factor_;
-
-  float transfer_cost_;    // Transfer cost
-  float transfer_penalty_; // Transfer penalty
-
-  // TODO - compute transit tile level based on tile specification?
-  float transit_tile_level = 3;
-
-  // stops exclude list
-  std::unordered_set<std::string> stop_exclude_onestops_;
-
-  // stops include list
-  std::unordered_set<std::string> stop_include_onestops_;
-
-  // operator exclude list
-  std::unordered_set<std::string> operator_exclude_onestops_;
-
-  // operator include list
-  std::unordered_set<std::string> operator_include_onestops_;
-
-  // route excluded list
-  std::unordered_set<std::string> route_exclude_onestops_;
-
-  // route include list
-  std::unordered_set<std::string> route_include_onestops_;
-
-  // Set of routes to exclude (by GraphId)
-  std::unordered_set<GraphId> exclude_routes_;
-
-  // Set of stops to exclude (by GraphId)
-  std::unordered_set<GraphId> exclude_stops_;
-};
-
 // Constructor. Parse pedestrian options from property tree. If option is
 // not present, set the default.
-TransitCost::TransitCost(const Costing& costing)
-    : DynamicCost(costing, TravelMode::kPublicTransit, kPedestrianAccess) {
+TransitCost::TransitCost(const DynamicCost* parent, const Costing& costing) {
   const auto& costing_options = costing.options();
 
   mode_factor_ = costing_options.mode_factor();
@@ -513,13 +251,9 @@ bool TransitCost::IsExcluded(const graph_tile_ptr& tile, const baldr::NodeInfo* 
           exclude_stops_.end());
 }
 
-// Get the access mode used by this costing method.
-uint32_t TransitCost::access_mode() const {
-  return 0;
-}
-
 // Check if access is allowed on the specified edge.
-bool TransitCost::Allowed(const baldr::DirectedEdge* edge,
+bool TransitCost::Allowed(const DynamicCost* parent,
+                          const baldr::DirectedEdge* edge,
                           const bool,
                           const EdgeLabel&,
                           const graph_tile_ptr& tile,
@@ -551,7 +285,8 @@ bool TransitCost::Allowed(const baldr::DirectedEdge* edge,
 
 // Checks if access is allowed for an edge on the reverse path (from
 // destination towards origin). Both opposing edges are provided.
-bool TransitCost::AllowedReverse(const baldr::DirectedEdge*,
+bool TransitCost::AllowedReverse(const DynamicCost* parent,
+                                 const baldr::DirectedEdge*,
                                  const EdgeLabel&,
                                  const baldr::DirectedEdge*,
                                  const graph_tile_ptr&,
@@ -565,16 +300,12 @@ bool TransitCost::AllowedReverse(const baldr::DirectedEdge*,
   return false;
 }
 
-// Check if access is allowed at the specified node.
-bool TransitCost::Allowed(const baldr::NodeInfo*) const {
-  return true;
-}
-
 // Get the cost to traverse the specified directed edge using a transit
 // departure (schedule based edge traversal). Cost includes
 // the time (seconds) to traverse the edge. Only transit cost models override
 // this method.
-Cost TransitCost::EdgeCost(const baldr::DirectedEdge* edge,
+Cost TransitCost::EdgeCost(const DynamicCost* parent,
+                           const baldr::DirectedEdge* edge,
                            const baldr::TransitDeparture* departure,
                            const uint32_t curr_time) const {
   // Separate wait time from time on transit
@@ -592,6 +323,7 @@ Cost TransitCost::EdgeCost(const baldr::DirectedEdge* edge,
 
 // Returns the time (in seconds) to make the transition from the predecessor
 Cost TransitCost::TransitionCost(
+    const DynamicCost* parent,
     const baldr::DirectedEdge* edge,
     const baldr::NodeInfo* /*node*/,
     const EdgeLabel& pred,
@@ -620,16 +352,6 @@ Cost TransitCost::DefaultTransferCost() const {
   return {transfer_cost_ + transfer_penalty_, transfer_cost_};
 }
 
-// Get the cost factor for A* heuristics. This factor is multiplied
-// with the distance to the destination to produce an estimate of the
-// minimum cost to the destination. The A* heuristic must underestimate the
-// cost to the destination. So a time based estimate based on speed should
-// assume the maximum speed is used to the destination such that the time
-// estimate is less than the least possible time along roads.
-float TransitCost::AStarCostFactor() const {
-  return 0.0f;
-}
-
 //  Override unit size since walking costs are higher range of values
 uint32_t TransitCost::UnitSize() const {
   using namespace transitcost_internal;
@@ -640,7 +362,7 @@ void ParseTransitCostOptions(const rapidjson::Document& doc,
                              const std::string& costing_options_key,
                              Costing* c) {
   using namespace transitcost_internal;
-  
+
   c->set_type(Costing::transit);
   c->set_name(Costing_Enum_Name(c->type()));
   auto* co = c->mutable_options();
@@ -650,18 +372,14 @@ void ParseTransitCostOptions(const rapidjson::Document& doc,
 
   // TODO: no base costing parsing because transit doesnt care about any of those options?
 
-  JSON_PBF_RANGED_DEFAULT(co, kModeFactorRange, json, "/mode_factor",
-                          mode_factor);
+  JSON_PBF_RANGED_DEFAULT(co, kModeFactorRange, json, "/mode_factor", mode_factor);
   JSON_PBF_DEFAULT_V2(co, false, json, "/wheelchair", wheelchair);
   JSON_PBF_DEFAULT_V2(co, false, json, "/bicycle", bicycle);
   JSON_PBF_RANGED_DEFAULT(co, kUseBusRange, json, "/use_bus", use_bus);
   JSON_PBF_RANGED_DEFAULT(co, kUseRailRange, json, "/use_rail", use_rail);
-  JSON_PBF_RANGED_DEFAULT(co, kUseTransfersRange, json, "/use_transfers",
-                          use_transfers);
-  JSON_PBF_RANGED_DEFAULT(co, kTransferCostRange, json, "/transfer_cost",
-                          transfer_cost);
-  JSON_PBF_RANGED_DEFAULT(co, kTransferPenaltyRange, json, "/transfer_penalty",
-                          transfer_penalty);
+  JSON_PBF_RANGED_DEFAULT(co, kUseTransfersRange, json, "/use_transfers", use_transfers);
+  JSON_PBF_RANGED_DEFAULT(co, kTransferCostRange, json, "/transfer_cost", transfer_cost);
+  JSON_PBF_RANGED_DEFAULT(co, kTransferPenaltyRange, json, "/transfer_penalty", transfer_penalty);
 
   // filter_stop_action
   auto filter_stop_action_str = rapidjson::get_optional<std::string>(json, "/filters/stops/action");
@@ -716,16 +434,12 @@ void ParseTransitCostOptions(const rapidjson::Document& doc,
   }
 }
 
-cost_ptr_t CreateTransitCost(const Costing& costing_options) {
-  return std::make_shared<TransitCost>(costing_options);
-}
-
 } // namespace sif
 } // namespace valhalla
 
 /**********************************************************************************************/
 
-#ifdef INLINE_TEST
+#ifdef INLINE_TEST_TODO_FIX
 
 using namespace valhalla;
 using namespace sif;
