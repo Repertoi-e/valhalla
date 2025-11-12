@@ -267,8 +267,7 @@ std::string do_request(std::string action_js, std::string request_js) {
     }
   } // request processing error specific error condition
   catch (const valhalla_exception_t& e) {
-    // result = serialize_error(e, request);
-    result = "exception";
+    result = serialize_error(e, request);
   } catch (const std::exception& e) {
     result = serialize_error({599, std::string(e.what())}, request);
   } catch (...) { result = serialize_error({599, std::string("Unknown exception thrown")}, request); }

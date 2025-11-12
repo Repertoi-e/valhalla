@@ -7,6 +7,9 @@
 * REMOVED: Fibonacci heap in favor of std::priority_queue (Fibonacci heap is hella slow in practice, no?)
 * REMOVED: Git submodules, as they are the antichrist
 
+* FIXED: ingest_transit to handle missing calendar.txt, since that's optional, and instead calendar_dates.txt can be used to define the availability, real world scenario was Netherlands' OV API which doesn't contain calendar.txt, but only calendar_dates.txt.
+* FIXED: ingest_transit was taking several orders of magnitude more time than necessary to ingest GTFS feeds, sped it up
+
 * TODO: Uncomment and fix VersionChecksum test cuz idk why its failing now
 * TODO: Fix SimpleCost test
 * TODO: Uncomment and fix pinpoints tests, but we need proper valhalla.json config to regen .pbf files

@@ -456,12 +456,14 @@ bool write_stop_pair(valhalla::Transit& tile,
   const auto& currTrip = feed.get_trip(tile_tripId);
 
   auto trip_calendar = feed.get_calendar_item(currTrip.service_id);
-  if (!gtfs::valid(trip_calendar)) {
+  auto trip_calDates = feed.get_calendar_dates(currTrip.service_id);
+
+if (!gtfs::valid(trip_calendar)) {
     // Could be a calendar_dates only service, dow_mask will be 0 then
     trip_calendar.service_id = currTrip.service_id;
     // @TODO Do we fill out .start_date and end_date here?
   }
-  auto trip_calDates = feed.get_calendar_dates(currTrip.service_id);
+
   if (!gtfs::valid(currTrip)) {
     LOG_ERROR("Feed " + feed_trip.feed + ", trip ID" + tile_tripId +
               " can't be found, skipping...");
