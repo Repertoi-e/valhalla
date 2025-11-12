@@ -46,7 +46,10 @@ struct feed_object_t {
 namespace std {
 template <> struct hash<feed_object_t> {
   inline size_t operator()(const feed_object_t& o) const {
-    return hash<string>()(o.id + o.feed);
+    size_t h1 = hash<gtfs::Id>()(o.id);
+    size_t h2 = hash<string>()(o.feed);
+    // Simple mix (FNV/boost-like)
+    return h1 ^ (h2 + 0x9e3779b97f4a7c15ULL + (h1 << 6) + (h1 >> 2));
   }
 };
 template <> struct equal_to<feed_object_t> {
@@ -78,9 +81,6 @@ struct feed_cache_t {
   std::unordered_map<std::string, gtfs::Feed> cache;
   std::filesystem::path gtfs_dir;
 
-  feed_cache_t(const std::string& gtfs_dir) : gtfs_dir(gtfs_dir) {
-  }
-
   const gtfs::Feed& operator()(const feed_object_t& feed_object) {
     auto found = cache.find(feed_object.feed);
     if (found != cache.end()) {
@@ -92,7 +92,19 @@ struct feed_cache_t {
     inserted.first->second.read_feed();
     return inserted.first->second;
   }
+
+  gtfs::Result ensure_feed_loaded(const std::string& feed_name) {
+    auto found = cache.find(feed_name);
+    if (found != cache.end()) {
+      return {gtfs::ResultCode::OK, ""};
+    }
+
+    auto inserted = cache.insert({feed_name, gtfs::Feed((gtfs_dir / feed_name).string())});
+    return inserted.first->second.read_feed();
+  }
 };
+
+feed_cache_t feeds;
 
 struct dist_sort_t {
   PointLL center;
@@ -156,7 +168,7 @@ select_transit_tiles(const std::filesystem::path& gtfs_path) {
 
     return tile_map.insert({graphid, tile_transit_info_t{graphid}}).first->second;
   };
-
+  
   std::filesystem::recursive_directory_iterator gtfs_feed_itr(gtfs_path);
   std::filesystem::recursive_directory_iterator end_file_itr;
   for (; gtfs_feed_itr != end_file_itr; ++gtfs_feed_itr) {
@@ -170,14 +182,15 @@ select_transit_tiles(const std::filesystem::path& gtfs_path) {
       const auto feed_name = feed_path.filename().string();
 
       LOG_INFO("Loading " + feed_name);
-      gtfs::Feed feed(feed_path.string());
-      auto read_result = feed.read_feed();
+      
+      auto read_result = feeds.ensure_feed_loaded(feed_name);
       if (read_result.code != gtfs::ResultCode::OK) {
         LOG_ERROR("Couldn't find a required file for feed " + feed_path.filename().string() + ": " +
                   read_result.message);
         continue;
       }
       LOG_INFO("Done loading, now parsing " + feed_name);
+      const auto& feed = feeds({"", feed_name});
 
       const auto& stops = feed.get_stops();
       // 1st pass to add all the stations, so we can add stops to its children in a 2nd pass
@@ -190,6 +203,10 @@ select_transit_tiles(const std::filesystem::path& gtfs_path) {
 
       // 2nd pass to add the platforms/stops
       for (const auto& stop : stops) {
+        // LOG_INFO(valhalla::midgard::logging::sprintf("Processing stop %zu / %zu for feed %s", stop_index++, stops.size(), feed_name.c_str()));
+
+        // auto start_time = std::chrono::steady_clock::now();
+
         // TODO: GenericNode & BoardingArea could be useful at some point
         if (!(stop.location_type == gtfs::StopLocationType::StopOrPlatform) &&
             !(stop.location_type == gtfs::StopLocationType::EntranceExit)) {
@@ -219,11 +236,25 @@ select_transit_tiles(const std::filesystem::path& gtfs_path) {
           tile_info.station_children.insert({{stop.stop_id, feed_name}, stop.stop_id});
         }
 
-        for (const auto& stopTime : feed.get_stop_times_for_stop(stop.stop_id)) {
+        /*auto end_time = std::chrono::steady_clock::now();
+        auto duration = end_time - start_time;
+        LOG_INFO(valhalla::midgard::logging::sprintf("...station/stop processing took %.3f seconds",
+                                                    std::chrono::duration<float>(duration).count()));
+
+        auto end_time_2 = std::chrono::steady_clock::now();
+        auto duration_2 = end_time_2 - end_time;
+        LOG_INFO(valhalla::midgard::logging::sprintf("...retrieving %zu stop_times took %.3f seconds",
+                                                    stop_times.size(),
+                                                    std::chrono::duration<float>(duration_2).count()));*/
+
+        const auto& stop_times = feed.get_stop_times_for_stop(stop.stop_id);
+
+        for (const auto& stopTime : stop_times) {
           // add trip, route, agency and service_id from stop_time, it's the only place with that info
           // TODO: should we throw here?
           auto trip = feed.get_trip(stopTime.trip_id);
           auto route = feed.get_route(trip.route_id);
+
           if (!gtfs::valid(trip) || !gtfs::valid(route) || trip.service_id.empty()) {
             LOG_ERROR("Missing trip or route or service_id for trip");
             continue;
@@ -299,7 +330,7 @@ void setup_stops(valhalla::Transit& tile,
  *         later on we use these ids to connect platforms that reference each other in the schedule
  */
 std::unordered_map<feed_object_t, GraphId>
-write_stops(valhalla::Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& feeds) {
+write_stops(valhalla::Transit& tile, const tile_transit_info_t& tile_info) {
   const auto& tile_children = tile_info.station_children;
   auto node_id = tile_info.graphid;
 
@@ -423,16 +454,22 @@ bool write_stop_pair(valhalla::Transit& tile,
   const std::string currFeedPath = feed_trip.feed;
 
   const auto& currTrip = feed.get_trip(tile_tripId);
-  const auto& trip_calendar = feed.get_calendar_item(currTrip.service_id);
+
+  auto trip_calendar = feed.get_calendar_item(currTrip.service_id);
+  if (!gtfs::valid(trip_calendar)) {
+    // Could be a calendar_dates only service, dow_mask will be 0 then
+    trip_calendar.service_id = currTrip.service_id;
+    // @TODO Do we fill out .start_date and end_date here?
+  }
   auto trip_calDates = feed.get_calendar_dates(currTrip.service_id);
-  if (!gtfs::valid(currTrip) || !gtfs::valid(trip_calendar)) {
+  if (!gtfs::valid(currTrip)) {
     LOG_ERROR("Feed " + feed_trip.feed + ", trip ID" + tile_tripId +
-              " can't be found or has no calendar.txt entry, skipping...");
+              " can't be found, skipping...");
     return false;
   }
 
-  uint8_t dow_mask = gtfs::availability(trip_calendar);
 
+  uint8_t dow_mask = gtfs::availability(trip_calendar);
   auto currFrequencies = feed.get_frequencies(currTrip.trip_id);
 
   // get the gtfs shape and our pbf shape_id if present
@@ -608,7 +645,7 @@ bool write_stop_pair(valhalla::Transit& tile,
 
 // read routes data from feed
 std::unordered_map<feed_object_t, size_t>
-write_routes(valhalla::Transit& tile, const tile_transit_info_t& tile_info, feed_cache_t& feeds) {
+write_routes(valhalla::Transit& tile, const tile_transit_info_t& tile_info) {
 
   const auto& tile_routeIds = tile_info.routes;
 
@@ -648,8 +685,7 @@ write_routes(valhalla::Transit& tile, const tile_transit_info_t& tile_info, feed
 
 // grab feed data from feed
 void write_shapes(valhalla::Transit& tile,
-                  const tile_transit_info_t& tile_info,
-                  feed_cache_t& feeds) {
+                  const tile_transit_info_t& tile_info) {
 
   // loop through all shapes inside the tile
   for (const auto& feed_shape : tile_info.shapes) {
@@ -695,15 +731,15 @@ void ingest_tiles(const std::filesystem::path& gtfs_dir,
     auto current_path = tile_path;
 
     // collect all the feeds in this tile
-    feed_cache_t feeds(gtfs_dir.string());
-    for (const auto& route : current.routes) {
-      feeds(route.first);
-    }
+    LOG_INFO("Processing tile " + std::to_string(current.graphid));
 
     // keep track of the PBF insertion order for the routes to set route_index on the stop_pairs
-    std::unordered_map<feed_object_t, size_t> routes_ids = write_routes(tile, current, feeds);
-    write_shapes(tile, current, feeds);
-    std::unordered_map<feed_object_t, GraphId> platform_node_ids = write_stops(tile, current, feeds);
+    std::unordered_map<feed_object_t, size_t> routes_ids = write_routes(tile, current);
+    LOG_INFO("Wrote " + std::to_string(tile.routes_size()) + " routes");
+    write_shapes(tile, current);
+    LOG_INFO("Wrote " + std::to_string(tile.shapes_size()) + " shapes");
+    std::unordered_map<feed_object_t, GraphId> platform_node_ids = write_stops(tile, current);
+    LOG_INFO("Wrote " + std::to_string(tile.nodes_size()) + " nodes");
 
     // keep the tile's nodes, they'll be cleared if we exceed the config's trip_limit
     const auto tile_nodes = tile.nodes();
@@ -727,6 +763,8 @@ void ingest_tiles(const std::filesystem::path& gtfs_dir,
       }
     }
 
+    LOG_INFO("Wrote " + std::to_string(tile.stop_pairs_size()) + " stop_pairs");
+
     if (dangles) {
       dangling.emplace_back(current.graphid);
     }
@@ -736,6 +774,8 @@ void ingest_tiles(const std::filesystem::path& gtfs_dir,
       LOG_INFO("Writing " + current_path.string());
       write_pbf(tile, current_path);
     }
+
+    LOG_INFO("Finished tile " + std::to_string(current.graphid));
   }
   promise.set_value(dangling);
 }
@@ -865,6 +905,7 @@ std::list<GraphId> ingest_transit(const property_tree& pt) {
   }
 
   std::filesystem::path gtfs_dir{pt.get<std::string>("mjolnir.transit_feeds_dir")};
+  feeds.gtfs_dir = gtfs_dir;
 
   auto thread_count =
       pt.get<unsigned int>("mjolnir.concurrency", std::max(static_cast<unsigned int>(1),

@@ -1296,7 +1296,7 @@ public:
   inline Result write_stop_times(const std::string & gtfs_path) const;
 
   inline const StopTimes & get_stop_times() const;
-  inline StopTimes get_stop_times_for_stop(const Id & stop_id) const;
+  inline const StopTimes & get_stop_times_for_stop(const Id & stop_id) const;
   inline StopTimesRange get_stop_times_for_trip(const Id & trip_id) const;
   inline void add_stop_time(const StopTime & stop_time);
 
@@ -1435,6 +1435,11 @@ protected:
   Routes routes;
   Trips trips;
   StopTimes stop_times;
+  // Index to speed up get_stop_times_for_stop: stop_id -> indices into stop_times
+  std::unordered_map<Id, std::vector<StopTime>> stop_times_by_stop_index;
+  // Indices for constant-time trip and route lookup
+  std::unordered_map<Id, size_t> trip_index;   // trip_id -> position in trips
+  std::unordered_map<Id, size_t> route_index;  // route_id -> position in routes
 
   Calendar calendar;
   CalendarDates calendar_dates;
@@ -1518,13 +1523,15 @@ inline Result Feed::read_feed()
             [](const auto & a, const auto & b) { return a.agency_id < b.agency_id; });
   std::sort(stops.begin(), stops.end(),
             [](const auto & a, const auto & b) { return a.stop_id < b.stop_id; });
-  std::sort(routes.begin(), routes.end(),
+  /*std::sort(routes.begin(), routes.end(),
             [](const auto & a, const auto & b) { return a.route_id < b.route_id; });
   std::sort(trips.begin(), trips.end(),
             [](const auto & a, const auto & b) { return a.trip_id < b.trip_id; });
   std::sort(stop_times.begin(), stop_times.end(),
             [](const auto & a, const auto & b)
             { return a.trip_id < b.trip_id || (a.trip_id == b.trip_id && a.stop_sequence < b.stop_sequence); }); // could also sort on stop_id
+            */
+
   std::sort(calendar.begin(), calendar.end(),
             [](const auto & a, const auto & b) { return a.service_id < b.service_id; });
   std::sort(calendar_dates.begin(), calendar_dates.end(),
@@ -1670,6 +1677,7 @@ inline Result Feed::add_route(const ParsedCsvRow & row)
   route.route_url = get_value_or_default(row, "route_url");
 
   routes.emplace_back(route);
+  route_index.emplace(route.route_id, routes.size() - 1);
 
   return ResultCode::OK;
 }
@@ -1736,6 +1744,7 @@ inline Result Feed::add_trip(const ParsedCsvRow & row)
   trip.block_id = get_value_or_default(row, "block_id");
 
   trips.emplace_back(trip);
+  trip_index.emplace(trip.trip_id, trips.size() - 1);
   return ResultCode::OK;
 }
 
@@ -1825,6 +1834,7 @@ inline Result Feed::add_stop_time(const ParsedCsvRow & row)
   stop_time.stop_headsign = get_value_or_default(row, "stop_headsign");
 
   stop_times.emplace_back(stop_time);
+  stop_times_by_stop_index[stop_time.stop_id].emplace_back(stop_time);
   return ResultCode::OK;
 }
 
@@ -2334,20 +2344,19 @@ inline const Routes & Feed::get_routes() const { return routes; }
 
 inline const Route & Feed::get_route(const Id & route_id) const
 {
-  const auto it =
-                         std::lower_bound(routes.begin(), routes.end(), route_id,
-                                          [](const auto & a, const Id & i){ return a.route_id < i;});
-
-  if (it == routes.end() || it->route_id != route_id)
-  {
-    static Route invalid;
-    return invalid;
+  // Fast path using index
+  auto idx_it = route_index.find(route_id);
+  if (idx_it != route_index.end()) {
+    return routes[idx_it->second];
   }
-
-  return *it;
+  static Route invalid;
+  return invalid;
 }
 
-inline void Feed::add_route(const Route & route) { routes.emplace_back(route); }
+inline void Feed::add_route(const Route & route) { 
+    routes.emplace_back(route); 
+    route_index.emplace(route.route_id, routes.size() - 1);
+}
 
 inline Result Feed::read_trips()
 {
@@ -2365,20 +2374,18 @@ inline const Trips & Feed::get_trips() const { return trips; }
 
 inline const Trip & Feed::get_trip(const Id & trip_id) const
 {
-  const auto it =
-                         std::lower_bound(trips.begin(), trips.end(), trip_id,
-                                          [](const auto & a, const Id & i){ return a.trip_id < i;});
-
-  if (it == trips.end() || it->trip_id != trip_id)
-  {
-    static Trip invalid;
-    return invalid;
+  auto idx_it = trip_index.find(trip_id);
+  if (idx_it != trip_index.end()) {
+    return trips[idx_it->second];
   }
-
-  return *it;
+  static Trip invalid;
+  return invalid;
 }
 
-inline void Feed::add_trip(const Trip & trip) { trips.emplace_back(trip); }
+inline void Feed::add_trip(const Trip & trip) { 
+    trips.emplace_back(trip); 
+    trip_index.emplace(trip.trip_id, trips.size() - 1);
+}
 
 inline Result Feed::read_stop_times()
 {
@@ -2394,15 +2401,16 @@ inline Result Feed::write_stop_times(const std::string & gtfs_path) const
 
 inline const StopTimes & Feed::get_stop_times() const { return stop_times; }
 
-inline StopTimes Feed::get_stop_times_for_stop(const Id & stop_id) const
+inline const StopTimes& Feed::get_stop_times_for_stop(const Id & stop_id) const
 {
-  StopTimes res;
-  for (const auto & stop_time : stop_times)
-  {
-    if (stop_time.stop_id == stop_id)
-      res.emplace_back(stop_time);
+  // Use index if available
+  auto it = stop_times_by_stop_index.find(stop_id);
+  if (it != stop_times_by_stop_index.end()) {
+    return it->second;
   }
-  return res;
+  const_cast<Feed*>(this)->stop_times_by_stop_index.emplace(stop_id, StopTimes{});
+  it = stop_times_by_stop_index.find(stop_id);
+  return it->second;
 }
 
 inline StopTimesRange Feed::get_stop_times_for_trip(const Id & trip_id) const
@@ -2414,7 +2422,10 @@ inline StopTimesRange Feed::get_stop_times_for_trip(const Id & trip_id) const
   return {start, end};
 }
 
-inline void Feed::add_stop_time(const StopTime & stop_time) { stop_times.emplace_back(stop_time); }
+inline void Feed::add_stop_time(const StopTime & stop_time) { 
+    stop_times.emplace_back(stop_time); 
+    stop_times_by_stop_index[stop_time.stop_id].emplace_back(stop_time);
+}
 
 inline Result Feed::read_calendar()
 {
