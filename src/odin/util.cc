@@ -37,7 +37,7 @@ using namespace valhalla::tyr;
 namespace valhalla {
 extern valhalla::odin::locales_singleton_t load_narrative_locals();
 extern std::shared_ptr<valhalla::odin::NarrativeDictionary>
-load_narrative_locals_for(const std::string& locale_string);
+load_narrative_locales_for(const std::string& locale_string);
 } // namespace valhalla
 #endif
 
@@ -55,7 +55,7 @@ constexpr size_t kPrivateuseIndex = 4;
 
 #if !defined(__EMSCRIPTEN__)
 std::shared_ptr<valhalla::odin::NarrativeDictionary>
-load_narrative_locals_for(const std::string& locale_string) {
+load_narrative_locales_for(const std::string& locale_string) {
   // Load the json
   auto json_it = locales_json.find(locale_string);
   if (json_it == locales_json.end()) {
@@ -198,7 +198,7 @@ get_locales_ensure_narrative_dictionary(const std::string& locale_string) {
     return it->second;
   }
   std::shared_ptr<NarrativeDictionary> narrative_dictionary =
-      load_narrative_locals_for(target_locale);
+      load_narrative_locales_for(target_locale);
   auto& locales_nonconst = const_cast<locales_singleton_t&>(locales);
   locales_nonconst.insert(std::make_pair(target_locale, narrative_dictionary));
   return narrative_dictionary;

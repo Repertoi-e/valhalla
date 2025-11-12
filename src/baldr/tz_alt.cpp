@@ -521,55 +521,10 @@ sort_zone_mappings(std::vector<date::detail::timezone_mapping>& mappings)
         return false;
     });
 }
+
 static
 bool
 native_to_standard_timezone_name(const std::string& native_tz_name,
-    inline std::unordered_map<std::string, std::unique_ptr<time_zone>>& timezone_cache()
-    {
-        static auto& cache = *new std::unordered_map<std::string, std::unique_ptr<time_zone>>();
-        return cache;
-    }
-
-    inline const time_zone* ensure_time_zone_from_string(const std::string& name)
-    {
-        auto safe_name = name.empty() ? std::string("Etc/UTC") : name;
-        auto& cache = timezone_cache();
-        auto it = cache.find(safe_name);
-        if (it != cache.end())
-            return it->second.get();
-
-        auto zone = std::make_unique<time_zone>(safe_name, detail::undocumented{});
-        auto* raw = zone.get();
-        cache.emplace(safe_name, std::move(zone));
-        return raw;
-    }
-
-    #if HAS_STRING_VIEW
-    inline const time_zone* ensure_time_zone_from_view(std::string_view name)
-    {
-        return ensure_time_zone_from_string(std::string{name});
-    }
-    #endif
-
-    inline std::string detect_default_timezone_name()
-    {
-        auto global = val::global();
-        auto intl = global["Intl"];
-        if (!intl.isUndefined() && !intl.isNull())
-        {
-            auto dtf = intl["DateTimeFormat"];
-            if (!dtf.isUndefined() && !dtf.isNull() && dtf.typeOf().as<std::string>() == "function")
-            {
-                auto formatter = dtf();
-                auto options = formatter.call<val>("resolvedOptions");
-                auto tz = options["timeZone"];
-                if (!tz.isUndefined() && !tz.isNull())
-                    return tz.as<std::string>();
-            }
-        }
-        return "Etc/UTC";
-    }
-
                                  std::string& standard_tz_name)
 {
     // TODO! Need be a case insensitive compare?
@@ -4197,10 +4152,11 @@ init_tzdb_strings()
 # pragma GCC diagnostic pop
 #endif
 
+// clang-format on
+
 #else  // __EMSCRIPTEN__
 
 #include <emscripten.h>
-
 #include <emscripten/val.h>
 
 #include <chrono>
@@ -4211,85 +4167,12 @@ init_tzdb_strings()
 #include <unordered_map>
 #include <mutex>
 
-#include <date/tz.h>
-
-EM_JS(void, date_init_timezone_stub, (), {
-    if (Module.__valhalla_tz_get_info) {
-        return;
-    }
-
-    Module.__valhalla_tz_get_info = function (tzName, epochSeconds, isLocal) {
-        tzName = tzName || 'Etc/UTC';
-        const epochMs = epochSeconds * 1000;
-        const instant = new Date(epochMs);
-
-        const parseOffsetSeconds = (text) => {
-            if (!text || typeof text !== 'string') {
-                return 0;
-            }
-            const match = /GMT([+-])([0-9]{1,2})(?::?([0-9]{2}))?/i.exec(text);
-            if (!match) {
-                return 0;
-            }
-            const sign = match[1] === '-' ? -1 : 1;
-            const hours = parseInt(match[2], 10) || 0;
-            const minutes = parseInt(match[3] || '0', 10) || 0;
-            return sign * ((hours * 60 + minutes) * 60);
-        };
-
-        const buildFormatterParts = (options) => {
-            try {
-                return new Intl.DateTimeFormat('en-US', Object.assign({ timeZone: tzName }, options)).formatToParts(instant);
-            } catch (err) {
-                return null;
-            }
-        };
-
-        const offsetParts = buildFormatterParts({ timeZoneName: 'shortOffset', hour: '2-digit', minute: '2-digit', second: '2-digit' }) || [];
-        const offsetPart = offsetParts.find((part) => part.type === 'timeZoneName');
-        const offsetSeconds = parseOffsetSeconds(offsetPart ? offsetPart.value : null);
-
-        const abbrevParts = buildFormatterParts({ timeZoneName: 'short' }) || [];
-        const abbrevPart = abbrevParts.find((part) => part.type === 'timeZoneName');
-        const abbrev = abbrevPart ? abbrevPart.value : (offsetPart ? offsetPart.value : 'UTC');
-
-        return {
-            result: 0,
-            first: {
-                begin: Number.NEGATIVE_INFINITY,
-                end: Number.POSITIVE_INFINITY,
-                offsetSeconds: offsetSeconds,
-                saveMinutes: 0,
-                abbrev: abbrev
-            },
-            second: null
-        };
-    };
-});
-
 namespace date
 {
 using emscripten::val;
 
-inline void ensure_timezone_provider()
-{
-    date_init_timezone_stub();
-}
-
-inline val get_timezone_provider(const std::string& preferred)
-{
-    ensure_timezone_provider();
-    auto module = val::global("Module");
-    auto fn = module[preferred];
-    if (!fn.isUndefined() && !fn.isNull() && fn.typeOf().as<std::string>() == "function") {
-        return fn;
-    }
-    auto fallback = module[std::string("__valhalla_tz_get_info")];
-    if (fallback.isUndefined() || fallback.isNull() || fallback.typeOf().as<std::string>() != "function") {
-        throw std::runtime_error("No JavaScript timezone resolver available (Module.getTimezoneInfo missing)");
-    }
-    return fallback;
-}
+val invoke_timezone_provider(const std::string& tz_name, double epoch_seconds, bool is_local);
+std::string detect_default_timezone_name();
 
 namespace
 {
@@ -4320,33 +4203,6 @@ inline const time_zone* ensure_time_zone_from_view(std::string_view name)
     return ensure_time_zone_from_string(std::string{name});
 }
 #endif
-
-inline std::string detect_default_timezone_name()
-{
-    auto global = val::global();
-    auto intl = global["Intl"];
-    if (!intl.isUndefined() && !intl.isNull())
-    {
-        auto dtf = intl["DateTimeFormat"];
-        if (!dtf.isUndefined() && !dtf.isNull() && dtf.typeOf().as<std::string>() == "function")
-        {
-            auto formatter = dtf();
-            auto options = formatter.call<val>("resolvedOptions");
-            auto tz = options["timeZone"];
-            if (!tz.isUndefined() && !tz.isNull())
-                return tz.as<std::string>();
-        }
-    }
-    return "Etc/UTC";
-}
-
-inline val invoke_timezone_provider(const std::string& tz_name,
-                                    double epoch_seconds,
-                                    bool is_local)
-{
-    auto fn = get_timezone_provider("getTimezoneInfo");
-    return fn(val(tz_name), val(epoch_seconds), val(is_local));
-}
 
 inline std::chrono::sys_seconds to_sys_seconds(double seconds_value)
 {
