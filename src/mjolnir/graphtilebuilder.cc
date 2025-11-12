@@ -28,8 +28,8 @@
 void stub_printf(const char*, ...) {
 }
 
-#define DEBUG_PRINTF(...) printf(__VA_ARGS__)
-// #define DEBUG_PRINTF(...) stub_printf(__VA_ARGS__)
+// #define DEBUG_PRINTF(...) printf(__VA_ARGS__)
+#define DEBUG_PRINTF(...) stub_printf(__VA_ARGS__)
 
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;

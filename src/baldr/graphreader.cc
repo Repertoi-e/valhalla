@@ -15,7 +15,7 @@
 using namespace valhalla::midgard;
 
 namespace valhalla {
-std::unordered_set<GraphId> fetch_wasm_tile_manifest();
+std::unordered_set<baldr::GraphId> fetch_wasm_tile_manifest();
 } // namespace valhalla
 
 namespace {

@@ -12,19 +12,42 @@
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
 
-// Include last cuz unf it defines some weir shi
-// #include "arche/arche.h"
+using namespace valhalla;
+using namespace emscripten;
+
+static val g_fetch_locale = val::undefined();
+static val g_fetch_tile = val::undefined();
+static val g_list_tiles = val::undefined();
+static val g_timezone_resolver = val::undefined();
+static val g_default_timezone_name = val::undefined();
 
 namespace valhalla {
+std::string serialize_error(const valhalla_exception_t& exception, Api& request);
+bool Options_Action_Enum_Parse(const std::string& action, Options::Action* a);
+} // namespace valhalla
 
-static emscripten::val g_fetch_locale = emscripten::val::undefined();
-static emscripten::val g_fetch_tile = emscripten::val::undefined();
-static emscripten::val g_list_tiles = emscripten::val::undefined();
+namespace date {
+
+std::string detect_default_timezone_name() {
+  if (g_default_timezone_name.isNull() || g_default_timezone_name.isUndefined()) {
+    throw valhalla_exception_t{500, "Default timezone name function not initialized"};
+  }
+  return g_default_timezone_name().as<std::string>();
+}
+
+val invoke_timezone_provider(const std::string& tz_name, double epoch_seconds, bool is_local) {
+  if (g_timezone_resolver.isNull() || g_timezone_resolver.isUndefined()) {
+    throw valhalla_exception_t{500, "Timezone resolver function not initialized"};
+  }
+  return g_timezone_resolver(val(tz_name), val(epoch_seconds), val(is_local));
+}
+} // namespace date
 
 using baldr::tile_getter_t;
 using baldr::wasm_tile_getter_t;
 
-extern std::unordered_set<baldr::GraphId> fetch_wasm_tile_manifest() {
+namespace valhalla{
+std::unordered_set<baldr::GraphId> fetch_wasm_tile_manifest() {
   std::unordered_set<baldr::GraphId> tiles;
   try {
     if (g_list_tiles.isNull() || g_list_tiles.isUndefined()) {
@@ -56,7 +79,7 @@ odin::locales_singleton_t load_narrative_locals() {
 }
 
 std::shared_ptr<valhalla::odin::NarrativeDictionary>
-load_narrative_locals_for(const std::string& locale_string) {
+load_narrative_locales_for(const std::string& locale_string) {
   if (g_fetch_locale.isNull() || g_fetch_locale.isUndefined()) {
     throw valhalla_exception_t{500, "Locale fetch function not initialized"};
   }
@@ -72,6 +95,7 @@ load_narrative_locals_for(const std::string& locale_string) {
       std::make_shared<valhalla::odin::NarrativeDictionary>(locale_string, narrative_pt);
   return narrative_dictionary;
 }
+} // namespace valhalla
 
 tile_getter_t::GET_response_t
 wasm_tile_getter_t::get(const std::string& url, const uint64_t offset, const uint64_t size) {
@@ -97,7 +121,6 @@ wasm_tile_getter_t::get(const std::string& url, const uint64_t offset, const uin
 
   return response;
 }
-} // namespace valhalla
 
 extern "C" {
 /*void* malloc(size_t size) {
@@ -154,58 +177,38 @@ int posix_memalign(void** memptr, size_t alignment, size_t size) {
 namespace emscripten {
 val js_malloc(size_t size) {
   // return val(typed_memory_view(size, (byte*)malloc<byte>({.Count = (s64)size})));
-  return val(typed_memory_view(size, (char *) malloc(size)));
+  return val(typed_memory_view(size, (char*)malloc(size)));
 }
 
 void js_free(val buffer) {
-  free((char *)buffer.as<uintptr_t>());
-}
-
-template <class Allocator = std::allocator<bool>>
-class_<std::vector<bool, Allocator>> register_vector_bool(const char* name) {
-  typedef std::vector<bool, Allocator> VecType;
-#if __cplusplus >= 201703L
-  register_optional<bool>();
-#endif
-
-  void (VecType::*push_back)(const bool&) = &VecType::push_back;
-  void (VecType::*resize)(const size_t, bool) = &VecType::resize;
-  size_t (VecType::*size)() const = &VecType::size;
-  return class_<std::vector<bool>>(name)
-      .template constructor<>()
-      .function("push_back", push_back, allow_raw_pointers())
-      .function("resize", resize, allow_raw_pointers())
-      .function("size", size)
-      .function("get", &internal::VectorAccess<VecType>::get, allow_raw_pointers())
-      .function("set", &internal::VectorAccess<VecType>::set, allow_raw_pointers());
+  free((char*)buffer.as<uintptr_t>());
 }
 } // namespace emscripten
 
-namespace valhalla {
-std::string serialize_error(const valhalla_exception_t& exception, Api& request);
-bool Options_Action_Enum_Parse(const std::string& action, Options::Action* a);
-} // namespace valhalla
-
-using namespace valhalla;
-
-void init_js_callbacks_holder(emscripten::val fetch_locale,
-                              emscripten::val fetch_tile,
-                              emscripten::val list_tiles) {
+void these_are_the_js_callbacks(val fetch_locale,
+                                val fetch_tile,
+                                val list_tiles,
+                                val timezone_resolver,
+                                val default_timezone_name) {
   g_fetch_locale = fetch_locale;
   g_fetch_tile = fetch_tile;
   g_list_tiles = list_tiles;
+  g_timezone_resolver = timezone_resolver;
+  g_default_timezone_name = default_timezone_name;
 }
 
 tyr::actor_t* actor = nullptr;
 
-extern "C" EMSCRIPTEN_KEEPALIVE void init_actor(const char* valhalla_config_json) {
-  actor = new tyr::actor_t(config(std::string(valhalla_config_json)));
-
-  load_narrative_locals_for("en-US");
+void init(std::string valhalla_config_json) {
+  actor = new tyr::actor_t(config(valhalla_config_json));
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js,
-                                                       const char* request_js) {
+void prefetch_locales_for(std::string locale_string) {
+  // Just load and it gets cached
+  auto _ = odin::get_locales_ensure_narrative_dictionary(std::string{locale_string});
+}
+
+std::string do_request(std::string action_js, std::string request_js) {
   // RequestArena.Used = 0; // Reset the arena for this request
   // if (!RequestArena.Block) {
   //   RequestArena.AutomaticBlockSize = 64_MiB;
@@ -274,13 +277,124 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char* do_request(const char* action_js,
     // print("STAT {}: {}\n", stat.key().c_str(), stat.value());
   }
 
-  return strdup(result.c_str()); // @Leak
+  return result; // strdup(result.c_str()); // @Leak
 }
 
 EMSCRIPTEN_BINDINGS(valhalla_bindings) {
-  using namespace emscripten;
+  function("these_are_the_js_callbacks", &these_are_the_js_callbacks);
+  function("init", &init);
+  function("prefetch_locales_for", &prefetch_locales_for);
+  function("do_request", &do_request);
 
-  function("init_js_callbacks_holder", &init_js_callbacks_holder);
   function("_malloc", &js_malloc);
   function("_free", &js_free);
 }
+
+/*
+#include "test.h"
+#include <gtest/gtest.h>
+#include <date/tz.h>
+#include <chrono>
+
+
+// These tests are intended to run only under the Emscripten/JS timezone shim.
+// They validate that Temporal integration (or Intl fallback) produces sane results.
+// If Temporal polyfill is present it should expose transitions and ambiguity on DST folds.
+
+using namespace date;
+using namespace std::chrono;
+
+namespace {
+
+bool running_in_wasm_stub() {
+#if defined(__EMSCRIPTEN__)
+  return true;
+#else
+  return false;
+#endif
+}
+
+// Helper to get sys_info for specific epoch seconds in a zone.
+static sys_info sys_at(const time_zone* tz, std::int64_t epoch_sec) {
+  return tz->get_info(sys_seconds{seconds{epoch_sec}});
+}
+
+// Attempt to detect a DST transition near a provided epoch range by scanning for offset changes.
+static bool find_transition(const time_zone* tz, std::int64_t start, std::int64_t end, std::int64_t&
+when, int& before_off, int& after_off) { int prev = (int)sys_at(tz, start).offset.count(); for
+(std::int64_t t = start + 3600; t <= end; t += 3600) { // hourly step int cur = (int)sys_at(tz,
+t).offset.count(); if (cur != prev) { when = t; before_off = prev; after_off = cur; return true;
+    }
+    prev = cur;
+  }
+  return false;
+}
+
+} // namespace
+
+TEST(WasmTimezone, BasicOffsetUTC) {
+  if (!running_in_wasm_stub()) GTEST_SKIP() << "Not running under Emscripten stub";
+  auto* tz = locate_zone("Etc/UTC");
+  auto info = sys_at(tz, 0);
+  EXPECT_EQ(info.offset.count(), 0) << "UTC offset should be 0";
+  EXPECT_TRUE(info.begin <= info.end);
+  EXPECT_FALSE(info.abbrev.empty());
+}
+
+TEST(WasmTimezone, NonUTCZoneReturnsOffset) {
+  if (!running_in_wasm_stub()) GTEST_SKIP();
+  auto* tz = locate_zone("America/New_York");
+  auto now = std::chrono::system_clock::now();
+  auto info = tz->get_info(std::chrono::time_point_cast<seconds>(now));
+  // Offset should be a whole number of minutes; multiple of 60 seconds.
+  EXPECT_EQ(info.offset.count() % 60, 0) << "Offset should be minute-aligned";
+  EXPECT_FALSE(info.abbrev.empty());
+}
+
+TEST(WasmTimezone, TransitionDetectionTemporalOrFallback) {
+  if (!running_in_wasm_stub()) GTEST_SKIP();
+  auto* tz = locate_zone("America/New_York");
+  // Choose a range around a typical DST change (March) for recent years.
+  // We try current year March 1 through April 15.
+  auto ymd = year_month_day{floor<days>(system_clock::now())};
+  int yr = (int)ymd.year();
+  // Build epoch seconds for target span using civil to sys conversion.
+  auto start = sys_days{year{yr}/March/1}.time_since_epoch().count();
+  auto end   = sys_days{year{yr}/April/15}.time_since_epoch().count();
+  std::int64_t when; int before_off; int after_off;
+  bool found = find_transition(tz, start, end, when, before_off, after_off);
+  // If Temporal is present we expect at least one transition; Intl fallback might miss it (then we
+allow not found).
+  // We can't directly check Temporal presence from C++; heuristic: begin != -inf and end != +inf near
+'when' if found. if (found) { auto info_before = sys_at(tz, when - 3600); auto info_after  =
+sys_at(tz, when + 3600); EXPECT_NE(info_before.offset.count(), info_after.offset.count());
+  }
+}
+
+TEST(WasmTimezone, AmbiguousFoldHeuristic) {
+  if (!running_in_wasm_stub()) GTEST_SKIP();
+  auto* tz = locate_zone("America/New_York");
+  // Fall transition: around first Sunday in November.
+  auto ymd = year_month_day{floor<days>(system_clock::now())};
+  int yr = (int)ymd.year();
+  // Search Nov 1-15 for offset decrease.
+  auto start = sys_days{year{yr}/November/1}.time_since_epoch().count();
+  auto end   = sys_days{year{yr}/November/15}.time_since_epoch().count();
+  std::int64_t when; int before_off; int after_off;
+  bool found = find_transition(tz, start, end, when, before_off, after_off);
+  if (!found) GTEST_SKIP() << "No fold transition detected (Intl fallback)";
+  // Construct a local_seconds in the hour after transition to probe ambiguity.
+  // We can't directly query local_info via public API unless we create local_seconds; emulate by
+calling get_info on local_seconds path indirectly.
+  // Here we just assert sys_info offset difference suffices.
+  EXPECT_GT(before_off, after_off) << "Fall back should reduce offset";
+}
+
+// If Temporal implemented: ambiguous/nonexistent local times should be distinguishable. Without
+direct local_seconds API exposure here we rely on future extension.
+
+int main(int argc, char** argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
+*/
