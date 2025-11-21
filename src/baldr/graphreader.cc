@@ -198,6 +198,7 @@ GraphReader::tile_extract_t::tile_extract_t(const property_tree& pt, bool traffi
 }
 
 void GraphReader::load_remote_tar_offsets() {
+#if !defined __EMSCRIPTEN__
   // get the tar header of the first file so we know with which range to download index.bin
   auto first_file_resp =
       CURL_OR_THROW(tile_getter_->get(tile_url_, 0, sizeof(tar::header_t)), tile_url_);
@@ -220,14 +221,14 @@ void GraphReader::load_remote_tar_offsets() {
 
   remote_tar_offsets_.reserve(index_bin_size);
   const auto entries =
-      std::span(reinterpret_cast<tile_index_entry*>(index_bin_response.data_),
-                index_bin_size);
+      std::span(reinterpret_cast<tile_index_entry*>(index_bin_response.data_), index_bin_size);
   for (const auto& entry : entries) {
     remote_tar_offsets_.insert({GraphId{entry.tile_id}, {entry.offset, entry.size}});
   }
   if (remote_tar_offsets_.size() == 0) {
     throw std::runtime_error("The 'index.bin' doesn't contain any data at " + tile_url_);
   }
+#endif
 };
 
 // ----------------------------------------------------------------------------
@@ -562,9 +563,16 @@ GraphReader::GraphReader(const property_tree& pt,
                                                pt.get<bool>("tile_url_gz", false),
                                                pt.get<std::string>("tile_url_user_pw", ""));
     }
+#if !defined __EMSCRIPTEN__
     if (is_tar_url_) {
       load_remote_tar_offsets();
     }
+#else
+    if (is_tar_url_) {
+      throw std::runtime_error("WASM builds do not support remote tar tile sources");
+    }
+#endif
+
     // we allow to not cache tiles locally from URL
     if (!tile_dir_.empty()) {
       // load & validate the id.txt if available
@@ -582,6 +590,7 @@ GraphReader::GraphReader(const property_tree& pt,
       }
     }
   }
+
   // Reserve cache (based on whether using individual tile files or shared,
   // mmap'd file
   cache_->Reserve(tile_extract_->tiles.empty() ? AVERAGE_TILE_SIZE : AVERAGE_MM_TILE_SIZE);
