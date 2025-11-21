@@ -4,7 +4,6 @@
 #include "midgard/util.h"
 #include "mjolnir/edgeinfobuilder.h"
 
-#include <boost/shared_array.hpp>
 #include <gtest/gtest.h>
 
 #include <cstdint>
@@ -19,7 +18,7 @@ using namespace valhalla::mjolnir;
 
 namespace {
 
-boost::shared_array<char> ToFileAndBack(const EdgeInfoBuilder& eibuilder) {
+std::vector<char> ToFileAndBack(const EdgeInfoBuilder& eibuilder) {
   // write EdgeInfoBuilder to binary file
   std::ofstream out_file("EdgeInfoBuilder_TestWriteRead.gph",
                          std::ios::out | std::ios::binary | std::ios::ate);
@@ -32,15 +31,15 @@ boost::shared_array<char> ToFileAndBack(const EdgeInfoBuilder& eibuilder) {
 
   // read EdgeInfo from binary file
   std::streampos size;
-  boost::shared_array<char> memblock;
+  std::vector<char> memblock;
 
   std::ifstream in_file("EdgeInfoBuilder_TestWriteRead.gph",
                         std::ios::in | std::ios::binary | std::ios::ate);
   if (in_file.is_open()) {
     size = in_file.tellg();
-    memblock.reset(new char[size]);
+    memblock.resize(size);
     in_file.seekg(0, std::ios::beg);
-    in_file.read(memblock.get(), size);
+    in_file.read(memblock.data(), size);
     in_file.close();
   }
 
@@ -79,8 +78,8 @@ TEST(EdgeInfoBuilder, TestWriteRead) {
   eibuilder.set_shape(shape);
 
   // Make an edge info object from the memory
-  boost::shared_array<char> memblock = ToFileAndBack(eibuilder);
-  std::unique_ptr<EdgeInfo> ei(new EdgeInfo(memblock.get(), nullptr, 0));
+  std::vector<char> memblock = ToFileAndBack(eibuilder);
+  std::unique_ptr<EdgeInfo> ei(new EdgeInfo(memblock.data(), nullptr, 0));
 
   // TODO: errors thrown should say what was found and what was expected
 
