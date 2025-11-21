@@ -213,7 +213,8 @@ void GraphTile::SaveTileToFile(const std::vector<char>& tile_data,
 void store(const std::string& cache_location,
            const GraphId& graphid,
            const tile_getter_t* tile_getter,
-           const std::vector<char>& raw_data) {
+           const char* raw_data, 
+           size_t raw_data_size) {
   if (!cache_location.empty()) {
     auto suffix =
         valhalla::baldr::GraphTile::FileSuffix(graphid.Tile_Base(),
@@ -223,18 +224,20 @@ void store(const std::string& cache_location,
     // Windows apparently can't "+" string & char (which "preferred_separator" is on win)
     std::filesystem::path disk_location{cache_location};
     disk_location.append(suffix);
-    filesystem_utils::save(disk_location, raw_data);
+    filesystem_utils::save(disk_location, std::span<const char>(raw_data, raw_data_size));
   }
 }
 #else
 void store(const std::string& cache_location,
            const GraphId& graphid,
            const tile_getter_t* tile_getter,
-           const std::vector<char>& raw_data) {
+           const char* raw_data, 
+           size_t raw_data_size) {
   (void)cache_location;
   (void)graphid;
   (void)tile_getter;
   (void)raw_data;
+  (void)raw_data_size;
 }
 #endif
 
@@ -272,7 +275,7 @@ graph_tile_ptr GraphTile::CacheTileURL(const std::string& tile_url,
   // inspect the header for the checksum
   // it's a POD type and thus trivially copyable
   GraphTileHeader header;
-  std::memcpy(&header, result.bytes_.data(), sizeof(header));
+  std::memcpy(&header, result.data_, sizeof(header));
   auto tile_checksum = header.checksum();
   if (tile_checksum == 0) {
     // loading tilesets built by older valhalla commits has the potential to corrupt the GraphReader
@@ -296,7 +299,7 @@ graph_tile_ptr GraphTile::CacheTileURL(const std::string& tile_url,
   }
 
   // try to cache it on disk so we dont have to keep fetching it from url
-  store(tile_dir, graphid, tile_getter, result.bytes_);
+  store(tile_dir, graphid, tile_getter, result.data_, result.size_);
 
   // turn the memory into a tile
   if (tile_getter->gzipped()) {
@@ -736,30 +739,15 @@ EdgeInfo GraphTile::edgeinfo(const DirectedEdge* edge) const {
 
 // Get the complex restrictions in the forward or reverse order based on
 // the id and modes.
-std::vector<ComplexRestriction*>
-GraphTile::GetRestrictions(const bool forward, const GraphId id, const uint64_t modes) const {
-  size_t offset = 0;
-  std::vector<ComplexRestriction*> cr_vector;
+ComplexRestrictionView
+GraphTile::GetComplexRestrictions(const bool forward, const GraphId id, const uint64_t modes) const {
   if (forward) {
-    while (offset < complex_restriction_forward_size_) {
-      ComplexRestriction* cr =
-          reinterpret_cast<ComplexRestriction*>(complex_restriction_forward_ + offset);
-      if (cr->to_graphid() == id && (cr->modes() & modes)) {
-        cr_vector.push_back(cr);
-      }
-      offset += cr->SizeOf();
-    }
+    return ComplexRestrictionView(complex_restriction_forward_, complex_restriction_forward_size_, id,
+                                  modes, true);
   } else {
-    while (offset < complex_restriction_reverse_size_) {
-      ComplexRestriction* cr =
-          reinterpret_cast<ComplexRestriction*>(complex_restriction_reverse_ + offset);
-      if (cr->from_graphid() == id && (cr->modes() & modes)) {
-        cr_vector.push_back(cr);
-      }
-      offset += cr->SizeOf();
-    }
+    return ComplexRestrictionView(complex_restriction_reverse_, complex_restriction_reverse_size_, id,
+                                  modes, false);
   }
-  return cr_vector;
 }
 
 // Get the directed edges outbound from the specified node index.
@@ -1246,13 +1234,11 @@ const TransitSchedule* GraphTile::GetTransitSchedule(const uint32_t idx) const {
 }
 
 // Get the access restriction given its directed edge index
-std::vector<AccessRestriction> GraphTile::GetAccessRestrictions(const uint32_t idx,
-                                                                const uint32_t access) const {
+std::span<const AccessRestriction> GraphTile::GetAccessRestrictions(const uint32_t idx) const {
 
-  std::vector<AccessRestriction> restrictions;
   uint32_t count = header_->access_restriction_count();
   if (count == 0) {
-    return restrictions;
+    return {};
   }
 
   // Access restriction are sorted by edge Id.
@@ -1277,16 +1263,12 @@ std::vector<AccessRestriction> GraphTile::GetAccessRestrictions(const uint32_t i
     }
   }
 
-  // Add restrictions for only the access that we are interested in
-  for (; found < count && access_restrictions_[found].edgeindex() == idx; ++found) {
-    if (access_restrictions_[found].modes() & access) {
-      restrictions.emplace_back(access_restrictions_[found]);
-    }
+  const auto start = found;
+  while (found < count && access_restrictions_[found].edgeindex() == idx) {
+    ++found;
   }
-
-  return restrictions;
+  return std::span<AccessRestriction>(access_restrictions_ + start, access_restrictions_ + found);
 }
-
 // Get the array of graphids for this bin
 std::span<GraphId> GraphTile::GetBin(size_t column, size_t row) const {
   auto offsets = header_->bin_offset(column, row);

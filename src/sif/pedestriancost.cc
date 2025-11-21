@@ -426,7 +426,7 @@ Cost PedestrianCost::EdgeCost(const DynamicCost* parent,
   }
 
   factor *= edge->lit() + (!edge->lit() * parent->unlit_factor_);
-  factor *= EdgeFactor(edgeid);
+  factor *= parent->EdgeFactor(edgeid);
 
   // Slightly favor walkways/paths and penalize alleys and driveways.
   return {sec * factor, sec};

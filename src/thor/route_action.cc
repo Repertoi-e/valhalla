@@ -222,7 +222,7 @@ void add_cost_factor_edges(const sif::mode_costing_t& costing,
   // keep track of how many edges we're adding
   uint64_t edge_count = 0;
 
-  for (auto& line : *options.mutable_cost_factor_lines()) {
+  for (auto& line : options.mutable_cost_factor_lines()) {
     std::vector<std::vector<PathInfo>> legs;
     if (!RouteMatcher::FormPath(costing, mode, reader, line, false, /* use_shortcuts=*/true, legs)) {
       throw valhalla_exception_t{233};

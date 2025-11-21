@@ -274,7 +274,7 @@ Cost AutoCost::EdgeCost(const DynamicCost* parent,
                         uint8_t& flow_sources) const {
 
   if (parent->costing_type_ == Costing::taxi) {
-    return Taxi_EdgeCost(parent, edge, tile, time_info, flow_sources);
+    return Taxi_EdgeCost(parent, edge, edgeid, tile, time_info, flow_sources);
   }
 
   using namespace autocost_internal;
@@ -334,7 +334,7 @@ Cost AutoCost::EdgeCost(const DynamicCost* parent,
       break;
   }
 
-  factor *= EdgeFactor(edgeid);
+  factor *= parent->EdgeFactor(edgeid);
 
   if (parent->IsClosed(edge, tile)) {
     // Add a penalty for traversing a closed edge
@@ -591,6 +591,7 @@ void ParseBusCostOptions(const rapidjson::Document& doc,
  */
 Cost AutoCost::Taxi_EdgeCost(const DynamicCost* parent,
                              const baldr::DirectedEdge* edge,
+                             const baldr::GraphId& edgeid,
                              const graph_tile_ptr& tile,
                              const baldr::TimeInfo& time_info,
                              uint8_t& flow_sources) const {

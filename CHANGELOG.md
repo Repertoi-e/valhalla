@@ -5,7 +5,6 @@
 * REMOVED: Dependency on google's libprotobuf in favor of a shim around plain old C++ structs and protozero for serialization/deserialization. 
            This removes dependecy on a bunch of libraries that Google's protobuf uses, this alone opened the possibility to build Valhalla to WASM with emscripten.
 * REMOVED: Fibonacci heap in favor of std::priority_queue (Fibonacci heap is hella slow in practice, no?)
-* REMOVED: Git submodules, as they are the antichrist
 
 * FIXED: ingest_transit to handle missing calendar.txt, since that's optional, and instead calendar_dates.txt can be used to define the availability, real world scenario was Netherlands' OV API which doesn't contain calendar.txt, but only calendar_dates.txt.
 * FIXED: ingest_transit was taking several orders of magnitude more time than necessary to ingest GTFS feeds, sped it up
@@ -13,7 +12,7 @@
 * TODO: Uncomment and fix VersionChecksum test cuz idk why its failing now
 * TODO: Fix SimpleCost test
 * TODO: Uncomment and fix pinpoints tests, but we need proper valhalla.json config to regen .pbf files
-* TODO: Fix INLINE_TEXT for sif 
+* TODO: Fix INLINE_TEXT for sif (INLINE_TEST_TODO_FIX)
 
 ## UNRELEASED
 * **Removed**
@@ -24,6 +23,10 @@
    * FIXED: Handle access restriction tag values separated by semicolon [#5560](https://github.com/valhalla/valhalla/pull/5560)
 * **Enhancement**
    * ADDED: Assign cost factors to linear features [#5584](https://github.com/valhalla/valhalla/pull/5584)
+   * CHANGED: Get rid of temporary std::vector in GraphTile::GetRestrictions [#5688](https://github.com/valhalla/valhalla/pull/5688)
+   * CHANGED: Use std::from_chars instead of std::stoi/stof/stod [#5704](https://github.com/valhalla/valhalla/pull/5704)
+   * CHANGED: Avoid dynamic allocation in loki::Search [#5724](https://github.com/valhalla/valhalla/pull/5724)
+   * CHANGED: Get rid of temporary vector in GraphTile::GetAccessRestrictions [#5689](https://github.com/valhalla/valhalla/pull/5689)
 
 ## Release Date: 2025-11-14 Valhalla 3.6.1
 * **Removed**
@@ -51,6 +54,8 @@
    * ADDED: `flow_sources` expansion property [#5697](https://github.com/valhalla/valhalla/pull/5697)
    * CHANGED: Replace GDAL with libgeotiff, re-enable support for bindings [#5680](https://github.com/valhalla/valhalla/pull/5680)
    * ADDED: Support for loading tiles from a remote tarball with optional HTTP basic auth [#5467](https://github.com/valhalla/valhalla/pull/5467)
+   * CHANGED: lower penalty for u-turns without name consistency [#5696](https://github.com/valhalla/valhalla/pull/5696)
+   * CHANGED: Speed up transit feed ingestion with faster stop time look up via stop id [#5134](https://github.com/valhalla/valhalla/pull/5134)
 
 ## Release Date: 2025-10-23 Valhalla 3.6.0
 * **Removed**

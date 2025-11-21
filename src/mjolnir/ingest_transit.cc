@@ -247,15 +247,14 @@ select_transit_tiles(const std::filesystem::path& gtfs_path) {
                                                     stop_times.size(),
                                                     std::chrono::duration<float>(duration_2).count()));*/
 
-        const auto& stop_times = feed.get_stop_times_for_stop(stop.stop_id);
-
-        for (const auto& stopTime : stop_times) {
+        auto stop_times = feed.get_stop_times_for_stop(stop.stop_id);
+        for (auto& stop_time : stop_times) {
           // add trip, route, agency and service_id from stop_time, it's the only place with that info
-          // TODO: should we throw here?
-          auto trip = feed.get_trip(stopTime.trip_id);
+          auto trip = feed.get_trip(stop_time.trip_id);
           auto route = feed.get_route(trip.route_id);
 
           if (!gtfs::valid(trip) || !gtfs::valid(route) || trip.service_id.empty()) {
+            // TODO: should we throw here?
             LOG_ERROR("Missing trip or route or service_id for trip");
             continue;
           }

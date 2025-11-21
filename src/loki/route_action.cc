@@ -128,7 +128,7 @@ void loki_worker_t::route(Api& request) {
 
     // store the correlations for the cost factor lines
     size_t i = 0;
-    for (auto& line : *options.mutable_cost_factor_lines()) {
+    for (auto& line : options.mutable_cost_factor_lines()) {
       const auto& correlated_start = projections.at(locations[locations_end + 2 * i]);
       auto* start = line.mutable_locations()->Add();
       PathLocation::toPBF(correlated_start, start, *reader);

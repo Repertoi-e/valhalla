@@ -300,25 +300,29 @@ void DynamicCost::AddUturnPenalty(const uint32_t idx,
                                   const bool penalize_internal_uturns,
                                   const InternalTurn internal_turn,
                                   float& seconds) const {
-  if (node->drive_on_right()) {
-    // Did we make a uturn on a short, internal edge or did we make a uturn at a node.
-    if (has_reverse ||
-        (penalize_internal_uturns && internal_turn == InternalTurn::kLeftTurn && has_left))
-      seconds += kTCUnfavorableUturn;
-    // Did we make a pencil point uturn?
-    else if (edge->turntype(idx) == baldr::Turn::Type::kSharpLeft && edge->edge_to_right(idx) &&
-             !edge->edge_to_left(idx) && edge->named() && edge->name_consistency(idx))
-      seconds *= kTCUnfavorablePencilPointUturn;
-  } else {
-    // Did we make a uturn on a short, internal edge or did we make a uturn at a node.
-    if (has_reverse ||
-        (penalize_internal_uturns && internal_turn == InternalTurn::kRightTurn && has_right))
-      seconds += kTCUnfavorableUturn;
-    // Did we make a pencil point uturn?
-    else if (edge->turntype(idx) == baldr::Turn::Type::kSharpRight && !edge->edge_to_right(idx) &&
-             edge->edge_to_left(idx) && edge->named() && edge->name_consistency(idx))
-      seconds *= kTCUnfavorablePencilPointUturn;
-  }
+if (node->drive_on_right()) {
+      // Did we make a uturn on a short, internal edge or did we make a uturn at a node.
+      if (has_reverse && !edge->name_consistency(idx)) {
+        seconds += kTCNameInconsistentUturn;
+      } else if (has_reverse ||
+                 (penalize_internal_uturns && internal_turn == InternalTurn::kLeftTurn && has_left)) {
+        seconds += kTCUnfavorableUturn;
+        // Did we make a pencil point uturn?
+      } else if (edge->turntype(idx) == baldr::Turn::Type::kSharpLeft && edge->edge_to_right(idx) &&
+                 !edge->edge_to_left(idx) && edge->named() && edge->name_consistency(idx))
+        seconds *= kTCUnfavorablePencilPointUturn;
+    } else {
+      // Did we make a uturn on a short, internal edge or did we make a uturn at a node.
+      if (has_reverse && !edge->name_consistency(idx)) {
+        seconds += kTCNameInconsistentUturn;
+      } else if (has_reverse || (penalize_internal_uturns &&
+                                 internal_turn == InternalTurn::kRightTurn && has_right)) {
+        seconds += kTCUnfavorableUturn;
+        // Did we make a pencil point uturn?
+      } else if (edge->turntype(idx) == baldr::Turn::Type::kSharpRight && !edge->edge_to_right(idx) &&
+                 edge->edge_to_left(idx) && edge->named() && edge->name_consistency(idx))
+        seconds *= kTCUnfavorablePencilPointUturn;
+    }
 }
 
 // Returns the transfer cost between 2 transit stops.
@@ -482,6 +486,7 @@ Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge,
 }
 
 Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge,
+                          const baldr::GraphId& edgeid,
                            const baldr::graph_tile_ptr& tile,
                            const baldr::TimeInfo& time_info,
                            uint8_t& flow_sources) const {
@@ -489,23 +494,23 @@ Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge,
     case Costing::auto_:
     case Costing::bus:
     case Costing::taxi:
-      return auto_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+      return auto_cost_.EdgeCost(this, edge, edgeid, tile, time_info, flow_sources);
     case Costing::bicycle:
-      return bicycle_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+      return bicycle_cost_.EdgeCost(this, edge, edgeid, tile, time_info, flow_sources);
     case Costing::motorcycle:
-      return motorcycle_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+      return motorcycle_cost_.EdgeCost(this, edge, edgeid, tile, time_info, flow_sources);
     case Costing::motor_scooter:
-      return motor_scooter_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+      return motor_scooter_cost_.EdgeCost(this, edge, edgeid, tile, time_info, flow_sources);
     case Costing::pedestrian:
     case Costing::bikeshare:
-      return pedestrian_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+      return pedestrian_cost_.EdgeCost(this, edge, edgeid, tile, time_info, flow_sources);
     case Costing::transit:
       throw std::runtime_error("Transit costing does not implement non-transit edge costs");
     case Costing::truck:
-      return truck_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+      return truck_cost_.EdgeCost(this, edge, edgeid, tile, time_info, flow_sources);
     case Costing::none_:
     case Costing::multimodal:
-      return no_cost_.EdgeCost(this, edge, tile, time_info, flow_sources);
+      return no_cost_.EdgeCost(this, edge, edgeid, tile, time_info, flow_sources);
   }
   throw std::runtime_error("EdgeCost not implemented for costing type");
 }

@@ -27,7 +27,7 @@ std::tuple<baldr::GraphId, const baldr::DirectedEdge*> get_shortcut(baldr::Graph
   return std::make_tuple(shortcut, de);
 }
 
-void check_cost_factor_edge(const ::google::protobuf::RepeatedPtrField<CostFactorEdge>& edges,
+void check_cost_factor_edge(const std::vector<CostFactorEdge>& edges,
                             const std::string& begin_node,
                             const std::string& end_node,
                             baldr::GraphReader& reader,
@@ -170,7 +170,7 @@ TEST_F(LinearFeatureTest, simple_high_factor) {
 
   thor_worker.route(request);
   auto costing_options =
-      request.options().costings().find(request.options().costing_type())->second.options();
+      request.options().costings().find((int) request.options().costing_type())->second.options();
   // AB, BC and the shortcut they make up, twice (once for each range)
   EXPECT_EQ(costing_options.cost_factor_edges().size(), 4);
 
@@ -242,7 +242,7 @@ TEST_F(LinearFeatureTest, simple_low_factor) {
 
   thor_worker.route(request);
   auto costing_options =
-      request.options().costings().find(request.options().costing_type())->second.options();
+      request.options().costings().find((int) request.options().costing_type())->second.options();
   EXPECT_EQ(costing_options.cost_factor_edges().size(), 4);
 
   baldr::GraphReader reader(map.config.get_child("mjolnir"));
@@ -257,7 +257,7 @@ TEST_F(LinearFeatureTest, simple_low_factor) {
                          1.);
 
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find(request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
   auto auto_cost = valhalla::sif::CreateAutoCost(costings);
 
   // make sure there is no shortcut here
@@ -301,7 +301,7 @@ TEST_F(LinearFeatureTest, partial_edges_shape) {
 
   thor_worker.route(request);
   auto costing_options =
-      request.options().costings().find(request.options().costing_type())->second.options();
+      request.options().costings().find((int) request.options().costing_type())->second.options();
   EXPECT_EQ(costing_options.cost_factor_edges().size(), 2);
 
   baldr::GraphReader reader(map.config.get_child("mjolnir"));
@@ -312,7 +312,7 @@ TEST_F(LinearFeatureTest, partial_edges_shape) {
                          0.6);
 
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find(request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
   auto auto_cost = valhalla::sif::CreateAutoCost(costings);
 
   // finally check the route
@@ -374,7 +374,7 @@ TEST_F(LinearFeatureTest, multi_shape_geojson) {
 
   thor_worker.route(request);
   auto costing_options =
-      request.options().costings().find(request.options().costing_type())->second.options();
+      request.options().costings().find((int) request.options().costing_type())->second.options();
   EXPECT_EQ(costing_options.cost_factor_edges().size(), 5);
 
   baldr::GraphReader reader(map.config.get_child("mjolnir"));
@@ -385,7 +385,7 @@ TEST_F(LinearFeatureTest, multi_shape_geojson) {
                          0.82498, 0.85, /*shortcut=*/true);
 
   sif::mode_costing_t mode_costing;
-  auto costings = request.options().costings().find(request.options().costing_type())->second;
+  auto costings = request.options().costings().find((int) request.options().costing_type())->second;
   auto auto_cost = valhalla::sif::CreateAutoCost(costings);
 
   // finally check the route

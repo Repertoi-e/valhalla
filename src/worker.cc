@@ -60,7 +60,7 @@ bool is_format_supported(Options::Action action, Options::Format format) {
           (1 << (int)Options::expansion),
   // geotiff
 #ifdef ENABLE_GEOTIFF
-      (1 << Options::isochrone),
+      (1 << (int) Options::isochrone),
 #else
       0,
 #endif
@@ -1033,11 +1033,11 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
   auto linear_feats = rapidjson::get_child_optional(doc, "/linear_cost_factors");
 
   if (linear_feats) {
-    if (!linear_feats->IsArray()) {
+    if (!(*linear_feats)->IsArray()) {
       add_warning(api, 212);
     } else {
       try {
-        for (const auto& linear_feat : linear_feats->GetArray()) {
+        for (const auto& linear_feat : (*linear_feats)->GetArray()) {
           auto is_geojson = linear_feat.GetObject().HasMember("type");
           auto* l = options.mutable_cost_factor_lines()->Add();
 

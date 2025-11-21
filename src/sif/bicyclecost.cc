@@ -498,7 +498,7 @@ Cost BicycleCost::EdgeCost(const DynamicCost* parent,
                               kGradeBasedSpeedFactor[edge->weighted_grade()]) +
                              0.5f);
 
-  factor *= EdgeFactor(edgeid);
+  factor *= parent->EdgeFactor(edgeid);
 
   // Compute elapsed time based on speed. Modulate cost with weighting factors.
   float sec = (edge->length() * kSpeedFactor[bike_speed]);

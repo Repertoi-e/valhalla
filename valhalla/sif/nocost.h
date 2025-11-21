@@ -86,6 +86,7 @@ public:
    */
   Cost EdgeCost(const DynamicCost* parent,
                 const baldr::DirectedEdge* edge,
+                const baldr::GraphId& edgeid,
                 const baldr::graph_tile_ptr&,
                 const baldr::TimeInfo&,
                 uint8_t&) const {

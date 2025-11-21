@@ -341,7 +341,7 @@ Cost TruckCost::EdgeCost(const DynamicCost* parent,
     // Add a penalty for traversing a closed edge
     factor *= parent->closure_factor_;
   }
-  factor *= EdgeFactor(edgeid);
+  factor *= parent->EdgeFactor(edgeid);
 
   return {sec * factor, sec};
 }

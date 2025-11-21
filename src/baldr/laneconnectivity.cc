@@ -1,4 +1,5 @@
 #include "baldr/laneconnectivity.h"
+#include "midgard/util.h"
 
 #include <sstream>
 #include <vector>
@@ -57,7 +58,7 @@ LaneConnectivityLanes::LaneConnectivityLanes(const std::string& lanes) : value_(
   }
   uint8_t n = 1;
   for (const auto& t : tokens) {
-    set_lane(n++, std::stoi(t));
+    set_lane(n++, midgard::to_int(t));
   }
 }
 

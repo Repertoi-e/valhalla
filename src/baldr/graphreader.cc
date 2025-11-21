@@ -201,7 +201,7 @@ void GraphReader::load_remote_tar_offsets() {
   // get the tar header of the first file so we know with which range to download index.bin
   auto first_file_resp =
       CURL_OR_THROW(tile_getter_->get(tile_url_, 0, sizeof(tar::header_t)), tile_url_);
-  auto first_file_header = reinterpret_cast<tar::header_t*>(first_file_resp.bytes_.data());
+  auto first_file_header = reinterpret_cast<tar::header_t*>(first_file_resp.data_);
 
   // verify the first file is indeed the index.bin
   auto first_file_name = std::string_view(first_file_header->name);
@@ -216,11 +216,11 @@ void GraphReader::load_remote_tar_offsets() {
   auto index_bin_response = CURL_OR_THROW(tile_getter_->get(tile_url_, sizeof(tar::header_t),
                                                             first_file_header->get_file_size()),
                                           tile_url_);
-  const auto index_bin_size = index_bin_response.bytes_.size() / sizeof(tile_index_entry);
+  const auto index_bin_size = index_bin_response.size_ / sizeof(tile_index_entry);
 
   remote_tar_offsets_.reserve(index_bin_size);
   const auto entries =
-      std::span(reinterpret_cast<tile_index_entry*>(index_bin_response.bytes_.data()),
+      std::span(reinterpret_cast<tile_index_entry*>(index_bin_response.data_),
                 index_bin_size);
   for (const auto& entry : entries) {
     remote_tar_offsets_.insert({GraphId{entry.tile_id}, {entry.offset, entry.size}});

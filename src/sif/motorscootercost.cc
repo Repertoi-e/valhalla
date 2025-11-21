@@ -280,7 +280,7 @@ Cost MotorScooterCost::EdgeCost(const DynamicCost* parent,
     factor *= parent->closure_factor_;
   }
 
-  factor *= EdgeFactor(edgeid);
+  factor *= parent->EdgeFactor(edgeid);
   return {sec * factor, sec};
 }
 
