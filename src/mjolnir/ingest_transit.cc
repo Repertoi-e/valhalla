@@ -87,8 +87,9 @@ struct feed_cache_t {
       return found->second;
     }
 
-    auto inserted =
-        cache.insert({feed_object.feed, gtfs::Feed((gtfs_dir / feed_object.feed).string())});
+    std::string f = feed_object.feed;
+    // Construct in-place: try_emplace forwards path string to gtfs::Feed constructor
+    auto inserted = cache.try_emplace(f, (gtfs_dir / f).string());
     inserted.first->second.read_feed();
     return inserted.first->second;
   }
@@ -99,7 +100,7 @@ struct feed_cache_t {
       return {gtfs::ResultCode::OK, ""};
     }
 
-    auto inserted = cache.insert({feed_name, gtfs::Feed((gtfs_dir / feed_name).string())});
+    auto inserted = cache.try_emplace(feed_name, (gtfs_dir / feed_name).string());
     return inserted.first->second.read_feed();
   }
 };
@@ -190,7 +191,7 @@ select_transit_tiles(const std::filesystem::path& gtfs_path) {
         continue;
       }
       LOG_INFO("Done loading, now parsing " + feed_name);
-      const auto& feed = feeds({"", feed_name});
+      const auto& feed = feeds({{}, feed_name});
 
       const auto& stops = feed.get_stops();
       // 1st pass to add all the stations, so we can add stops to its children in a 2nd pass
@@ -229,7 +230,7 @@ select_transit_tiles(const std::filesystem::path& gtfs_path) {
               tile_info.graphid !=
                   GraphId(local_tiles.TileId(parent_station.stop_lat, parent_station.stop_lon),
                           TileHierarchy::GetTransitLevel().level, 0)) {
-            LOG_WARN("Station ID " + stop.parent_station + " is not in stop " + stop.stop_id +
+            LOG_WARN("Station ID " + (std::string) stop.parent_station + " is not in stop " + (std::string) stop.stop_id +
                      "'s tile: " + std::to_string(tile_info.graphid));
           }
           tile_info.stations.insert({stop.stop_id, feed_name});
@@ -248,7 +249,7 @@ select_transit_tiles(const std::filesystem::path& gtfs_path) {
                                                     std::chrono::duration<float>(duration_2).count()));*/
 
         auto stop_times = feed.get_stop_times_for_stop(stop.stop_id);
-        for (auto& stop_time : stop_times) {
+        for (const auto& stop_time : stop_times) {
           // add trip, route, agency and service_id from stop_time, it's the only place with that info
           auto trip = feed.get_trip(stop_time.trip_id);
           auto route = feed.get_route(trip.route_id);
@@ -304,12 +305,12 @@ void setup_stops(valhalla::Transit& tile,
     //  spec, perhaps one should use pathways.txt::is_bidirectional to differentiate?
     node->set_traversability(static_cast<uint32_t>(Traversability::kBoth));
   }
-  node->set_name(tile_stop.stop_name);
-  node->set_timezone(tile_stop.stop_timezone);
+  node->set_name((std::string) tile_stop.stop_name);
+  node->set_timezone((std::string) tile_stop.stop_timezone);
   bool wheelchair_accessible = (tile_stop.wheelchair_boarding == "1");
   node->set_wheelchair_boarding(wheelchair_accessible);
   node->set_generated(isGenerated);
-  const auto& onestop_base = get_onestop_id_base(tile_stop.stop_id, feed_name);
+  const auto& onestop_base = get_onestop_id_base((std::string) tile_stop.stop_id, feed_name);
   node->set_onestop_id(isGenerated ? onestop_base + "_" + to_string(node_type) : onestop_base);
   if (node_type == NodeType::kMultiUseTransitPlatform) {
     // when this platform is not generated, we can use its actual given id verbatim because thats how
@@ -387,7 +388,7 @@ write_stops(valhalla::Transit& tile, const tile_transit_info_t& tile_info) {
     //   to properly remove its associated station/egress IF they're not referenced
     //   by other platforms.
     if (tile.nodes_size() == node_count) {
-      LOG_ERROR("Generated platform for station " + station_as_stop.stop_id);
+      LOG_ERROR("Generated platform for station " + (std::string) station_as_stop.stop_id);
       setup_stops(tile, station_as_stop, node_id, platform_node_ids, station.feed,
                   NodeType::kMultiUseTransitPlatform, true, prev_id);
     }
@@ -464,7 +465,7 @@ if (!gtfs::valid(trip_calendar)) {
   }
 
   if (!gtfs::valid(currTrip)) {
-    LOG_ERROR("Feed " + feed_trip.feed + ", trip ID" + tile_tripId +
+    LOG_ERROR("Feed " + (std::string) feed_trip.feed + ", trip ID" + (std::string) tile_tripId +
               " can't be found, skipping...");
     return false;
   }
@@ -497,10 +498,10 @@ if (!gtfs::valid(trip_calendar)) {
     // we check further down when stitching and adjust if it's was generated
     std::string origin_onestop_id = origin_is_in_tile
                                         ? tile_nodes[origin_graphid_it->second.id()].onestop_id()
-                                        : get_onestop_id_base(origin_stopId, feed_trip.feed);
+                                        : get_onestop_id_base((std::string) origin_stopId, (std::string) feed_trip.feed);
     std::string dest_onestop_id = dest_is_in_tile
                                       ? tile_nodes[dest_graphid_it->second.id()].onestop_id()
-                                      : get_onestop_id_base(dest_stopId, feed_trip.feed);
+                                      : get_onestop_id_base((std::string) dest_stopId, (std::string) feed_trip.feed);
 
     // we don't use this value unless the origin is in the tile, so it's fine to set it false
     bool origin_is_generated =
@@ -535,7 +536,7 @@ if (!gtfs::valid(trip_calendar)) {
       // this shouldn't happen, but let's make sure it doesn't
       // in convert_transit we'll check if there was a valid date for this service and skip if not
       if (!dow_mask && !had_added_date) {
-        LOG_WARN("Service ID " + currTrip.service_id +
+        LOG_WARN("Service ID " + (std::string) currTrip.service_id +
                  " has no valid calendar or calendar_dates entry, skipping...");
         tile.mutable_stop_pairs()->RemoveLast();
         continue;
@@ -558,7 +559,7 @@ if (!gtfs::valid(trip_calendar)) {
 
       if (currTrip.block_id != "") {
         uniques.lock.lock();
-        auto inserted = uniques.block_ids.insert({currTrip.block_id, uniques.block_ids.size() + 1});
+        auto inserted = uniques.block_ids.insert({(std::string) currTrip.block_id, uniques.block_ids.size() + 1});
         stop_pair->set_block_id(inserted.first->second);
         uniques.lock.unlock();
       }
@@ -597,11 +598,11 @@ if (!gtfs::valid(trip_calendar)) {
       stop_pair->set_route_index(routes_ids.at({currTrip.route_id, currFeedPath}));
 
       // grab the headsign
-      stop_pair->set_trip_headsign(currTrip.trip_headsign);
+      stop_pair->set_trip_headsign((std::string) currTrip.trip_headsign);
 
       uniques.lock.lock();
       // trips should never have ID=0, it messes up the triplegbuilder logic
-      auto inserted = uniques.trips.insert({currTrip.trip_id, uniques.trips.size() + 1});
+      auto inserted = uniques.trips.insert({(std::string) currTrip.trip_id, uniques.trips.size() + 1});
       stop_pair->set_trip_id(inserted.first->second);
       uniques.lock.unlock();
 
@@ -613,7 +614,7 @@ if (!gtfs::valid(trip_calendar)) {
         if (num_frequencies > 1) {
           // TODO(nils): this should be properly handled as 1 trip id can have
           //  multiple frequencies, e.g. the example Google feed does
-          LOG_WARN("More than one frequencies based schedule for " + currTrip.trip_id);
+          LOG_WARN("More than one frequencies based schedule for " + (std::string) currTrip.trip_id);
         }
 
         auto freq_start_time = (currFrequencies.first->start_time.get_raw_time());
@@ -631,9 +632,9 @@ if (!gtfs::valid(trip_calendar)) {
 
         auto line_id = stop_pair->origin_onestop_id() < stop_pair->destination_onestop_id()
                            ? stop_pair->origin_onestop_id() + stop_pair->destination_onestop_id() +
-                                 currTrip.route_id + freq_time
+                                 (std::string) currTrip.route_id + freq_time
                            : stop_pair->destination_onestop_id() + stop_pair->origin_onestop_id() +
-                                 currTrip.route_id + freq_time;
+                                 (std::string) currTrip.route_id + freq_time;
         uniques.lock.lock();
         uniques.lines.insert({line_id, uniques.lines.size()});
         uniques.lock.unlock();
@@ -660,21 +661,21 @@ write_routes(valhalla::Transit& tile, const tile_transit_info_t& tile_info) {
     auto* route = tile.add_routes();
     auto currRoute = feed.get_route(tile_routeId);
 
-    route->set_name(currRoute.route_short_name);
-    route->set_onestop_id(get_onestop_id_base(currRoute.route_id, feed_route.first.feed));
+    route->set_name((std::string) currRoute.route_short_name);
+    route->set_onestop_id(get_onestop_id_base((std::string) currRoute.route_id, (std::string) feed_route.first.feed));
     route->set_operated_by_onestop_id(
-        get_onestop_id_base(currRoute.agency_id, feed_route.first.feed));
+        get_onestop_id_base((std::string) currRoute.agency_id, (std::string) feed_route.first.feed));
 
     auto currAgency = feed.get_agency(currRoute.agency_id);
-    route->set_operated_by_name(currAgency.agency_name);
-    route->set_operated_by_website(currAgency.agency_url);
+    route->set_operated_by_name((std::string) currAgency.agency_name);
+    route->set_operated_by_website((std::string) currAgency.agency_url);
     // TODO(nils): add operated_by_onestop_id to the route, convert transit sets it and it's
     // used for filtering
 
-    route->set_route_color(strtol(currRoute.route_color.c_str(), nullptr, 16));
-    route->set_route_desc(currRoute.route_desc);
-    route->set_route_long_name(currRoute.route_long_name);
-    route->set_route_text_color(strtol(currRoute.route_text_color.c_str(), nullptr, 16));
+    route->set_route_color(gtfs::strtol(currRoute.route_color, 16));
+    route->set_route_desc((std::string) currRoute.route_desc);
+    route->set_route_long_name((std::string) currRoute.route_long_name);
+    route->set_route_text_color(gtfs::strtol(currRoute.route_text_color, 16));
     route->set_vehicle_type((valhalla::Transit_VehicleType)(static_cast<int>(currRoute.route_type)));
 
     routes_ids.emplace(feed_route.first, idx);
