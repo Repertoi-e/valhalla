@@ -604,7 +604,7 @@ float DynamicCost::AStarCostFactor() const {
       return kSpeedFactor[top_speed_] * min_linear_cost_factor_;
     case Costing::bicycle:
       // Assume max speed of 2 * the average speed set for costing
-      return kSpeedFactor[static_cast<uint32_t>(2 * bicycle_cost_.speed_)];
+      return kSpeedFactor[static_cast<uint32_t>(2 * bicycle_cost_.speed_)] * min_linear_cost_factor_;
     case Costing::pedestrian:
     case Costing::bikeshare:
       // On first pass use the walking speed plus a small factor to account for
@@ -634,9 +634,9 @@ float DynamicCost::AStarCostFactor() const {
         if (service_factor_ < 1.f) {
           factor *= service_factor_;
         }
-        return (pedestrian_cost_.speedfactor_ * factor);
+        return (pedestrian_cost_.speedfactor_ * factor) * min_linear_cost_factor_;
       } else {
-        return (midgard::kSecPerHour * 0.001f) / static_cast<float>(baldr::kMaxFerrySpeedKph);
+        return (midgard::kSecPerHour * 0.001f) / static_cast<float>(baldr::kMaxFerrySpeedKph) * min_linear_cost_factor_;
       }
     case Costing::transit:
       return 0.0f;

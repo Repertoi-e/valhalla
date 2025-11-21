@@ -4,6 +4,9 @@
 * REMOVED: Dependency on boost in favor of std:: or tiny replacements: boost::optional in favor of std::optional, boost::format in favor of a tiny wrapper around sprintf, boost::property_tree::ptree in favor of a light custom replacement
 * REMOVED: Dependency on google's libprotobuf in favor of a shim around plain old C++ structs and protozero for serialization/deserialization. 
            This removes dependecy on a bunch of libraries that Google's protobuf uses, this alone opened the possibility to build Valhalla to WASM with emscripten.
+
+           Important semantic change, repeated fields are stable pointers because they essentially store T*, and not just T, but we changed to std::vector<T> which invalidates pointers on resize. Some places in the code are using pointers to elements, while also resizing later and using those pointers.
+
 * REMOVED: Fibonacci heap in favor of std::priority_queue (Fibonacci heap is hella slow in practice, no?)
 
 * FIXED: ingest_transit to handle missing calendar.txt, since that's optional, and instead calendar_dates.txt can be used to define the availability, real world scenario was Netherlands' OV API which doesn't contain calendar.txt, but only calendar_dates.txt.

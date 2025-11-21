@@ -172,8 +172,8 @@ opposing) { loc.mutable_correlation()->mutable_edges()->SwapElements(i, loc.path
 void add_partial_shortcut(baldr::GraphReader& reader,
                           GraphId shortcut,
                           valhalla::Costing_Options* options,
-                          valhalla::CostFactorEdge* cost_factor) {
-  GraphId edge = static_cast<GraphId>(cost_factor->id());
+                          valhalla::CostFactorEdge cost_factor) {
+  GraphId edge = static_cast<GraphId>(cost_factor.id());
   graph_tile_ptr tile = reader.GetGraphTile(shortcut);
   // it's part of a shortcut
   auto constituents = reader.RecoverShortcut(shortcut);
@@ -197,12 +197,12 @@ void add_partial_shortcut(baldr::GraphReader& reader,
   }
   auto* e = options->add_cost_factor_edges();
   e->set_id(shortcut);
-  e->set_factor(cost_factor->factor());
+  e->set_factor(cost_factor.factor());
   e->set_start(static_cast<double>(accumulated_length + (static_cast<double>(current_edge->length()) *
-                                                         cost_factor->start())) /
+                                                         cost_factor.start())) /
                static_cast<double>(shortcut_edge->length()));
   e->set_end(static_cast<double>(accumulated_length +
-                                 (static_cast<double>(current_edge->length()) * cost_factor->end())) /
+                                 (static_cast<double>(current_edge->length()) * cost_factor.end())) /
              static_cast<double>(shortcut_edge->length()));
 }
 
@@ -253,7 +253,7 @@ void add_cost_factor_edges(const sif::mode_costing_t& costing,
           }
           auto shortcut = reader.GetShortcut(path_info.edgeid);
           if (shortcut.Is_Valid()) {
-            add_partial_shortcut(reader, shortcut, costing_options, e);
+            add_partial_shortcut(reader, shortcut, costing_options, *e);
           }
         } else if (is_first || is_last) { // beginning or end edge
           for (const auto& edge :
@@ -268,7 +268,7 @@ void add_cost_factor_edges(const sif::mode_costing_t& costing,
               e->set_end(is_last ? edge.percent_along() : 1.);
               auto shortcut = reader.GetShortcut(path_info.edgeid);
               if (shortcut.Is_Valid()) {
-                add_partial_shortcut(reader, shortcut, costing_options, e);
+                add_partial_shortcut(reader, shortcut, costing_options, *e);
               }
               break;
             }
@@ -298,7 +298,7 @@ void add_cost_factor_edges(const sif::mode_costing_t& costing,
             // a little, can't we persist this information somehow?
             auto shortcut = reader.GetShortcut(path_info.edgeid);
             if (shortcut.Is_Valid()) {
-              add_partial_shortcut(reader, shortcut, costing_options, e);
+              add_partial_shortcut(reader, shortcut, costing_options, *e);
             }
           }
         }
