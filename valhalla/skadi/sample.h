@@ -4,7 +4,6 @@
 #include <valhalla/baldr/tilegetter.h>
 #include <valhalla/property_tree/ptree_fwd.hpp>
 
-#include <mutex>
 #include <string>
 #include <vector>
 

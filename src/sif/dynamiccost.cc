@@ -19,6 +19,8 @@ using namespace valhalla::midgard;
 
 namespace {
 
+constexpr double kMinCustomFactor = std::numeric_limits<double>::epsilon();
+
 uint8_t SpeedMask_Parse(const std::optional<const rapidjson::Value*>& speed_types) {
   static const std::unordered_map<std::string, uint8_t> types{
       {"freeflow", kFreeFlowMask},
@@ -112,6 +114,32 @@ constexpr ranged_default_t<uint32_t> kFixedSpeedRange{0, baldr::kDisableFixedSpe
                                                       baldr::kMaxSpeedKph};
 } // namespace
 
+/**
+ * When all ranges for a given edge are added, sort by range start
+ * and return the smallest factor found for this edge.
+ */
+double custom_cost_t::sort_and_find_smallest() {
+  if (ranges.empty())
+    return 1.;
+
+  std::sort(ranges.begin(), ranges.end(),
+            [](const cost_edge_t& a, const cost_edge_t& b) { return a.start < b.start; });
+
+  // keep track of how much of the edge is
+  // not covered by ranges
+  double uncovered = 1.;
+  double avg = 0.;
+  double min_factor = 1.;
+  for (const auto& range : ranges) {
+    uncovered -= range.end - range.start;
+    avg += (range.end - range.start) * range.factor;
+    min_factor = std::min(min_factor, range.factor);
+  }
+  avg += uncovered * 1.;
+  avg_factor = std::max(avg, kMinCustomFactor);
+  return std::max(min_factor, kMinCustomFactor);
+}
+
 /*
  * Assign default values for costing options in constructor. In case of different
  * default values they should be overridden in "<type>cost.cc" file.
@@ -157,7 +185,7 @@ DynamicCost::DynamicCost(const Costing& costing,
       ignore_construction_(costing.options().ignore_construction()),
       top_speed_(costing.options().top_speed()), fixed_speed_(costing.options().fixed_speed()),
       filter_closures_(ignore_closures_ ? false : costing.filter_closures()),
-      penalize_uturns_(penalize_uturns) {
+      penalize_uturns_(penalize_uturns), min_linear_cost_factor_(1.) {
 
   // set user supplied hierarchy limits if present, fill the other
   // required levels up with sentinel values (clamping to config supplied limits/defaults is handled
@@ -211,6 +239,24 @@ DynamicCost::DynamicCost(const Costing& costing,
     case Costing::multimodal:
       no_cost_ = NoCost();
   }
+
+  // add linear feature factors
+  for (auto& e : costing.options().cost_factor_edges()) {
+    // short-circuit the ones with factor 0 by putting them on the exclude pile
+    if (e.factor() == 0.) {
+      user_exclude_edges_.insert({static_cast<GraphId>(e.id()), e.start()});
+      break;
+    }
+    auto& cost_edge = linear_cost_edges_[static_cast<GraphId>(e.id())];
+    cost_edge.ranges.push_back({e.start(), e.end(), e.factor()});
+  }
+
+  // once all cost factors are filled, sort by range, precompute overall average
+  // and store the overall minimum factor so it won't mess with the A* heuristic
+  for (auto& [edge, cost_factors] : linear_cost_edges_) {
+    min_linear_cost_factor_ =
+        std::min(min_linear_cost_factor_, cost_factors.sort_and_find_smallest());
+  }
 }
 
 DynamicCost::~DynamicCost() {
@@ -238,9 +284,11 @@ bool DynamicCost::AllowMultiPass() const {
 // using them for the current route. Here we just call out to the derived classes costing function
 // with a time that tells the function that we aren't using time. This avoids having to worry about
 // default parameters and inheritance (which are a bad mix)
-Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge, const graph_tile_ptr& tile) const {
+Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge,
+                           const baldr::GraphId& edgeid,
+                           const graph_tile_ptr& tile) const {
   uint8_t flow_sources;
-  return EdgeCost(edge, tile, TimeInfo::invalid(), flow_sources);
+  return EdgeCost(edge, edgeid, tile, TimeInfo::invalid(), flow_sources);
 }
 
 void DynamicCost::AddUturnPenalty(const uint32_t idx,
@@ -548,7 +596,7 @@ float DynamicCost::AStarCostFactor() const {
     case Costing::truck:
     case Costing::motorcycle:
     case Costing::motor_scooter:
-      return kSpeedFactor[top_speed_];
+      return kSpeedFactor[top_speed_] * min_linear_cost_factor_;
     case Costing::bicycle:
       // Assume max speed of 2 * the average speed set for costing
       return kSpeedFactor[static_cast<uint32_t>(2 * bicycle_cost_.speed_)];

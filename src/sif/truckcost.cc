@@ -283,6 +283,7 @@ bool TruckCost::AllowedReverse(const DynamicCost* parent,
 // Get the cost to traverse the edge in seconds
 Cost TruckCost::EdgeCost(const DynamicCost* parent,
                          const baldr::DirectedEdge* edge,
+                         const baldr::GraphId& edgeid,
                          const graph_tile_ptr& tile,
                          const baldr::TimeInfo& time_info,
                          uint8_t& flow_sources) const {
@@ -340,6 +341,7 @@ Cost TruckCost::EdgeCost(const DynamicCost* parent,
     // Add a penalty for traversing a closed edge
     factor *= parent->closure_factor_;
   }
+  factor *= EdgeFactor(edgeid);
 
   return {sec * factor, sec};
 }

@@ -108,6 +108,34 @@
 namespace valhalla {
 namespace sif {
 
+struct cost_edge_t {
+  double start{0.};
+  double end{1.};
+  double factor{1.};
+};
+
+struct custom_cost_t {
+  std::vector<cost_edge_t> ranges;
+  double avg_factor{1.};
+
+  // once ranges are filled up, sort and compute average
+  // returns the minimum factor
+  double sort_and_find_smallest();
+};
+
+// Holds a range plus a default value for that range
+template <class T> struct ranged_default_t {
+  T min, def, max;
+
+  // Returns the value snapped to the default if outside of the range
+  T operator()(const T& value) const {
+    if (value < min || value > max) {
+      return def;
+    }
+    return value;
+  }
+};
+
 class DynamicCost;
 
 const std::unordered_map<Costing::Type, std::vector<Costing::Type>> kCostingTypeMapping{

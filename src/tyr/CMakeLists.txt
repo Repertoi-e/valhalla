@@ -42,4 +42,5 @@ valhalla_module(NAME tyr
     valhalla::thor
     valhalla::odin
     valhalla::proto
-    ${GDAL_TARGET})
+    ${GTIFF_TARGETS}
+    )

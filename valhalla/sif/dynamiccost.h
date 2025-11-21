@@ -13,7 +13,7 @@
 
 namespace valhalla {
 namespace sif {
-
+    
 /**
  * Base class for dynamic edge costing. This class defines the interface for
  * costing methods and includes a few base methods that define default behavior
@@ -310,6 +310,7 @@ public:
    * @return  Returns the cost and time (seconds).
    */
   Cost EdgeCost(const baldr::DirectedEdge* edge,
+                const baldr::GraphId& id,
                 const baldr::graph_tile_ptr& tile,
                 const baldr::TimeInfo& time_info,
                 uint8_t& flow_sources) const;
@@ -321,7 +322,9 @@ public:
    * @param   tile    Pointer to the tile which contains the directed edge for speed lookup
    * @return  Returns the cost and time (seconds).
    */
-  Cost EdgeCost(const baldr::DirectedEdge* edge, const baldr::graph_tile_ptr& tile) const;
+  Cost EdgeCost(const baldr::DirectedEdge* edge,
+                const baldr::GraphId& edgeid,
+                const baldr::graph_tile_ptr& tile) const;
 
   /**
    * Returns the cost to make the transition from the predecessor edge.
@@ -891,6 +894,58 @@ public:
   }
 
   /**
+   * Get the partial cost along a fraction of the edge. Calls `EdgeCost`, scales it accordingly
+   * and applies the edge factors that apply along the portion of the edge.
+   *
+   * @param   edge          Pointer to a directed edge
+   * @param   edgeid        GraphId of the directed edge
+   * @param   tile          Pointer to the tile which contains the directed edge for speed lookup
+   * @param   time_info     Time info about edge passing, uses second_of_week for historical speed
+   * lookup and seconds_from_now for live-traffic smoothing
+   * @param   flow_sources  Which speed sources were used in this speed calculation
+   * @param   start         Start of the fraction along the edge
+   * @param   end           End of the fraction along the edge
+   *
+   * @return  Returns the cost and time (seconds).
+   *
+   */
+  Cost PartialEdgeCost(const baldr::DirectedEdge* edge,
+                       const baldr::GraphId& edgeid,
+                       const baldr::graph_tile_ptr& tile,
+                       const baldr::TimeInfo& time_info,
+                       uint8_t& flow_sources,
+                       const float start,
+                       const float end) const {
+    // pass an invalid edge id to EdgeCost to avoid applying an average factor along the whole edge
+    return EdgeCost(edge, baldr::GraphId(baldr::kInvalidGraphId), tile, time_info, flow_sources) *
+           std::max(end - start, std::numeric_limits<float>::epsilon()) *
+           PartialEdgeFactor(edgeid, start, end);
+  };
+
+  /**
+   * Get the cost to traverse the specified directed edge. Cost includes
+   * the time (seconds) to traverse the edge. This is the overload that can be called by non-time
+   * aware algorithms.
+   *
+   * @param   edge    Pointer to a directed edge.
+   * @param   edgeid        GraphId of the directed edge
+   * @param   tile    Pointer to the tile which contains the directed edge for speed lookup
+   * @param   start         Start of the fraction along the edge
+   * @param   end           End of the fraction along the edge
+   *
+   * @return  Returns the cost and time (seconds).
+   */
+  Cost PartialEdgeCost(const baldr::DirectedEdge* edge,
+                       const baldr::GraphId& edgeid,
+                       const baldr::graph_tile_ptr& tile,
+                       const float start,
+                       const float end) const {
+    return EdgeCost(edge, baldr::GraphId(baldr::kInvalidGraphId), tile) *
+           std::max(end - start, std::numeric_limits<float>::epsilon()) *
+           PartialEdgeFactor(edgeid, start, end);
+  };
+
+  /**
    * Get the flow mask used for accessing traffic flow data from the tile
    * @return the flow mask used
    */
@@ -946,6 +1001,53 @@ public:
 
   bool UseHierarchyLimits() {
     return use_hierarchy_limits;
+  }
+
+  /**
+   * Returns the averaged factor for an edge fraction based on user provided custom factors
+   * along linear features. If no custom factors are present for an edge, returns 1.
+   */
+  double PartialEdgeFactor(const baldr::GraphId& edgeid, const float start, const float end) const {
+    if (linear_cost_edges_.empty() || start == end)
+      return 1.;
+
+    if (auto it = linear_cost_edges_.find(edgeid); it != linear_cost_edges_.end()) {
+      double partial_factor = 0.;
+      double uncovered = 1.;
+      for (const auto& range : it->second.ranges) {
+        // skip if the range ends before our fraction starts or starts after our fraction ends
+        if (range.end <= start || range.start >= end)
+          continue;
+
+        // this range overlaps with the traversed fraction of the edge; figure out
+        // how big the overlap is and apply the factor accordingly
+        double fraction = (range.end - std::max(static_cast<double>(start), range.start)) /
+                          (static_cast<double>(end - start));
+        partial_factor += fraction * range.factor;
+
+        uncovered -= fraction; // keep track of how much of the partial edge is not covered by a range
+      }
+      partial_factor += uncovered; // whatever part of the fraction that was not covered by a range
+                                   // implicitly gets a factor of 1
+      return partial_factor;
+    }
+
+    // linear cost edges were present but none matched this edge
+    return 1.;
+  }
+
+  /**
+   * Returns a factor to be applied to edge cost based on user provided input. If
+   * no custom cost factors were provided for this edge, return 1.
+   */
+  double EdgeFactor(const baldr::GraphId& edgeid) const {
+    if (linear_cost_edges_.empty() || edgeid == baldr::kInvalidGraphId)
+      return 1.;
+
+    if (auto it = linear_cost_edges_.find(edgeid); it != linear_cost_edges_.end())
+      return it->second.avg_factor;
+
+    return 1.;
   }
 
   /**
@@ -1066,6 +1168,10 @@ public:
   TransitCost transit_cost_;
   TruckCost truck_cost_;
   NoCost no_cost_;
+
+  // User specified edges to cost based on user provided factors
+  std::unordered_map<baldr::GraphId, custom_cost_t> linear_cost_edges_;
+  double min_linear_cost_factor_;
 
   /**
    * Get the base transition costs (and ferry factor) from the costing options.
@@ -1342,38 +1448,38 @@ inline cost_ptr_t CreateTransitCost(const Costing& costing_options) {
 struct BaseCostingOptionsConfig {
   BaseCostingOptionsConfig();
 
-  midgard::ranged_default_t<float> dest_only_penalty_;
-  midgard::ranged_default_t<float> maneuver_penalty_;
-  midgard::ranged_default_t<float> alley_penalty_;
-  midgard::ranged_default_t<float> gate_cost_;
-  midgard::ranged_default_t<float> gate_penalty_;
-  midgard::ranged_default_t<float> private_access_penalty_;
-  midgard::ranged_default_t<float> country_crossing_cost_;
-  midgard::ranged_default_t<float> country_crossing_penalty_;
+  ranged_default_t<float> dest_only_penalty_;
+  ranged_default_t<float> maneuver_penalty_;
+  ranged_default_t<float> alley_penalty_;
+  ranged_default_t<float> gate_cost_;
+  ranged_default_t<float> gate_penalty_;
+  ranged_default_t<float> private_access_penalty_;
+  ranged_default_t<float> country_crossing_cost_;
+  ranged_default_t<float> country_crossing_penalty_;
 
   bool disable_toll_booth_ = false;
-  midgard::ranged_default_t<float> toll_booth_cost_;
-  midgard::ranged_default_t<float> toll_booth_penalty_;
+  ranged_default_t<float> toll_booth_cost_;
+  ranged_default_t<float> toll_booth_penalty_;
 
   bool disable_ferry_ = false;
-  midgard::ranged_default_t<float> ferry_cost_;
-  midgard::ranged_default_t<float> use_ferry_;
+  ranged_default_t<float> ferry_cost_;
+  ranged_default_t<float> use_ferry_;
 
   bool disable_rail_ferry_ = false;
-  midgard::ranged_default_t<float> rail_ferry_cost_;
-  midgard::ranged_default_t<float> use_rail_ferry_;
+  ranged_default_t<float> rail_ferry_cost_;
+  ranged_default_t<float> use_rail_ferry_;
 
-  midgard::ranged_default_t<float> service_penalty_;
-  midgard::ranged_default_t<float> service_factor_;
+  ranged_default_t<float> service_penalty_;
+  ranged_default_t<float> service_factor_;
 
-  midgard::ranged_default_t<float> height_;
-  midgard::ranged_default_t<float> width_;
+  ranged_default_t<float> height_;
+  ranged_default_t<float> width_;
 
-  midgard::ranged_default_t<float> use_tracks_;
-  midgard::ranged_default_t<float> use_living_streets_;
-  midgard::ranged_default_t<float> use_lit_;
+  ranged_default_t<float> use_tracks_;
+  ranged_default_t<float> use_living_streets_;
+  ranged_default_t<float> use_lit_;
 
-  midgard::ranged_default_t<float> closure_factor_;
+  ranged_default_t<float> closure_factor_;
 
   bool exclude_unpaved_;
   bool exclude_bridges_;

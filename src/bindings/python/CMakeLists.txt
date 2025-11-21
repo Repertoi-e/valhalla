@@ -2,7 +2,16 @@ cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
 
 include(ValhallaVersion)
 
-add_subdirectory(${VALHALLA_SOURCE_DIR}/third_party/nanobind ${CMAKE_BINARY_DIR}/third_party/nanobind EXCLUDE_FROM_ALL)
+if (PREFER_EXTERNAL_DEPS)
+  find_package(nanobind QUIET CONFIG)
+  if (NOT TARGET nanobind::nanobind)
+    message(WARNING "No nanobind found in system libraries, using vendored nanobind...")
+  endif()
+endif()
+
+if (NOT TARGET nanobind::nanobind)
+  add_subdirectory(${VALHALLA_SOURCE_DIR}/third_party/nanobind ${CMAKE_BINARY_DIR}/third_party/nanobind EXCLUDE_FROM_ALL)
+endif()
 
 message(STATUS "Installing python modules to ${Python_SITEARCH}")
 

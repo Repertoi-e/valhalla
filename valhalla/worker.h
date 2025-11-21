@@ -2,6 +2,7 @@
 #define __VALHALLA_WORKER_H__
 #include <valhalla/exceptions.h>
 #include <valhalla/property_tree/ptree_fwd.hpp>
+#include <valhalla/midgard/util.h>
 #include <valhalla/proto/api.pb.h>
 #include <valhalla/sif/dynamiccost.h>
 

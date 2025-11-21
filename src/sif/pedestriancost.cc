@@ -382,6 +382,7 @@ bool PedestrianCost::AllowedReverse(const DynamicCost* parent,
 // (in seconds) to traverse the edge.
 Cost PedestrianCost::EdgeCost(const DynamicCost* parent,
                               const baldr::DirectedEdge* edge,
+                              const baldr::GraphId& edgeid,
                               const graph_tile_ptr& tile,
                               const baldr::TimeInfo& time_info,
                               uint8_t& flow_sources) const {
@@ -425,6 +426,7 @@ Cost PedestrianCost::EdgeCost(const DynamicCost* parent,
   }
 
   factor *= edge->lit() + (!edge->lit() * parent->unlit_factor_);
+  factor *= EdgeFactor(edgeid);
 
   // Slightly favor walkways/paths and penalize alleys and driveways.
   return {sec * factor, sec};

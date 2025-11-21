@@ -403,6 +403,7 @@ bool BicycleCost::AllowedReverse(const DynamicCost* parent,
 // (in seconds) to traverse the edge.
 Cost BicycleCost::EdgeCost(const DynamicCost* parent,
                            const baldr::DirectedEdge* edge,
+                           const baldr::GraphId& edgeid,
                            const graph_tile_ptr&,
                            const baldr::TimeInfo&,
                            uint8_t&) const {
@@ -496,6 +497,8 @@ Cost BicycleCost::EdgeCost(const DynamicCost* parent,
                              (speed_ * surface_speed_factor_[static_cast<uint32_t>(edge->surface())] *
                               kGradeBasedSpeedFactor[edge->weighted_grade()]) +
                              0.5f);
+
+  factor *= EdgeFactor(edgeid);
 
   // Compute elapsed time based on speed. Modulate cost with weighting factors.
   float sec = (edge->length() * kSpeedFactor[bike_speed]);

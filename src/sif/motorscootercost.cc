@@ -230,6 +230,7 @@ bool MotorScooterCost::AllowedReverse(const DynamicCost* parent,
 
 Cost MotorScooterCost::EdgeCost(const DynamicCost* parent,
                                 const baldr::DirectedEdge* edge,
+                                const baldr::GraphId& edgeid,
                                 const graph_tile_ptr& tile,
                                 const baldr::TimeInfo& time_info,
                                 uint8_t& flow_sources) const {
@@ -279,6 +280,7 @@ Cost MotorScooterCost::EdgeCost(const DynamicCost* parent,
     factor *= parent->closure_factor_;
   }
 
+  factor *= EdgeFactor(edgeid);
   return {sec * factor, sec};
 }
 
