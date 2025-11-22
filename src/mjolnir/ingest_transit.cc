@@ -80,21 +80,24 @@ struct tile_transit_info_t {
 struct feed_cache_t {
   std::unordered_map<std::string, gtfs::Feed> cache;
   std::filesystem::path gtfs_dir;
+  std::mutex lock;
 
   const gtfs::Feed& operator()(const feed_object_t& feed_object) {
+    std::lock_guard<std::mutex> guard(lock);
+
     auto found = cache.find(feed_object.feed);
     if (found != cache.end()) {
       return found->second;
     }
 
-    std::string f = feed_object.feed;
-    // Construct in-place: try_emplace forwards path string to gtfs::Feed constructor
-    auto inserted = cache.try_emplace(f, (gtfs_dir / f).string());
+    auto inserted = cache.emplace(feed_object.feed, (gtfs_dir / feed_object.feed).string());
     inserted.first->second.read_feed();
     return inserted.first->second;
   }
 
   gtfs::Result ensure_feed_loaded(const std::string& feed_name) {
+    std::lock_guard<std::mutex> guard(lock);
+    
     auto found = cache.find(feed_name);
     if (found != cache.end()) {
       return {gtfs::ResultCode::OK, ""};
@@ -489,6 +492,7 @@ if (!gtfs::valid(trip_calendar)) {
     const auto& dest_stopId = dest_stopTime.stop_id;
     const auto& dest_stop = feed.get_stop(dest_stopId);
     assert(gtfs::valid(dest_stop));
+
     const auto origin_graphid_it = platform_node_ids.find({origin_stopId, currFeedPath});
     const auto dest_graphid_it = platform_node_ids.find({dest_stopId, currFeedPath});
     const bool origin_is_in_tile = origin_graphid_it != platform_node_ids.end();
@@ -594,7 +598,6 @@ if (!gtfs::valid(trip_calendar)) {
                                            static_cast<uint64_t>(dest_is_generated));
       }
 
-      // set the proper route_index which will be referred to later in convert_transit
       stop_pair->set_route_index(routes_ids.at({currTrip.route_id, currFeedPath}));
 
       // grab the headsign
@@ -731,6 +734,10 @@ void ingest_tiles(const std::filesystem::path& gtfs_dir,
 
     const auto tile_path = get_tile_path(transit_dir, current.graphid);
     auto current_path = tile_path;
+
+    for (const auto& route : current.routes) {
+      feeds(route.first);
+    }
 
     // collect all the feeds in this tile
     LOG_INFO("Processing tile " + std::to_string(current.graphid));
