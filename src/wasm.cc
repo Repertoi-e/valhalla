@@ -200,7 +200,15 @@ void these_are_the_js_callbacks(val fetch_locale,
 tyr::actor_t* actor = nullptr;
 
 void init(std::string valhalla_config_json) {
-  actor = new tyr::actor_t(config(valhalla_config_json));
+  try {
+    actor = new tyr::actor_t(config(valhalla_config_json));
+  } catch (const valhalla_exception_t& e) {
+    printf("C/ Valhalla exception: %u, %s, http: %u, %s, osrm_error: %s, statsd_key: %s", e.code,
+           e.message.c_str(), e.http_code, e.http_message.c_str(), e.osrm_error.c_str(),
+           e.statsd_key.c_str());
+  } catch (const std::exception& e) {
+    printf("C/ Valhalla std::exception: %s\n", e.what());
+  } catch (...) { printf("C/ Valhalla unknown exception thrown\n"); }
 }
 
 void prefetch_locales_for(std::string locale_string) {
@@ -268,15 +276,17 @@ std::string do_request(std::string action_js, std::string request_js) {
   } // request processing error specific error condition
   catch (const valhalla_exception_t& e) {
     result = serialize_error(e, request);
+    printf("C/ Valhalla exception: %u, %s, http: %u, %s, osrm_error: %s, statsd_key: %s", e.code,
+           e.message.c_str(), e.http_code, e.http_message.c_str(), e.osrm_error.c_str(),
+           e.statsd_key.c_str());
   } catch (const std::exception& e) {
     result = serialize_error({599, std::string(e.what())}, request);
-  } catch (...) { result = serialize_error({599, std::string("Unknown exception thrown")}, request); }
-
-  for (auto& stat : request.info().statistics()) {
-    // print("STAT {}: {}\n", stat.key().c_str(), stat.value());
+    printf("C/ Valhalla std::exception: %s\n", e.what());
+  } catch (...) { 
+    result = serialize_error({599, std::string("Unknown exception thrown")}, request); 
+    printf("C/ Valhalla unknown exception thrown\n");
   }
-
-  return result; // strdup(result.c_str()); // @Leak
+  return result; 
 }
 
 EMSCRIPTEN_BINDINGS(valhalla_bindings) {

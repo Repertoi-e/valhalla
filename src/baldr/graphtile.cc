@@ -276,6 +276,8 @@ graph_tile_ptr GraphTile::CacheTileURL(const std::string& tile_url,
   // it's a POD type and thus trivially copyable
   GraphTileHeader header;
   std::memcpy(&header, result.data_, sizeof(header));
+
+#if !defined __EMSCRIPTEN__
   auto tile_checksum = header.checksum();
   if (tile_checksum == 0) {
     // loading tilesets built by older valhalla commits has the potential to corrupt the GraphReader
@@ -297,6 +299,7 @@ graph_tile_ptr GraphTile::CacheTileURL(const std::string& tile_url,
       throw valhalla_exception_t(446);
     }
   }
+#endif
 
   // try to cache it on disk so we dont have to keep fetching it from url
   store(tile_dir, graphid, tile_getter, result.data_, result.size_);

@@ -573,6 +573,7 @@ GraphReader::GraphReader(const property_tree& pt,
     }
 #endif
 
+#if !defined __EMSCRIPTEN__
     // we allow to not cache tiles locally from URL
     if (!tile_dir_.empty()) {
       // load & validate the id.txt if available
@@ -589,6 +590,7 @@ GraphReader::GraphReader(const property_tree& pt,
         out_url_file << url_id_txt_checksum_ << std::endl;
       }
     }
+#endif
   }
 
   // Reserve cache (based on whether using individual tile files or shared,
@@ -1176,8 +1178,10 @@ IncidentResult GraphReader::GetIncidents(const GraphId& edge_id, graph_tile_ptr&
 
 uint64_t GraphReader::load_id_txt_checksum(const std::filesystem::path& id_txt_path,
                                            const std::string& tile_url) {
+#if !defined(__EMSCRIPTEN__)
   std::ifstream in_id_txt_file(id_txt_path);
   std::string file_checksum = "0";
+
   // if no cache wanted, never mind
   if (!tile_dir_.empty() && in_id_txt_file) {
     std::string file_url;
@@ -1196,6 +1200,9 @@ uint64_t GraphReader::load_id_txt_checksum(const std::filesystem::path& id_txt_p
   }
 
   return std::stoull(file_checksum);
+#else
+  return 0;
+#endif
 };
 
 graph_tile_ptr LimitedGraphReader::GetGraphTile(const GraphId& graphid) {
